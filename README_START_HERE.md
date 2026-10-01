@@ -1,6 +1,8 @@
-# Codex Starter Pack — Project Sandstrike
+# Sandstrike
 
-This folder contains persistent instructions and a master prompt for starting an original browser game inspired by the *mechanics* of Death Worm while adding a Worm-vs-Hunter mode.
+Sandstrike is an original browser-first 2D action game with two asymmetric roles:
+an underground monster and a human hunter. The project targets desktop and
+landscape-first mobile play from one shared simulation.
 
 ## Files
 
@@ -15,14 +17,25 @@ This folder contains persistent instructions and a master prompt for starting an
 - `docs/CHANGELOG.md` — meaningful changes.
 - `docs/SESSION_HANDOFF.md` — latest verified checkpoint and exact resume action.
 
-## Recommended use
+## Start development
 
-1. Create a new empty Git repository/folder.
-2. Copy `AGENTS.md` and the `docs/` folder into it.
-3. Open that folder in Codex Desktop or Codex in VS Code.
-4. Paste `MASTER_PROMPT_CODEX.md` into Codex.
-5. Let Codex complete **Phase A research/design first**.
-6. Review that checkpoint before allowing scaffolding/code.
+Use Node.js `^20.19.0 || >=22.12.0` and npm. The pinned local baseline is in
+`.nvmrc`.
+
+```bash
+npm install
+npm run dev
+```
+
+Run the complete foundation gate before committing:
+
+```bash
+npm run verify
+npm run test:e2e
+npm run test:e2e:pages
+npm run test:smoke:root
+npm run test:smoke:pages
+```
 
 For a later session, a short request such as “lanjutkan proyek” means: read the
 handoff, verify it against Git, and continue from its recorded next action without
@@ -37,3 +50,39 @@ The prompt and AGENTS rules now require the game to be playable responsively on:
 - tablets where practical.
 
 Codex also has explicit permission to propose original gameplay features, while still requiring design justification and approval before major scope expansion.
+
+## Static deployment
+
+The game requires no backend, server runtime, rewrite rule, or runtime secret.
+Every deployment publishes the generated `dist/` directory.
+
+### Vercel
+
+- Install command: `npm install`
+- Build command: `npm run build`
+- Output directory: `dist`
+
+The root production smoke test uses the same output:
+
+```bash
+npm run test:smoke:root
+```
+
+### GitHub Pages
+
+The Pages build sets Vite's base path to `/Sandstrike/` so JavaScript and CSS
+resolve under the repository subpath.
+
+```bash
+npm install
+npm run build:pages
+```
+
+Publish `dist/` as the Pages artifact. Validate that exact build locally with:
+
+```bash
+npm run test:smoke:pages
+```
+
+The repository-subpath behavior is covered independently from the root build;
+asset or chunk responses at HTTP 400 and above fail the smoke test.
