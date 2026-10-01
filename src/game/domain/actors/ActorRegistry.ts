@@ -30,7 +30,7 @@ export class ActorRegistry {
 
   markForRemoval(id: ActorId, cause: RemovalCause): boolean {
     const actor = this.actors.get(id);
-    if (!actor || actor.lifecycle !== "active") return false;
+    if (actor?.lifecycle !== "active") return false;
     this.removals.set(id, cause);
     this.actors.set(id, createActor({ ...actor, lifecycle: "pending-removal" }));
     return true;
@@ -38,7 +38,8 @@ export class ActorRegistry {
 
   commit(): { readonly spawned: readonly ActorState[]; readonly removed: readonly Readonly<{ actor: ActorState; cause: RemovalCause }>[] } {
     const removed = [...this.removals].sort(([a], [b]) => a.localeCompare(b)).map(([id, cause]) => {
-      const actor = this.actors.get(id)!;
+      const actor = this.actors.get(id);
+      if (!actor) throw new Error(`Removal references unknown actor ${id}.`);
       this.actors.delete(id);
       return Object.freeze({ actor, cause });
     });

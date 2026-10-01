@@ -16,7 +16,7 @@ describe("CollisionWorld", () => {
   ])("detects circle contact with $kind", (shape) => {
     const actors = [actor("worm", 0, 0, collisionProfiles.worm), actor("target", 24, 0, profile(shape))];
     expect(new CollisionWorld().query(actors, actors)).toHaveLength(1);
-    const separated = [actors[0]!, actor("target", 100, 0, profile(shape))];
+    const separated = [actor("worm", 0, 0, collisionProfiles.worm), actor("target", 100, 0, profile(shape))];
     expect(new CollisionWorld().query(separated, separated)).toHaveLength(0);
   });
 
@@ -37,7 +37,7 @@ describe("CollisionWorld", () => {
         ? profile({ kind: "box", halfWidth: 0.5, halfHeight: 16 })
         : collisionProfiles.worm;
       const before = [actor("source", -50, 0, sourceProfile), actor("target", 0, 0, targetProfile)];
-      const after = [actor("source", 50, 0, sourceProfile), before[1]!];
+      const after = [actor("source", 50, 0, sourceProfile), actor("target", 0, 0, targetProfile)];
       const contacts = new CollisionWorld().query(before, after);
       expect(contacts).toHaveLength(1);
       expect(contacts[0]?.sourceId).toBe("source");
@@ -46,7 +46,7 @@ describe("CollisionWorld", () => {
 
   it("rejects corner near-misses and disallowed masks", () => {
     const before = [actor("worm", -50, 40, collisionProfiles.worm), actor("target", 0, 0, collisionProfiles.infantry)];
-    const after = [actor("worm", 50, 40, collisionProfiles.worm), before[1]!];
+    const after = [actor("worm", 50, 40, collisionProfiles.worm), actor("target", 0, 0, collisionProfiles.infantry)];
     expect(new CollisionWorld().query(before, after)).toHaveLength(0);
     const masked = [actor("a"), actor("b")];
     expect(new CollisionWorld().query(masked, masked)).toHaveLength(0);

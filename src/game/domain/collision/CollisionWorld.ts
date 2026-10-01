@@ -10,11 +10,11 @@ export class CollisionWorld {
     const history = new Map(previous.map((actor) => [actor.id, actor]));
     const contacts: Contact[] = [];
     for (let firstIndex = 0; firstIndex < current.length; firstIndex += 1) {
-      const first = current[firstIndex]!;
-      if (first.lifecycle !== "active") continue;
+      const first = current[firstIndex];
+      if (first?.lifecycle !== "active") continue;
       for (let secondIndex = firstIndex + 1; secondIndex < current.length; secondIndex += 1) {
-        const second = current[secondIndex]!;
-        if (second.lifecycle !== "active" ||
+        const second = current[secondIndex];
+        if (second?.lifecycle !== "active" ||
             !(first.collision.mask & second.collision.layer) ||
             !(second.collision.mask & first.collision.layer)) continue;
         const [source, target] = orderActors(first, second);
@@ -99,7 +99,9 @@ function segmentBoxDistance(segment: Segment, box: Box): number {
   const corners = [{ x: box.left, y: box.top }, { x: box.right, y: box.top }, { x: box.right, y: box.bottom }, { x: box.left, y: box.bottom }];
   let distance = Infinity;
   for (let index = 0; index < 4; index += 1) {
-    distance = Math.min(distance, segmentDistance(segment, { from: corners[index]!, to: corners[(index + 1) % 4]!, radius: 0 }));
+    const from = corners[index];
+    const to = corners[(index + 1) % 4];
+    if (from && to) distance = Math.min(distance, segmentDistance(segment, { from, to, radius: 0 }));
   }
   return distance;
 }

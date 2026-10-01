@@ -72,7 +72,9 @@ export class GameSession {
     );
     for (const event of movementEvents) this.events.publish(mapMovementEvent(event));
     const worm = this.locomotion.snapshot();
-    this.actors.update({ ...this.actors.get("worm")!, position: worm.head.position, direction: worm.head.tangent, velocity: worm.head.velocity });
+    const wormActor = this.actors.get("worm");
+    if (!wormActor) throw new Error("Session has no player worm.");
+    this.actors.update({ ...wormActor, position: worm.head.position, direction: worm.head.tangent, velocity: worm.head.velocity });
     for (const contact of this.collisions.query(previousActors, this.actors.snapshot())) {
       this.events.publish({ type: "contact", tick: this.currentTick, contact });
     }
