@@ -66,6 +66,17 @@ export class GameplayScene extends Phaser.Scene {
       movementBalance,
     );
     this.configureSession({ seed: DEFAULT_SEED });
+    lifecycle.onControlsReady?.(
+      Object.freeze({
+        touchInput: this.touch,
+        clear: () => {
+          this.inputRouter?.clear();
+        },
+        resetTiming: () => {
+          this.pipeline?.resetTiming();
+        },
+      }),
+    );
 
     if (__SANDSTRIKE_E2E__) {
       this.removeTestBridge = installE2EDebugBridge({
@@ -98,6 +109,9 @@ export class GameplayScene extends Phaser.Scene {
     }
 
     const frame = this.pipeline.advance(deltaMs);
+    if (frame.lastAction?.pause.pressed) {
+      this.lifecycle().onPauseRequested?.();
+    }
     this.snapshot = frame.snapshot;
     this.totalDroppedMs += frame.report.droppedMs;
     this.recentEvents.push(...frame.events);

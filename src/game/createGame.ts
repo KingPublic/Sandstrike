@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 
+import type { TouchInput } from "./input/TouchInput";
 import { BootScene } from "./scenes/BootScene";
 import { GameplayScene } from "./scenes/GameplayScene";
 import { PreloadScene } from "./scenes/PreloadScene";
@@ -8,6 +9,14 @@ export interface GameBootstrapOptions {
   readonly onReady?: () => void;
   readonly onFatalError?: (error: Error) => void;
   readonly debug?: boolean;
+  readonly onControlsReady?: (controls: GameplayControlPort) => void;
+  readonly onPauseRequested?: () => void;
+}
+
+export interface GameplayControlPort {
+  readonly touchInput: TouchInput;
+  clear(): void;
+  resetTiming(): void;
 }
 
 export const GAME_LIFECYCLE_REGISTRY_KEY = "sandstrike.lifecycle";

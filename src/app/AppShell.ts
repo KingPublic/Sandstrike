@@ -1,16 +1,61 @@
 import type Phaser from "phaser";
 
-import { createGame } from "../game/createGame";
+import {
+  createGame,
+  type GameplayControlPort,
+} from "../game/createGame";
+import { TouchControls } from "../game/ui/TouchControls";
+import {
+  computeViewportLayout,
+  type SafeAreaInsets,
+} from "../game/ui/ViewportLayout";
+import {
+  PauseCoordinator,
+  type PauseReason,
+} from "./PauseCoordinator";
 
 export class AppShell {
   private root: HTMLElement | undefined;
   private host: HTMLElement | undefined;
   private status: HTMLElement | undefined;
   private startButton: HTMLButtonElement | undefined;
+  private gameFrame: HTMLElement | undefined;
+  private pauseOverlay: HTMLElement | undefined;
+  private pauseTitle: HTMLElement | undefined;
+  private pauseMessage: HTMLElement | undefined;
+  private resumeButton: HTMLButtonElement | undefined;
+  private controls: GameplayControlPort | undefined;
+  private touchControls: TouchControls | undefined;
   private game: Phaser.Game | undefined;
+  private readonly pause = new PauseCoordinator((paused, reasons) => {
+    this.applyPauseState(paused, reasons);
+  });
 
   private readonly handleStart = (): void => {
     this.startPreview();
+  };
+
+  private readonly handleResume = (): void => {
+    this.resumeWhenSafe();
+  };
+
+  private readonly handleVisibility = (): void => {
+    if (document.visibilityState !== "visible") {
+      this.pause.add("visibility");
+    }
+    this.refreshPauseOverlay();
+  };
+
+  private readonly handleWindowBlur = (): void => {
+    this.pause.add("focus");
+  };
+
+  private readonly handleWindowFocus = (): void => {
+    this.refreshPauseOverlay();
+  };
+
+  private readonly handleResize = (): void => {
+    this.refreshLayout();
   };
 
   mount(root: HTMLElement): void {
@@ -35,8 +80,8 @@ export class AppShell {
             <p class="preview__kicker">Phase B systems check</p>
             <h2 id="preview-title">Worm movement laboratory</h2>
             <p>
-              This first scene verifies the renderer, scaling, lifecycle, and
-              static-host pipeline before movement enters the arena.
+              Shape underground momentum, breach the surface, and test the same
+              action layer with keyboard, touch, or gamepad.
             </p>
             <button class="primary-action" type="button">
               Start vertical slice
@@ -48,6 +93,22 @@ export class AppShell {
           <div class="game-frame">
             <div class="game-surface" data-game-host></div>
             <div class="game-frame__edge" aria-hidden="true"></div>
+            <div class="safe-area-probe" aria-hidden="true"></div>
+            <div
+              class="pause-overlay"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="pause-title"
+              aria-describedby="pause-message"
+              hidden
+            >
+              <div class="pause-card">
+                <p class="preview__kicker">Simulation secured</p>
+                <h2 id="pause-title">Paused</h2>
+                <p id="pause-message">Resume when you are ready.</p>
+                <button class="resume-action" type="button">Resume movement</button>
+              </div>
+            </div>
           </div>
         </section>
         <footer class="shell-footer">
@@ -60,7 +121,18 @@ export class AppShell {
     this.host = this.requireElement("[data-game-host]");
     this.status = this.requireElement(".boot-status");
     this.startButton = this.requireButton(".primary-action");
+    this.gameFrame = this.requireElement(".game-frame");
+    this.pauseOverlay = this.requireElement(".pause-overlay");
+    this.pauseTitle = this.requireElement("#pause-title");
+    this.pauseMessage = this.requireElement("#pause-message");
+    this.resumeButton = this.requireButton(".resume-action");
     this.startButton.addEventListener("click", this.handleStart);
+    this.resumeButton.addEventListener("click", this.handleResume);
+    document.addEventListener("visibilitychange", this.handleVisibility);
+    window.addEventListener("blur", this.handleWindowBlur);
+    window.addEventListener("focus", this.handleWindowFocus);
+    window.addEventListener("resize", this.handleResize);
+    window.addEventListener("orientationchange", this.handleResize);
     queueMicrotask(() => this.startButton?.focus());
   }
 
@@ -94,12 +166,23 @@ export class AppShell {
 
   destroy(): void {
     this.startButton?.removeEventListener("click", this.handleStart);
+    this.resumeButton?.removeEventListener("click", this.handleResume);
+    document.removeEventListener("visibilitychange", this.handleVisibility);
+    window.removeEventListener("blur", this.handleWindowBlur);
+    window.removeEventListener("focus", this.handleWindowFocus);
+    window.removeEventListener("resize", this.handleResize);
+    window.removeEventListener("orientationchange", this.handleResize);
     this.destroyGame();
     this.root?.replaceChildren();
     this.root = undefined;
     this.host = undefined;
     this.status = undefined;
     this.startButton = undefined;
+    this.gameFrame = undefined;
+    this.pauseOverlay = undefined;
+    this.pauseTitle = undefined;
+    this.pauseMessage = undefined;
+    this.resumeButton = undefined;
   }
 
   private startPreview(): void {
@@ -125,6 +208,12 @@ export class AppShell {
         onFatalError: () => {
           this.handleFatalError();
         },
+        onControlsReady: (controls) => {
+          this.handleControlsReady(controls);
+        },
+        onPauseRequested: () => {
+          this.pause.add("user");
+        },
       });
     } catch {
       this.handleFatalError();
@@ -139,6 +228,7 @@ export class AppShell {
     this.status.textContent = "Movement preview ready.";
     this.startButton.disabled = false;
     this.startButton.textContent = "Focus game";
+    this.refreshLayout();
     this.focusCanvas();
   }
 
@@ -157,14 +247,153 @@ export class AppShell {
 
     canvas.tabIndex = 0;
     canvas.setAttribute("aria-label", "Sandstrike movement preview");
-    canvas.focus();
+    canvas.focus({ preventScroll: true });
   }
 
   private destroyGame(): void {
+    this.touchControls?.destroy();
+    this.touchControls = undefined;
+    this.controls?.clear();
+    this.controls = undefined;
+    this.pause.clear();
     const game = this.game;
     this.game = undefined;
     game?.destroy(true);
     this.host?.replaceChildren();
+  }
+
+  private handleControlsReady(controls: GameplayControlPort): void {
+    if (!this.gameFrame) {
+      return;
+    }
+    this.touchControls?.destroy();
+    this.controls = controls;
+    this.touchControls = new TouchControls(
+      this.gameFrame,
+      controls.touchInput,
+    );
+    this.refreshLayout();
+  }
+
+  private refreshLayout(): void {
+    if (!this.gameFrame || !this.touchControls) {
+      return;
+    }
+    const bounds = this.gameFrame.getBoundingClientRect();
+    if (bounds.width <= 0 || bounds.height <= 0) {
+      return;
+    }
+    const orientation =
+      window.innerWidth >= window.innerHeight ? "landscape" : "portrait";
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    const touchCapable = navigator.maxTouchPoints > 0 || coarsePointer;
+    const layout = computeViewportLayout({
+      cssWidth: bounds.width,
+      cssHeight: bounds.height,
+      devicePixelRatio: window.devicePixelRatio,
+      safeArea: this.readSafeArea(),
+      orientation,
+      coarsePointer,
+      touchCapable,
+      role: "worm",
+    });
+    this.touchControls.applyLayout(layout);
+
+    if (layout.portraitBlocked && this.game) {
+      this.pause.add("orientation");
+    }
+    this.refreshPauseOverlay();
+  }
+
+  private applyPauseState(
+    paused: boolean,
+    reasons: readonly PauseReason[],
+  ): void {
+    this.gameFrame?.setAttribute("data-pause-reasons", reasons.join(" "));
+    this.gameFrame?.classList.toggle("game-frame--paused", paused);
+    this.controls?.clear();
+    this.controls?.resetTiming();
+    this.touchControls?.clearPointers();
+
+    if (paused) {
+      if (this.game?.scene.isActive("Gameplay")) {
+        this.game.scene.pause("Gameplay");
+      }
+      this.refreshPauseOverlay();
+      this.resumeButton?.focus({ preventScroll: true });
+      return;
+    }
+
+    if (this.game?.scene.isPaused("Gameplay")) {
+      this.game.scene.resume("Gameplay");
+    }
+    if (this.pauseOverlay) {
+      this.pauseOverlay.hidden = true;
+    }
+    queueMicrotask(() => {
+      this.focusCanvas();
+    });
+  }
+
+  private refreshPauseOverlay(): void {
+    if (
+      !this.pause.paused ||
+      !this.pauseOverlay ||
+      !this.pauseTitle ||
+      !this.pauseMessage ||
+      !this.resumeButton
+    ) {
+      return;
+    }
+
+    const portrait = window.innerHeight > window.innerWidth;
+    const hidden = document.visibilityState !== "visible";
+    this.pauseOverlay.hidden = false;
+    this.resumeButton.disabled = portrait || hidden;
+
+    if (portrait) {
+      this.pauseTitle.textContent = "Rotate to landscape";
+      this.pauseMessage.textContent =
+        "Sandstrike pauses in portrait so the playfield and controls stay readable.";
+    } else if (hidden || this.pause.has("visibility")) {
+      this.pauseTitle.textContent = "Session protected";
+      this.pauseMessage.textContent =
+        "The simulation stopped while the page was hidden. Resume deliberately when ready.";
+    } else if (this.pause.has("focus")) {
+      this.pauseTitle.textContent = "Focus interrupted";
+      this.pauseMessage.textContent =
+        "Input was cleared to prevent a stuck direction or Burst.";
+    } else {
+      this.pauseTitle.textContent = "Movement paused";
+      this.pauseMessage.textContent =
+        "The worm is frozen and all held actions have been cleared.";
+    }
+  }
+
+  private resumeWhenSafe(): void {
+    if (
+      document.visibilityState !== "visible" ||
+      window.innerHeight > window.innerWidth
+    ) {
+      this.refreshPauseOverlay();
+      return;
+    }
+    this.pause.clear();
+    this.refreshLayout();
+  }
+
+  private readSafeArea(): SafeAreaInsets {
+    const probe = this.root?.querySelector(".safe-area-probe");
+    if (!(probe instanceof HTMLElement)) {
+      return Object.freeze({ top: 0, right: 0, bottom: 0, left: 0 });
+    }
+    const style = getComputedStyle(probe);
+    return Object.freeze({
+      top: parsePixels(style.paddingTop),
+      right: parsePixels(style.paddingRight),
+      bottom: parsePixels(style.paddingBottom),
+      left: parsePixels(style.paddingLeft),
+    });
   }
 
   private requireElement(selector: string): HTMLElement {
@@ -182,4 +411,9 @@ export class AppShell {
     }
     return element;
   }
+}
+
+function parsePixels(value: string): number {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
 }
