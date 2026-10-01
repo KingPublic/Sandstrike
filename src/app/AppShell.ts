@@ -61,6 +61,7 @@ export class AppShell {
   };
 
   private readonly handleVisibility = (): void => {
+    if (!this.controller.active) return;
     if (document.visibilityState !== "visible") {
       this.pause.add("visibility");
     }
@@ -68,6 +69,7 @@ export class AppShell {
   };
 
   private readonly handleWindowBlur = (): void => {
+    if (!this.controller.active) return;
     this.pause.add("focus");
   };
 
@@ -158,7 +160,7 @@ export class AppShell {
     window.addEventListener("orientationchange", this.handleResize);
     window.addEventListener("popstate", this.handleBack);
     this.root.classList.toggle("high-contrast", this.settings.highContrast); this.root.classList.toggle("reduced-motion", this.settings.reducedMotion); this.refreshSaveNotice();
-    if (__SANDSTRIKE_E2E__) this.removeTestBridge = installE2EDebugBridge({ snapshot: () => this.controller.snapshot(), presentation: () => Object.freeze({ actorIds: this.controls?.actorIds() ?? Object.freeze([]) }), configureNextRun: (configuration) => { if (this.controller.active) throw new Error("Configure the next run before starting."); this.nextConfiguration = Object.freeze({ ...configuration }); }, enqueueActions: (frames) => { this.controls?.enqueueActions(frames); } });
+    if (__SANDSTRIKE_E2E__) this.removeTestBridge = installE2EDebugBridge({ snapshot: () => this.controller.snapshot(), presentation: () => { const metrics = this.controls?.metrics(); return Object.freeze({ actorIds: this.controls?.actorIds() ?? Object.freeze([]), ...(metrics ? { metrics } : {}) }); }, configureNextRun: (configuration) => { if (this.controller.active) throw new Error("Configure the next run before starting."); this.nextConfiguration = Object.freeze({ ...configuration }); }, enqueueActions: (frames) => { this.controls?.enqueueActions(frames); } });
   }
 
   showError(message: string, retry: () => void): void {
@@ -273,6 +275,8 @@ export class AppShell {
     this.status.textContent = "Rampage ready.";
     if (this.startButton) this.startButton.disabled = false;
     this.root?.classList.add("sandstrike-playing");
+    this.game.scale.getParentBounds();
+    this.game.scale.refresh();
     this.refreshLayout();
     this.focusCanvas();
     if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt"; prompt.textContent = "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
@@ -361,6 +365,7 @@ export class AppShell {
     paused: boolean,
     reasons: readonly PauseReason[],
   ): void {
+    if (!this.controller.active) { if (this.pauseOverlay) this.pauseOverlay.hidden = true; return; }
     this.gameFrame?.setAttribute("data-pause-reasons", reasons.join(" "));
     this.gameFrame?.classList.toggle("game-frame--paused", paused);
     this.controls?.clear();
@@ -392,6 +397,7 @@ export class AppShell {
   }
 
   private refreshPauseOverlay(): void {
+    if (!this.controller.active) { if (this.pauseOverlay) this.pauseOverlay.hidden = true; return; }
     if (
       !this.pause.paused ||
       !this.pauseOverlay ||

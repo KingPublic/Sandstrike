@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import { movementBalance } from "../data/movementBalance";
 import { DebugOverlay } from "../debug/DebugOverlay";
 import type { DomainEvent } from "../domain/events/DomainEvent";
+import type { PresentationMetrics } from "../debug/PresentationMetrics";
 import { SessionController } from "../application/SessionController";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
 import { GamepadInput } from "../input/GamepadInput";
@@ -38,6 +39,7 @@ export class GameplayScene extends Phaser.Scene {
   private feedback = new FeedbackController();
   private totalDroppedMs = 0;
   private reportedResult = false;
+  private metrics: PresentationMetrics | undefined;
 
   constructor() {
     super("Gameplay");
@@ -75,6 +77,7 @@ export class GameplayScene extends Phaser.Scene {
       Object.freeze({
         enqueueActions: (frames: readonly ActionFrame[]) => { this.scripted?.enqueueActions(frames); },
         actorIds: () => this.actorViews?.actorIds() ?? Object.freeze([]),
+        metrics: () => this.metrics,
         touchInput: this.touch,
         clear: () => {
           this.inputRouter?.clear();
@@ -102,7 +105,9 @@ export class GameplayScene extends Phaser.Scene {
       return;
     }
 
+    const simulationStart = performance.now();
     const frame = this.controller.advance(deltaMs);
+    const simulationMs = performance.now() - simulationStart;
     if (frame.lastAction?.pause.pressed) {
       this.lifecycle().onPauseRequested?.();
     }
@@ -121,6 +126,7 @@ export class GameplayScene extends Phaser.Scene {
     this.actorViews?.sync(frame.snapshot, frame.report.alpha, settings.highContrast);
     this.effects?.consume(commands);
     this.effects?.update(deltaMs / 1000, settings.reducedMotion);
+    this.metrics = Object.freeze({ fps: this.game.loop.actualFps, frameMs: deltaMs, simulationMsPerTick: frame.report.steps > 0 ? simulationMs / frame.report.steps : 0, steps: frame.report.steps, totalDroppedMs: this.totalDroppedMs, actors: frame.snapshot.actors.length, shapes: frame.snapshot.actors.length, projectiles: frame.snapshot.diagnostics.projectileCount, particles: this.effects?.particleCount() ?? 0 });
     if (settings.shake === 0 || settings.reducedMotion) this.cameras.main.shakeEffect.reset();
     for (const command of commands) {
       if (command.shake > 0) this.cameras.main.shake(90, command.shake);
@@ -139,6 +145,7 @@ export class GameplayScene extends Phaser.Scene {
       pauseReasons: Object.freeze([]),
       camera: this.cameraController.debugBounds(),
       recentEvents: this.recentEvents,
+      particles: this.metrics.particles,
     });
   }
 

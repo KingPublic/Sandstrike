@@ -115,7 +115,7 @@ Known evidence limits:
 
 ## Phase B combat prototype hypothesis (2026-10-01)
 
-Status: provisional domain fixtures; browser combat/feedback gate pending.
+Status: provisional tuning, now covered by built-browser combat/feedback checks.
 Baseline: contact pipeline `cd43855`; fixtures cover Bite, impact, simultaneous
 contacts, capped healing, armor, and tick-based invulnerability.
 
@@ -134,7 +134,7 @@ and current poses to retain turning hits.
 
 ## Phase B infantry hypothesis (2026-10-01)
 
-Domain tests pass; visual/audio telegraph feedback remains for presentation.
+Domain and browser presentation tests pass; physical audio remains unverified.
 Infantry has 25 health, repositions at 90 px/s for 24 ticks, locks perceived aim
 for a 36-tick telegraph, and waits 53 recovery ticks after its one-tick fire state
 (90 ticks between shots). Visibility is limited to 900 px and 18 px below the
@@ -167,7 +167,8 @@ The seed-811 fixture runs 5,400 ticks with circular steering and Bite every 25
 ticks. Two runs reproduce all snapshots/events, preserve caps and legal head
 positions, announce once, activate band 1 at tick 2,820, and overflow no events.
 Fresh checkpoint: 103/103 tests, typecheck/lint pass. These are mechanical pacing
-hypotheses; browser playtesting and presentation readability remain to be checked.
+hypotheses; browser presentation checks now pass, while broader player tuning
+still needs physical device playtesting.
 
 ## Phase B presentation checkpoint (2026-10-01)
 
@@ -184,3 +185,40 @@ pass; 11 root Chromium E2E pass. Layout and actor-view identity checks cover
 do not change its snapshot. Combat-breach captures verify prey/infantry silhouettes,
 aim-lock shapes/text and the full segmented worm. Capture waits for fixture/Phaser
 readiness; optional bridge calls before installation had initially skipped setup.
+
+## Phase B encounter measurement (2026-10-01)
+
+Environment: Windows Chromium 153.0.8010.12 through Playwright, one browser
+worker, optimized E2E build, seed 811, 12 seconds of scripted steering/Bite/Burst
+per viewport. This is automated host evidence, not a physical phone benchmark.
+Raw observations are in `docs/PHASE_B_PERFORMANCE.json`.
+
+| Measurement | 1440x900 | 844x390 |
+|---|---:|---:|
+| Simulation ticks / render samples | 622 / 370 | 654 / 421 |
+| Frame median / p95 / p99, ms | 31.66 / 33.35 / 39.99 | 28.33 / 30.00 / 35.00 |
+| Frames above 33.34 ms | 22 | 9 |
+| Simulation per tick median / p95, ms | 0.20 / 0.40 | 0.20 / 0.40 |
+| Peak actors / logical shapes | 6 / 6 | 7 / 7 |
+| Peak projectiles / particles | 0 / 24 | 0 / 24 |
+| Dropped catch-up time / event overflow | 0 / 0 | 0 / 0 |
+| Exposed JS heap before / after, MB | 19.3 / 19.3 | 18.2 / 18.2 |
+| End score / health | 250 / 100 | 200 / 100 |
+
+Median frame pacing is about 32–35 fps on this automated host; the provisional
+60 fps target on documented physical hardware is **not verified**. Simulation
+cost fits the initial desktop budget; heap readings are coarse browser counters,
+not proof of absence of leaks. The short encounter is band 0 and does not exercise
+rifle pressure. A separate combined-boundary fixture exercises two live projectiles,
+seven overlapping targets, damage protection, three heals, four infantry kills,
+one warning and band 1. Its first hit is tick 1 (16.67 ms); target credits/healing
+occur at tick 2 (33.33 ms). This deliberate density is not normal spawn spacing.
+
+Ten independent 120-tick stress replays have identical finite outcomes. The
+earlier ten-cycle breach/return camera check remains recorded above. Audio and
+gamepad adapters are covered by logic tests; real audio, haptics, phone/tablet
+touch, GPU performance and human movement-feel tuning remain explicit limits.
+
+Final review corrections: pause input stops before the requested simulation tick
+and suppresses later catch-up ticks; lethal health cannot be restored by an attack
+later in the same tick; menu/Results interruption never exposes run controls.

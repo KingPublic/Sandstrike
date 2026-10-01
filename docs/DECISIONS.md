@@ -229,3 +229,31 @@ later Node 22 baseline may reassess Vitest 5 through a separate compatibility
 ruling; no upgrade happens implicitly.
 
 Status: accepted from Phase B compatibility evidence on 2026-10-01.
+
+## D-015 — Static Phase B run and save ownership
+
+Decision: SessionController owns one authoritative session; RampageRules constructs
+one immutable result; SaveCoordinator accepts each session ID once and preserves
+the previous valid save as backup before replacement. v1 is the first supported
+schema. Unknown future schemas remain on disk and the current session uses memory
+until explicit reset confirmation. No mid-run persistence is required.
+
+Why: Render timing, retries and storage failure must not duplicate scores or block
+play. Domain code remains independent of Phaser, DOM and persistence adapters.
+
+Status: implemented and covered by run-lifecycle, result-persistence, save-recovery
+and browser tests on 2026-10-01.
+
+## D-016 — Project-root workflow after Phase B
+
+Decision: At the user's request, move the completed Phase B checkout into the
+project root on a development branch. Future work runs directly in the root;
+the user controls later pushes and merging to main.
+
+Why: The root workflow makes changes easier for this user to inspect. Isolation
+through additional worktree folders is no longer desired.
+
+Consequences: Inspect the existing root branch and dirty state before switching.
+Keep the Phase B branch/history intact; do not overwrite unrelated edits.
+
+Status: explicitly authorized by the user on 2026-10-01.

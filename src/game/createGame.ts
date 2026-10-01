@@ -10,6 +10,7 @@ import type { PhaserAudioAdapter } from "./infrastructure/phaser/PhaserAudioAdap
 import type { SessionController } from "./application/SessionController";
 import type { RunResult } from "./domain/modes/RunResult";
 import type { ActionFrame } from "./input/ActionFrame";
+import type { PresentationMetrics } from "./debug/PresentationMetrics";
 
 export interface GameBootstrapOptions {
   readonly controller?: SessionController;
@@ -27,6 +28,7 @@ export interface GameBootstrapOptions {
 export interface GameplayControlPort {
   enqueueActions(frames: readonly ActionFrame[]): void;
   actorIds(): readonly string[];
+  metrics(): PresentationMetrics | undefined;
   readonly touchInput: TouchInput;
   clear(): void;
   resetTiming(): void;

@@ -2,7 +2,29 @@
 
 Sandstrike is an original browser-first 2D action game with two asymmetric roles:
 an underground monster and a human hunter. The project targets desktop and
-landscape-first mobile play from one shared simulation.
+landscape-first mobile play from one shared simulation. Phase B implements the
+playable worm Rampage slice. Hunter mode is the next planned phase.
+
+## Play the current slice
+
+From the project root, run `npm ci` once, then `npm run dev` and open the local
+URL printed by Vite. Choose Enter desert → Play → Rampage → Start Rampage.
+
+- Keyboard: WASD or arrow keys steer, Space bites, Shift bursts, Escape pauses.
+- Touch: drag the joystick; use Bite and Burst with another finger. Landscape
+  is required during play; portrait safely pauses the run.
+- Gamepad: left stick steers, right trigger bites, right bumper bursts, Start
+  pauses. The shared action adapter is tested; physical hardware remains unverified.
+- Pause offers Resume, Restart and End run. Results offers Retry, mode selection
+  and the main menu. Restart/end/reset require explicit confirmation.
+- Settings control feedback, volume, touch handedness/opacity and accessibility.
+  Muted play retains critical text/shape cues. There is no music track yet.
+
+Burrow, turn upward to breach, strike prey for healing and chain varied targets.
+Infantry locks its aim before firing. The current slice has response bands 0–1,
+one original procedural worm, prey and infantry; broader content remains planned.
+Best score, onboarding and settings save locally. If storage is unavailable,
+play continues with memory-only progress for that session.
 
 ## Files
 
@@ -23,11 +45,11 @@ Use Node.js `^20.19.0 || >=22.12.0` and npm. The pinned local baseline is in
 `.nvmrc`.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Run the complete foundation gate before committing:
+Use targeted tests while developing. Run the integrated gate for release changes:
 
 ```bash
 npm run verify

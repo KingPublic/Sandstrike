@@ -1,0 +1,74 @@
+﻿[
+    {
+        "browser":  "153.0.8010.12",
+        "build":  "optimized E2E build",
+        "viewport":  {
+                         "width":  1440,
+                         "height":  900
+                     },
+        "userAgent":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36",
+        "seed":  811,
+        "elapsedMs":  12024.400000000373,
+        "ticks":  622,
+        "samples":  370,
+        "frameMs":  {
+                        "median":  31.660000000000036,
+                        "p95":  33.35,
+                        "p99":  39.99000000000005
+                    },
+        "simulationMsPerTick":  {
+                                    "median":  0.20000000018626451,
+                                    "p95":  0.40000000037252903
+                                },
+        "slowFramesOver33ms":  22,
+        "maxActors":  6,
+        "maxShapes":  6,
+        "maxProjectiles":  0,
+        "maxParticles":  24,
+        "totalDroppedMs":  0,
+        "memoryBefore":  19300000,
+        "memoryAfter":  19300000,
+        "score":  250,
+        "health":  100,
+        "eventOverflows":  0,
+        "failures":  [
+
+                     ]
+    },
+    {
+        "browser":  "153.0.8010.12",
+        "build":  "optimized E2E build",
+        "viewport":  {
+                         "width":  844,
+                         "height":  390
+                     },
+        "userAgent":  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.8010.12 Safari/537.36",
+        "seed":  811,
+        "elapsedMs":  12022.5,
+        "ticks":  654,
+        "samples":  421,
+        "frameMs":  {
+                        "median":  28.329999999999927,
+                        "p95":  30,
+                        "p99":  35
+                    },
+        "simulationMsPerTick":  {
+                                    "median":  0.20000000018626451,
+                                    "p95":  0.40000000037252903
+                                },
+        "slowFramesOver33ms":  9,
+        "maxActors":  7,
+        "maxShapes":  7,
+        "maxProjectiles":  0,
+        "maxParticles":  24,
+        "totalDroppedMs":  0,
+        "memoryBefore":  18200000,
+        "memoryAfter":  18200000,
+        "score":  200,
+        "health":  100,
+        "eventOverflows":  0,
+        "failures":  [
+
+                     ]
+    }
+]

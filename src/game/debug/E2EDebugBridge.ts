@@ -1,5 +1,6 @@
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
 import type { ActionFrame } from "../input/ActionFrame";
+import type { PresentationMetrics } from "./PresentationMetrics";
 
 export interface NextRunConfiguration {
   readonly seed: number;
@@ -7,14 +8,14 @@ export interface NextRunConfiguration {
 }
 
 export interface SandstrikeTestApi {
-  presentation(): Readonly<{ actorIds: readonly string[] }>;
+  presentation(): Readonly<{ actorIds: readonly string[]; metrics?: PresentationMetrics }>;
   snapshot(): SessionSnapshot;
   configureNextRun(configuration: NextRunConfiguration): void;
   enqueueActions(frames: readonly ActionFrame[]): void;
 }
 
 export interface E2EDebugBridgeController {
-  readonly presentation: () => Readonly<{ actorIds: readonly string[] }>;
+  readonly presentation: SandstrikeTestApi["presentation"];
   readonly snapshot: () => SessionSnapshot;
   readonly configureNextRun: (configuration: NextRunConfiguration) => void;
   readonly enqueueActions: (frames: readonly ActionFrame[]) => void;

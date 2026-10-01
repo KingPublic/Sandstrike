@@ -31,13 +31,17 @@ export class SessionController {
   advance(deltaMs: number): MovementFrameResult {
     const session = this.requireSession(); const events: DomainEvent[] = [];
     let lastAction: ActionFrame | undefined;
+    let steps = 0;
     const report = this.runner.advance(this.paused || this.accepted ? 0 : deltaMs, () => {
-      if (this.accepted) return;
+      if (this.accepted || this.paused) return;
       const action = this.input?.sample(session.nextTick) ?? neutralActionFrame(session.nextTick);
       lastAction = action;
+      if (action.pause.pressed) { this.paused = true; this.input?.clear(); return; }
       const result = session.step(action); events.push(...result.events); this.accepted ??= result.result;
+      steps += 1;
     });
-    const frame = { report, snapshot: session.snapshot(), events: Object.freeze(events) };
+    if (this.paused || this.accepted) this.runner.reset();
+    const frame = { report: Object.freeze({ ...report, steps, alpha: this.paused || this.accepted ? 0 : report.alpha }), snapshot: session.snapshot(), events: Object.freeze(events) };
     return Object.freeze(lastAction ? { ...frame, lastAction } : frame);
   }
   requestEnd(): SessionStepResult {

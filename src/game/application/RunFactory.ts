@@ -9,10 +9,16 @@ export class RunFactory {
   constructor(private readonly namespace = Date.now().toString(36)) {}
   create(configuration: RunConfiguration): GameSession {
     this.sequence += 1;
-    const breach = configuration.fixtureId === "surface-breach" || configuration.fixtureId === "combat-breach" || configuration.fixtureId === "rampage-short";
+    const stress = configuration.fixtureId === "phase-b-smoke";
+    const defeat = configuration.fixtureId === "rampage-defeat";
+    const breach = stress || configuration.fixtureId === "surface-breach" || configuration.fixtureId === "combat-breach" || configuration.fixtureId === "rampage-short";
     const laboratory = configuration.fixtureId === "surface-breach";
     const movement = breach ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: movementBalance.cruiseSpeed } : movementBalance;
-    const actors = laboratory ? [] : [spawnActor("opening.prey.1", "actor.prey", { x: 260, y: -10 }), spawnActor("opening.prey.2", "actor.prey", { x: 440, y: -10 }), spawnActor("opening.prey.3", "actor.prey", { x: -320, y: -10 }), ...(configuration.fixtureId === "combat-breach" ? [spawnActor("opening.infantry", "actor.infantry", { x: 180, y: -16 })] : [])];
-    return new GameSession({ sessionId: `${this.namespace}.${String(this.sequence)}`, seed: configuration.seed, movement, terrain: new FlatTerrainProfile(0), actors, ...(laboratory ? {} : { mode: "rampage" }) });
+    const actors = stress ? [
+      ...Array.from({ length: 3 }, (_, index) => spawnActor(`smoke.prey.${String(index + 1)}`, "actor.prey", { x: 0, y: -10 })),
+      ...Array.from({ length: 4 }, (_, index) => spawnActor(`smoke.infantry.${String(index + 1)}`, "actor.infantry", { x: 0, y: -16 })),
+    ] : laboratory ? [] : [spawnActor("opening.prey.1", "actor.prey", { x: 260, y: -10 }), spawnActor("opening.prey.2", "actor.prey", { x: 440, y: -10 }), spawnActor("opening.prey.3", "actor.prey", { x: -320, y: -10 }), ...(configuration.fixtureId === "combat-breach" ? [spawnActor("opening.infantry", "actor.infantry", { x: 180, y: -16 })] : [])];
+    const shots = stress ? [{ position: { x: -26, y: 22 }, direction: { x: 1, y: 0 } }, { position: { x: -26, y: 22 }, direction: { x: 1, y: 0 } }] : defeat ? [{ position: { x: -26, y: 180 }, direction: { x: 1, y: 0 } }] : [];
+    return new GameSession({ sessionId: `${this.namespace}.${String(this.sequence)}`, seed: configuration.seed, movement, terrain: new FlatTerrainProfile(0), actors, ...(laboratory ? {} : { mode: "rampage" }), ...(stress || defeat ? { playerHealth: stress ? 30 : 10, initialProjectiles: shots } : {}) });
   }
 }

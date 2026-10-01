@@ -7,7 +7,11 @@
 - Added original animated procedural actors, capped combat effects, generated
   gesture-unlocked tones, and a semantic responsive HUD with presentation settings.
 - Landscape play fills the viewport. Five desktop/touch layout checks pass;
-  run/menu/Results/save flow and the final Phase B gate remain pending.
+  menu, run confirmation, immutable Results and retry are now implemented.
+- Added versioned local best scores and settings, strict validation, valid-save
+  backup recovery and memory fallback for unavailable or incompatible storage.
+- Added combined combat/defeat browser smoke and read-only performance evidence.
+  Production builds remove the test bridge and remain static-host compatible.
 
 - Initialized persistent research/design documentation.
 - Defined browser-first Worm-vs-Hunter concept.

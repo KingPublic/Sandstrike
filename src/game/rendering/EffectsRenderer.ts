@@ -6,6 +6,7 @@ export class EffectsRenderer {
   private readonly graphics: Phaser.GameObjects.Graphics;
   private readonly labels: Phaser.GameObjects.Text[];
   private readonly effects: Effect[] = [];
+  private renderedParticles = 0;
   constructor(private readonly scene: Phaser.Scene) {
     this.graphics = scene.add.graphics().setDepth(40);
     this.labels = Array.from({ length: 16 }, () => scene.add.text(0, 0, "", { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff1cb", stroke: "#170e1a", strokeThickness: 4 }).setOrigin(0.5).setDepth(45).setVisible(false));
@@ -42,7 +43,9 @@ export class EffectsRenderer {
       const label = this.labels[index];
       label?.setVisible(true).setText(command.label).setPosition(x, y - 38 - (reducedMotion ? 0 : age * 30)).setAlpha(alpha);
     }
+    this.renderedParticles = 48 - particleBudget;
   }
-  reset(): void { this.effects.length = 0; this.graphics.clear(); for (const label of this.labels) label.setVisible(false); }
+  particleCount(): number { return this.renderedParticles; }
+  reset(): void { this.effects.length = 0; this.renderedParticles = 0; this.graphics.clear(); for (const label of this.labels) label.setVisible(false); }
   destroy(): void { this.graphics.destroy(); for (const label of this.labels) label.destroy(); }
 }

@@ -13,7 +13,7 @@ export class CombatSystem {
     for (const command of sorted) {
       const target = registry.get(command.targetId);
       const source = registry.get(command.sourceId);
-      if (target?.lifecycle !== "active" || (source?.lifecycle !== "active" && !command.tags.includes("projectile")) || target.health <= 0 || command.amount <= 0) continue;
+      if (target?.lifecycle !== "active" || (!command.tags.includes("projectile") && (source?.lifecycle !== "active" || source.health <= 0)) || target.health <= 0 || command.amount <= 0) continue;
       const result = this.resolver.resolve(target, command);
       registry.update(result.actor);
       events.push({ type: "damage-applied", tick: command.tick, sourceId: command.sourceId, targetId: target.id, abilityId: command.abilityId, amount: result.applied, ...(result.blocked ? { blocked: result.blocked } : {}), tags: command.tags, position: target.position });
