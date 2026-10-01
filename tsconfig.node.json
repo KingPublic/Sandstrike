@@ -19,6 +19,7 @@
     "types": ["node"]
   },
   "include": [
+    "src/game/config/buildConfig.ts",
     "vite.config.ts",
     "vitest.config.ts",
     "playwright*.config.ts"
