@@ -1,0 +1,338 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: #fff6df;
+  background: #130e1b;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --ink: #fff6df;
+  --muted: #cdbd9d;
+  --ember: #ff9a55;
+  --ember-bright: #ffc36e;
+  --panel: rgb(24 15 29 / 86%);
+  --line: rgb(255 205 128 / 24%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 78% 12%, rgb(226 124 70 / 22%), transparent 30rem),
+    linear-gradient(150deg, #0e0b15 0%, #1d1223 50%, #120d17 100%);
+}
+
+button,
+canvas {
+  font: inherit;
+}
+
+button:focus-visible,
+canvas:focus-visible {
+  outline: 3px solid #fff5bc;
+  outline-offset: 4px;
+}
+
+.sandstrike-shell {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3.25rem);
+  width: min(100%, 1500px);
+  min-height: 100vh;
+  min-height: 100svh;
+  margin: 0 auto;
+  padding:
+    max(1.25rem, env(safe-area-inset-top))
+    max(1.25rem, env(safe-area-inset-right))
+    max(1.25rem, env(safe-area-inset-bottom))
+    max(1.25rem, env(safe-area-inset-left));
+}
+
+.atmosphere {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.atmosphere__sun {
+  position: absolute;
+  top: clamp(2rem, 8vw, 8rem);
+  right: clamp(-5rem, 9vw, 11rem);
+  width: clamp(14rem, 27vw, 30rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 196 102 / 30%), transparent 67%);
+  filter: blur(2px);
+}
+
+.atmosphere__dust {
+  position: absolute;
+  width: 42rem;
+  height: 5rem;
+  border-top: 1px solid rgb(255 187 111 / 20%);
+  border-radius: 50%;
+  filter: blur(12px);
+  animation: dust-drift 14s ease-in-out infinite alternate;
+}
+
+.atmosphere__dust--one {
+  top: 40%;
+  left: -8rem;
+  rotate: -6deg;
+}
+
+.atmosphere__dust--two {
+  right: -13rem;
+  bottom: 17%;
+  rotate: 7deg;
+  animation-delay: -6s;
+}
+
+.hero {
+  max-width: 62rem;
+  padding-top: clamp(0.5rem, 4vw, 3rem);
+}
+
+.hero__eyebrow,
+.preview__kicker {
+  margin: 0 0 0.7rem;
+  color: var(--ember-bright);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0.55rem;
+  font-size: clamp(3.2rem, 10vw, 8.5rem);
+  font-weight: 950;
+  line-height: 0.78;
+  letter-spacing: -0.075em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fff4cf 5%, #ffb65f 51%, #c55f3e 100%);
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 16px 30px rgb(0 0 0 / 38%));
+}
+
+.hero__lede {
+  max-width: 42rem;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 2.1vw, 1.35rem);
+  line-height: 1.55;
+}
+
+.preview {
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.7fr) minmax(30rem, 1.6fr);
+  gap: clamp(1rem, 3vw, 2.25rem);
+  align-items: center;
+}
+
+.preview__copy {
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  border: 1px solid var(--line);
+  border-radius: 1.5rem;
+  background: linear-gradient(145deg, rgb(42 25 39 / 90%), var(--panel));
+  box-shadow: 0 24px 80px rgb(0 0 0 / 35%);
+  backdrop-filter: blur(18px);
+}
+
+.preview__copy h2 {
+  margin-bottom: 0.85rem;
+  font-size: clamp(1.65rem, 3vw, 2.65rem);
+  line-height: 1.04;
+}
+
+.preview__copy > p:not(.preview__kicker) {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.primary-action,
+.retry-action {
+  min-width: 48px;
+  min-height: 48px;
+  border: 1px solid rgb(255 236 185 / 32%);
+  border-radius: 999px;
+  color: #1b1019;
+  background: linear-gradient(135deg, #ffd180, #ef7848);
+  box-shadow: 0 13px 35px rgb(227 104 62 / 24%);
+  cursor: pointer;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+}
+
+.primary-action {
+  width: 100%;
+  padding: 0.85rem 1.4rem;
+}
+
+.primary-action:hover:not(:disabled),
+.retry-action:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.primary-action:disabled {
+  cursor: progress;
+  filter: saturate(0.55);
+  opacity: 0.75;
+}
+
+.boot-status {
+  min-height: 2.2rem;
+  margin-top: 1rem;
+  color: #dac8a9;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.boot-status--error {
+  display: grid;
+  gap: 0.7rem;
+  color: #ffe1d0;
+}
+
+.boot-status--error p {
+  margin: 0;
+}
+
+.retry-action {
+  justify-self: start;
+  padding: 0.65rem 1rem;
+}
+
+.game-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  min-width: 0;
+  border: 1px solid rgb(255 214 144 / 32%);
+  border-radius: clamp(1rem, 2.5vw, 2rem);
+  background: #17101f;
+  box-shadow:
+    0 34px 90px rgb(0 0 0 / 48%),
+    inset 0 0 0 1px rgb(255 255 255 / 4%);
+}
+
+.game-surface,
+.game-surface canvas {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.game-surface canvas {
+  display: block;
+}
+
+.game-frame__edge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 75px rgb(16 9 19 / 48%);
+  pointer-events: none;
+}
+
+.shell-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  color: rgb(219 197 160 / 68%);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@keyframes dust-drift {
+  from {
+    translate: -3% 0;
+    opacity: 0.45;
+  }
+  to {
+    translate: 7% 1rem;
+    opacity: 0.9;
+  }
+}
+
+@media (max-width: 900px) {
+  .preview {
+    grid-template-columns: 1fr;
+  }
+
+  .preview__copy {
+    display: grid;
+    grid-template-columns: 1fr minmax(12rem, 0.5fr);
+    column-gap: 1rem;
+  }
+
+  .preview__copy > *:not(.primary-action) {
+    grid-column: 1;
+  }
+
+  .primary-action {
+    grid-column: 2;
+    grid-row: 1 / 5;
+    align-self: center;
+  }
+
+  .boot-status {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 620px), (orientation: portrait) and (max-width: 900px) {
+  .sandstrike-shell {
+    gap: 1.25rem;
+  }
+
+  .preview__copy {
+    display: block;
+  }
+
+  .primary-action {
+    width: 100%;
+  }
+
+  .shell-footer {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
