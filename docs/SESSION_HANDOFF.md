@@ -2,11 +2,11 @@
 
 Updated: 2026-10-01 16:46 +08:00 (Asia/Makassar)
 
-Status: active — Foundation/Movement complete; Rampage Tasks 1-4 verified
+Status: active — Foundation/Movement complete; Rampage Tasks 1-5 verified
 
 Current phase: Phase B Rampage vertical slice in progress
 
-Current gate: movement-feel GO; next is Rampage Task 5 presentation/HUD
+Current gate: movement-feel GO; next is Rampage Task 6 run flow/Results
 
 Branch: `phase-b-vertical-slice`
 
@@ -81,13 +81,13 @@ budget work rather than hidden.
 - Exact retracing of a vertical breach path can spatially overlap follower
   samples. The observed path remained finite and ordered without jitter.
 - Current visuals are original procedural prototype art. Rampage feedback,
-  enemies, scoring, HUD, audio, and final polish are still pending.
+  run/menu/Results/save flow and final performance/review gate remain pending.
 - No branch integration, remote push, deployment, or pull request has occurred.
 
 ## Exact next action
 
 Read the Rampage ledger under `.superpowers/sdd/2026-10-01-phase-b-rampage-slice/`
-and Task 5 brief. Tasks 1-2 added swept collision, actor registry/deferred removal,
+and Task 6 brief. Tasks 1-2 added swept collision, actor registry/deferred removal,
 bounded immutable events, Bite/impact, armor, tick invulnerability, and capped prey
 healing. Contact commits: `88a0fab`, `cd43855`; combat checkpoint is the commit
 containing this update. Task 3 adds seeded perception-only infantry, telegraphs,
@@ -95,9 +95,9 @@ pooled swept projectiles and read-only AI diagnostics through the existing bridg
 snapshot. Task 4 adds typed scoring/combo, legal seeded spawns, bounded arena,
 definition validation and band 0–1 pacing. Seed-811 90-second replay passes twice.
 Fresh verification: 103/103 Vitest, typecheck and lint exit 0.
-Browser combat presentation is not implemented yet.
+Task 5 presentation is verified: 108/108 tests, lint/typecheck/production build, and 11/11 root Chromium E2E pass. Five captures inspected with combat-breach infantry aim-lock. Settings remain in memory; run/menu/Results/save flow is next. Physical audio/touch/haptics remain unavailable; no music track is implemented.
 
-Execute Task 5 with test-driven development. Continue tasks
+Execute Task 6 with test-driven development. Continue tasks
 in order through the complete Phase B gate, whole-branch code review, and fresh
 verification.
 
@@ -106,7 +106,7 @@ verification.
 - `docs/superpowers/plans/2026-10-01-phase-b-foundation.md`: complete.
 - `docs/superpowers/plans/2026-10-01-phase-b-worm-movement.md`: complete after
   the movement-gate checkpoint.
-- `docs/superpowers/plans/2026-10-01-phase-b-rampage-slice.md`: active, Task 5 next.
+- `docs/superpowers/plans/2026-10-01-phase-b-rampage-slice.md`: active, Task 6 next.
 - `docs/superpowers/plans/2026-10-01-phase-b-plan-set.md`: cross-plan contracts
   and final Phase B gate remain authoritative.
 

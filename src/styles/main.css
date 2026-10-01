@@ -274,12 +274,47 @@ h1 {
 }
 
 .touch-controls {
+  opacity: var(--touch-opacity, 0.85);
   position: absolute;
   z-index: 35;
   inset: 0;
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.rampage-hud { position: absolute; z-index: 30; inset: 0; pointer-events: none; font-size: clamp(12px, 1.35vw, 16px); font-weight: 750; }
+.hud-top { position: absolute; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); display: flex; gap: 10px; align-items: center; }
+.hud-stat, .hud-threat, .hud-cooldowns { border: 1px solid #ffcf843f; border-radius: 12px; padding: 10px 14px; background: #170f1ee6; box-shadow: 0 4px 18px #08061040; }
+.hud-stat { white-space: nowrap; }
+.hud-combo { position: relative; overflow: hidden; }
+.hud-combo::after { content: ""; position: absolute; bottom: 0; left: 0; height: 3px; width: calc(var(--combo-progress, 0) * 100%); background: #ffd894; }
+.rampage-hud[data-decay="true"] .hud-combo { border-style: dashed; }
+.rampage-hud[data-low-health="true"] [data-hud-health] { border: 2px solid #ffada1; }
+.hud-actions { margin-left: auto; display: flex; gap: 8px; pointer-events: auto; }
+.hud-actions button, .settings-card button { min-width: 48px; min-height: 48px; border: 1px solid #ffce8866; border-radius: 12px; background: #241726f2; color: #fff2d2; font-weight: 750; cursor: pointer; padding: 8px 12px; }
+.hud-threat { position: absolute; left: 50%; top: max(75px, calc(env(safe-area-inset-top) + 75px)); transform: translateX(-50%); white-space: nowrap; }
+.hud-cooldowns { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; gap: 20px; font-size: 13px; white-space: nowrap; }
+.settings-overlay { position: absolute; z-index: 90; inset: 0; background: #100b18e8; display: grid; place-items: center; padding: 14px; }
+.settings-overlay[hidden] { display: none; }
+.settings-card { width: min(100%, 600px); max-height: 100%; overflow-y: auto; border: 1px solid #ffcf8455; background: #241826; border-radius: 20px; padding: 20px; }
+.settings-card h2 { margin-bottom: 8px; }
+.settings-card p { color: var(--muted); }
+.settings-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin-bottom: 12px; }
+.settings-fields label { display: flex; gap: 12px; align-items: center; justify-content: space-between; min-height: 48px; font-size: 14px; }
+.settings-fields input[type="range"] { width: 90px; min-height: 44px; accent-color: #ffc477; }
+.settings-fields input[type="checkbox"] { min-width: 44px; min-height: 44px; accent-color: #ffc477; }
+.high-contrast .hud-stat, .high-contrast .hud-threat, .high-contrast .hud-cooldowns { border-color: #fff2d2; background: #090711; color: white; }
+.reduced-motion *, .reduced-motion *::before, .reduced-motion *::after { animation: none !important; transition: none !important; }
+@media (orientation: landscape) {
+  .sandstrike-playing .game-frame { position: fixed; z-index: 100; inset: 0; width: 100vw; height: 100dvh; aspect-ratio: auto; border: 0; border-radius: 0; }
+}
+@media (max-width: 900px) {
+  .hud-top { gap: 6px; }
+  .hud-stat { padding: 8px 10px; }
+  .hud-cooldowns { bottom: 18px; font-size: 12px; padding: 8px 10px; }
+  .settings-card { padding: 14px 20px; }
 }
 
 .touch-controls[hidden],

@@ -20,6 +20,10 @@ import { TouchInput } from "../input/TouchInput";
 import { CameraController } from "../rendering/CameraController";
 import { WorldRenderer } from "../rendering/WorldRenderer";
 import { WormView } from "../rendering/WormView";
+import { ActorViews } from "../rendering/ActorViews";
+import { EffectsRenderer } from "../rendering/EffectsRenderer";
+import { FeedbackController, defaultPresentationSettings } from "../rendering/FeedbackController";
+import { spawnActor } from "../data/actors";
 import {
   GAME_LIFECYCLE_REGISTRY_KEY,
   type GameBootstrapOptions,
@@ -38,6 +42,9 @@ export class GameplayScene extends Phaser.Scene {
   private debugOverlay: DebugOverlay | undefined;
   private snapshot: SessionSnapshot | undefined;
   private recentEvents: DomainEvent[] = [];
+  private actorViews: ActorViews | undefined;
+  private effects: EffectsRenderer | undefined;
+  private feedback = new FeedbackController();
   private totalDroppedMs = 0;
   private removeTestBridge: (() => void) | undefined;
 
@@ -47,7 +54,7 @@ export class GameplayScene extends Phaser.Scene {
 
   create(): void {
     const lifecycle = this.lifecycle();
-    const debug = lifecycle.debug ?? (import.meta.env.DEV || __SANDSTRIKE_E2E__);
+    const debug = lifecycle.debug ?? (import.meta.env.DEV && !__SANDSTRIKE_E2E__);
     new WorldRenderer(this).create();
 
     this.keyboard = new KeyboardInput(window);
@@ -60,6 +67,8 @@ export class GameplayScene extends Phaser.Scene {
       this.scripted,
     ]);
     this.wormView = new WormView(this, debug);
+    this.actorViews = new ActorViews(this);
+    this.effects = new EffectsRenderer(this);
     this.debugOverlay = new DebugOverlay(this, debug);
     this.cameraController = new CameraController(
       this.cameras.main,
@@ -80,6 +89,7 @@ export class GameplayScene extends Phaser.Scene {
 
     if (__SANDSTRIKE_E2E__) {
       this.removeTestBridge = installE2EDebugBridge({
+        presentation: () => Object.freeze({ actorIds: this.actorViews?.actorIds() ?? Object.freeze([]) }),
         snapshot: () => this.requireSnapshot(),
         configureNextRun: (configuration) => {
           this.inputRouter?.clear();
@@ -121,6 +131,19 @@ export class GameplayScene extends Phaser.Scene {
 
     this.wormView.render(frame.snapshot.worm, frame.report.alpha);
     this.cameraController.update(frame.snapshot, deltaMs / 1000);
+    const lifecycle = this.lifecycle();
+    const settings = lifecycle.settings?.() ?? defaultPresentationSettings;
+    const commands = this.feedback.consume(frame.events, settings, lifecycle.audio?.ready ?? false);
+    this.actorViews?.sync(frame.snapshot, frame.report.alpha, settings.highContrast);
+    this.effects?.consume(commands);
+    this.effects?.update(deltaMs / 1000, settings.reducedMotion);
+    if (settings.shake === 0 || settings.reducedMotion) this.cameras.main.shakeEffect.reset();
+    for (const command of commands) {
+      if (command.shake > 0) this.cameras.main.shake(90, command.shake);
+      lifecycle.audio?.play(command, settings);
+      if (command.haptic && typeof navigator.vibrate === "function") navigator.vibrate(12);
+    }
+    lifecycle.onSnapshot?.(frame.snapshot);
     this.debugOverlay.update({
       snapshot: frame.snapshot,
       report: frame.report,
@@ -139,7 +162,7 @@ export class GameplayScene extends Phaser.Scene {
       return;
     }
     const fixtureMovement =
-      configuration.fixtureId === "surface-breach"
+      configuration.fixtureId === "surface-breach" || configuration.fixtureId === "combat-breach"
         ? {
             ...movementBalance,
             initialPosition: { x: 0, y: 28 },
@@ -151,6 +174,7 @@ export class GameplayScene extends Phaser.Scene {
       seed: configuration.seed,
       movement: fixtureMovement,
       terrain: new FlatTerrainProfile(0),
+      ...(configuration.fixtureId === "surface-breach" ? {} : { mode: "rampage" as const, actors: [spawnActor("opening.prey.1", "actor.prey", { x: 260, y: -10 }), spawnActor("opening.prey.2", "actor.prey", { x: 440, y: -10 }), spawnActor("opening.prey.3", "actor.prey", { x: -320, y: -10 }), ...(configuration.fixtureId === "combat-breach" ? [spawnActor("opening.infantry", "actor.infantry", { x: 180, y: -16 })] : [])] }),
     });
     this.pipeline = new MovementPipeline(
       new FixedStepRunner(),
@@ -158,6 +182,10 @@ export class GameplayScene extends Phaser.Scene {
       session,
     );
     this.snapshot = session.snapshot();
+    this.actorViews?.reset();
+    this.effects?.reset();
+    this.feedback = new FeedbackController();
+    this.lifecycle().onSnapshot?.(this.snapshot);
     this.recentEvents = [];
     this.totalDroppedMs = 0;
     this.cameraController?.snap(this.snapshot);
@@ -185,6 +213,8 @@ export class GameplayScene extends Phaser.Scene {
     this.keyboard?.destroy();
     this.inputRouter?.clear();
     this.wormView?.destroy();
+    this.actorViews?.destroy();
+    this.effects?.destroy();
     this.debugOverlay?.destroy();
     this.keyboard = undefined;
     this.touch = undefined;

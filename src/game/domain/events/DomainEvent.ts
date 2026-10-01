@@ -8,6 +8,8 @@ interface WormEventBase {
 }
 
 export type DomainEvent =
+  | Readonly<WormEventBase & { type: "worm-defeated" }>
+  | Readonly<WormEventBase & { type: "low-health-warning" }>
   | Readonly<{ type: "score-awarded"; tick: number; points: number; total: number }>
   | Readonly<{ type: "response-warning"; tick: number; band: 1 }>
   | Readonly<{ type: "response-band-changed"; tick: number; band: 1 }>

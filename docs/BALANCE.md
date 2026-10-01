@@ -168,3 +168,19 @@ ticks. Two runs reproduce all snapshots/events, preserve caps and legal head
 positions, announce once, activate band 1 at tick 2,820, and overflow no events.
 Fresh checkpoint: 103/103 tests, typecheck/lint pass. These are mechanical pacing
 hypotheses; browser playtesting and presentation readability remain to be checked.
+
+## Phase B presentation checkpoint (2026-10-01)
+
+Original procedural views are pooled per actor ID. Feedback retains shape and
+text when muted; commands cap at 32 and 48 particles, with 16 reusable text views.
+Reduced motion disables particles/shake, reduced flashes gates flash policy,
+and critical health/response cues remain text-readable. Web Audio is optional
+and unlocks only after a user gesture. No music track or physical haptic/audio
+measurement is claimed.
+
+Fresh verification: 108/108 unit/integration tests, lint/typecheck/production build
+pass; 11 root Chromium E2E pass. Layout and actor-view identity checks cover
+1440x900, 1280x720, 1024x768, 915x412 and 844x390. Settings pause the simulation and
+do not change its snapshot. Combat-breach captures verify prey/infantry silhouettes,
+aim-lock shapes/text and the full segmented worm. Capture waits for fixture/Phaser
+readiness; optional bridge calls before installation had initially skipped setup.

@@ -4,8 +4,14 @@ import type { TouchInput } from "./input/TouchInput";
 import { BootScene } from "./scenes/BootScene";
 import { GameplayScene } from "./scenes/GameplayScene";
 import { PreloadScene } from "./scenes/PreloadScene";
+import type { SessionSnapshot } from "./domain/session/SessionSnapshot";
+import type { PresentationSettings } from "./rendering/FeedbackController";
+import type { PhaserAudioAdapter } from "./infrastructure/phaser/PhaserAudioAdapter";
 
 export interface GameBootstrapOptions {
+  readonly onSnapshot?: (snapshot: SessionSnapshot) => void;
+  readonly settings?: () => PresentationSettings;
+  readonly audio?: PhaserAudioAdapter;
   readonly onReady?: () => void;
   readonly onFatalError?: (error: Error) => void;
   readonly debug?: boolean;

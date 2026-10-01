@@ -1,4 +1,8 @@
 import type Phaser from "phaser";
+import { RampageHud } from "../game/ui/hud/RampageHud";
+import { SettingsPanel } from "../game/ui/hud/SettingsPanel";
+import { defaultPresentationSettings, type PresentationSettings } from "../game/rendering/FeedbackController";
+import { PhaserAudioAdapter } from "../game/infrastructure/phaser/PhaserAudioAdapter";
 
 import {
   createGame,
@@ -27,6 +31,10 @@ export class AppShell {
   private controls: GameplayControlPort | undefined;
   private touchControls: TouchControls | undefined;
   private game: Phaser.Game | undefined;
+  private hud: RampageHud | undefined;
+  private settingsPanel: SettingsPanel | undefined;
+  private settings: PresentationSettings = defaultPresentationSettings;
+  private readonly audio = new PhaserAudioAdapter();
   private readonly pause = new PauseCoordinator((paused, reasons) => {
     this.applyPauseState(paused, reasons);
   });
@@ -200,9 +208,17 @@ export class AppShell {
     this.status.classList.remove("boot-status--error");
     this.status.textContent = "Preparing the arena...";
     this.startButton.disabled = true;
+    this.audio.unlock();
+    if (this.gameFrame) {
+      this.hud = new RampageHud(this.gameFrame, () => { this.pause.add("user"); }, () => { this.pause.add("user"); this.settingsPanel?.open(); });
+      this.settingsPanel = new SettingsPanel(this.gameFrame, (settings) => { this.settings = settings; this.root?.classList.toggle("high-contrast", settings.highContrast); this.root?.classList.toggle("reduced-motion", settings.reducedMotion); this.refreshLayout(); }, () => { this.resumeButton?.focus(); }, this.settings);
+    }
 
     try {
       this.game = createGame(this.host, {
+        onSnapshot: (snapshot) => this.hud?.update(snapshot, this.settings.reducedMotion),
+        settings: () => this.settings,
+        audio: this.audio,
         onReady: () => {
           this.handleReady();
         },
@@ -253,6 +269,8 @@ export class AppShell {
   }
 
   private destroyGame(): void {
+    this.hud?.destroy(); this.hud = undefined;
+    this.settingsPanel?.destroy(); this.settingsPanel = undefined;
     this.touchControls?.destroy();
     this.touchControls = undefined;
     this.controls?.clear();
@@ -299,8 +317,10 @@ export class AppShell {
       coarsePointer,
       touchCapable,
       role: "worm",
+      leftHanded: this.settings.leftHanded,
     });
     this.touchControls.applyLayout(layout);
+    this.gameFrame.style.setProperty("--touch-opacity", String(this.settings.touchOpacity));
 
     if (layout.portraitBlocked && this.game) {
       this.pause.add("orientation");
@@ -382,6 +402,7 @@ export class AppShell {
       return;
     }
     this.pause.clear();
+    this.audio.unlock();
     this.refreshLayout();
   }
 

@@ -58,7 +58,7 @@ export class TouchControls {
     this.joystick.append(this.joystickKnob);
 
     this.boostButton = this.createButton("boost", "Burst");
-    this.primaryButton = this.createButton("primary", "Strike");
+    this.primaryButton = this.createButton("primary", "Bite");
     this.root.append(this.joystick, this.boostButton, this.primaryButton);
     container.append(this.root);
 

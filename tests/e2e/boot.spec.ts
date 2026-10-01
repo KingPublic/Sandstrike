@@ -18,7 +18,7 @@ function collectBrowserFailures(page: Page): string[] {
   return failures;
 }
 
-test("boots one accessible Phaser canvas and keeps start idempotent", async ({
+test("boots one accessible Phaser canvas and preserves it across pause/resume", async ({
   page,
 }) => {
   const failures = collectBrowserFailures(page);
@@ -37,7 +37,8 @@ test("boots one accessible Phaser canvas and keeps start idempotent", async ({
   await expect(page.getByRole("status")).toContainText("Movement preview ready");
   await expect(page.locator("canvas")).toBeFocused();
 
-  await page.getByRole("button", { name: "Focus game" }).click();
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.getByRole("button", { name: "Resume movement" }).click();
   await expect(page.locator("canvas")).toHaveCount(1);
   expect(failures).toEqual([]);
 });

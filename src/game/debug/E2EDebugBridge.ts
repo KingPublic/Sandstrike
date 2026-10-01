@@ -7,12 +7,14 @@ export interface NextRunConfiguration {
 }
 
 export interface SandstrikeTestApi {
+  presentation(): Readonly<{ actorIds: readonly string[] }>;
   snapshot(): SessionSnapshot;
   configureNextRun(configuration: NextRunConfiguration): void;
   enqueueActions(frames: readonly ActionFrame[]): void;
 }
 
 export interface E2EDebugBridgeController {
+  readonly presentation: () => Readonly<{ actorIds: readonly string[] }>;
   readonly snapshot: () => SessionSnapshot;
   readonly configureNextRun: (configuration: NextRunConfiguration) => void;
   readonly enqueueActions: (frames: readonly ActionFrame[]) => void;
@@ -28,6 +30,7 @@ export function installE2EDebugBridge(
   controller: E2EDebugBridgeController,
 ): () => void {
   const api: SandstrikeTestApi = Object.freeze({
+    presentation: controller.presentation,
     snapshot: controller.snapshot,
     configureNextRun: controller.configureNextRun,
     enqueueActions: controller.enqueueActions,

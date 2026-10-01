@@ -131,6 +131,9 @@ export class GameSession {
       }
     }
     for (const event of this.combat.resolve(this.actors, commands)) this.events.publish(event);
+    const healthAfterCombat = this.actors.get("worm")?.health ?? 0;
+    if (wormActor.health > 25 && healthAfterCombat <= 25) this.events.publish({ type: "low-health-warning", tick: this.currentTick, position: worm.head.position });
+    if (wormActor.health > 0 && healthAfterCombat <= 0) this.events.publish({ type: "worm-defeated", tick: this.currentTick, position: worm.head.position });
     const combatEvents = this.events.drain();
     const combo = this.combo.step(combatEvents, this.currentTick);
     const award = this.score.consume(combatEvents, combo);

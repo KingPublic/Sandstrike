@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Added seeded infantry, telegraphs, swept pooled projectiles, typed scoring and
+  combo, legal spawn caps, arena bounds, and response bands 0–1.
+- Added original animated procedural actors, capped combat effects, generated
+  gesture-unlocked tones, and a semantic responsive HUD with presentation settings.
+- Landscape play fills the viewport. Five desktop/touch layout checks pass;
+  run/menu/Results/save flow and the final Phase B gate remain pending.
+
 - Initialized persistent research/design documentation.
 - Defined browser-first Worm-vs-Hunter concept.
 - Corrected the reference chronology and separated the 2006–07 JTR lineage,

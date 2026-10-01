@@ -9,6 +9,7 @@ export interface SafeAreaInsets {
 }
 
 export interface ViewportLayoutInput {
+  readonly leftHanded?: boolean;
   readonly cssWidth: number;
   readonly cssHeight: number;
   readonly devicePixelRatio: number;
@@ -99,14 +100,16 @@ export function computeViewportLayout(
       height: Math.round(input.cssHeight * input.devicePixelRatio),
     }),
     criticalRegion,
-    joystick,
-    primaryButton,
-    boostButton,
+    joystick: input.leftHanded ? mirror(joystick, gameRect) : joystick,
+    primaryButton: input.leftHanded ? mirror(primaryButton, gameRect) : primaryButton,
+    boostButton: input.leftHanded ? mirror(boostButton, gameRect) : boostButton,
     targetSize,
     portraitBlocked,
     touchControlsVisible,
   });
 }
+
+function mirror(value: LayoutRect, area: LayoutRect): LayoutRect { return rect(area.x + area.width - (value.x - area.x) - value.width, value.y, value.width, value.height); }
 
 function validateInput(input: ViewportLayoutInput): void {
   const values = [
