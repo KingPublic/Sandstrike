@@ -3,7 +3,7 @@ import Phaser from "phaser";
 const WORLD_LEFT = -20_000;
 const WORLD_RIGHT = 20_000;
 const WORLD_TOP = -1_200;
-const WORLD_BOTTOM = 2_000;
+const WORLD_BOTTOM = 3_200;
 
 export class WorldRenderer {
   readonly bounds = Object.freeze({
@@ -38,7 +38,7 @@ export class WorldRenderer {
       { y: 0, height: 170, color: 0x9f5138 },
       { y: 170, height: 260, color: 0x71382f },
       { y: 430, height: 390, color: 0x4c2930 },
-      { y: 820, height: 1_180, color: 0x291b27 },
+      { y: 820, height: 2_380, color: 0x291b27 },
     ];
     for (const band of groundBands) {
       backdrop.fillStyle(band.color, 1);
@@ -57,7 +57,7 @@ export class WorldRenderer {
 
     for (let index = 0; index < 180; index += 1) {
       const x = WORLD_LEFT + ((index * 977) % (WORLD_RIGHT - WORLD_LEFT));
-      const y = 36 + ((index * 193) % 1_850);
+      const y = 36 + ((index * 193) % 3_050);
       const radius = 1 + (index % 4);
       backdrop.fillStyle(index % 3 === 0 ? 0xe29756 : 0xb96b46, 0.22);
       backdrop.fillCircle(x, y, radius);

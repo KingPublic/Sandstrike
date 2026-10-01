@@ -2,6 +2,7 @@ import Phaser from "phaser";
 
 import type { WormMovementConfig } from "../domain/movement/WormMovementTypes";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
+import { computeCameraFraming } from "./CameraFraming";
 
 export interface CameraDebugBounds {
   readonly left: number;
@@ -13,6 +14,7 @@ export interface CameraDebugBounds {
 export class CameraController {
   private centerX: number;
   private centerY: number;
+  private zoom: number;
 
   constructor(
     private readonly camera: Phaser.Cameras.Scene2D.Camera,
@@ -20,13 +22,16 @@ export class CameraController {
   ) {
     this.centerX = camera.midPoint.x;
     this.centerY = camera.midPoint.y;
-    camera.setBounds(-20_000, -1_200, 40_000, 3_200);
+    this.zoom = camera.zoom;
+    camera.setBounds(-20_000, -1_200, 40_000, 4_400);
   }
 
   snap(snapshot: SessionSnapshot): void {
     const target = this.targetFor(snapshot);
-    this.centerX = target.x;
-    this.centerY = target.y;
+    this.centerX = target.centerX;
+    this.centerY = target.centerY;
+    this.zoom = target.zoom;
+    this.camera.setZoom(this.zoom);
     this.camera.centerOn(this.centerX, this.centerY);
   }
 
@@ -37,8 +42,10 @@ export class CameraController {
       : 0;
     const smoothing =
       1 - Math.pow(2, -safeDelta / this.config.cameraSmoothingHalfLife);
-    this.centerX = Phaser.Math.Linear(this.centerX, target.x, smoothing);
-    this.centerY = Phaser.Math.Linear(this.centerY, target.y, smoothing);
+    this.centerX = Phaser.Math.Linear(this.centerX, target.centerX, smoothing);
+    this.centerY = Phaser.Math.Linear(this.centerY, target.centerY, smoothing);
+    this.zoom = Phaser.Math.Linear(this.zoom, target.zoom, smoothing);
+    this.camera.setZoom(this.zoom);
     this.camera.centerOn(this.centerX, this.centerY);
   }
 
@@ -51,21 +58,11 @@ export class CameraController {
     });
   }
 
-  private targetFor(snapshot: SessionSnapshot): { x: number; y: number } {
-    const head = snapshot.worm.head;
-    const lookX = Phaser.Math.Clamp(
-      head.velocity.x * 0.38,
-      -this.config.cameraLookAheadX,
-      this.config.cameraLookAheadX,
+  private targetFor(snapshot: SessionSnapshot) {
+    return computeCameraFraming(
+      snapshot.worm.head,
+      this.camera.height,
+      this.config,
     );
-    const lookY = Phaser.Math.Clamp(
-      head.velocity.y * 0.28,
-      -this.config.cameraLookAheadY,
-      this.config.cameraLookAheadY,
-    );
-    return {
-      x: head.position.x + lookX,
-      y: Phaser.Math.Clamp(head.position.y + lookY, -210, 330),
-    };
   }
 }

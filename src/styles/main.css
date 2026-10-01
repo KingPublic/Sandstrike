@@ -447,6 +447,23 @@ h1 {
   }
 }
 
+@media (orientation: landscape) and (max-width: 1100px) {
+  .sandstrike-playing .game-frame {
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .sandstrike-playing .game-frame__edge {
+    border-radius: 0;
+  }
+}
+
 @media (max-width: 620px), (orientation: portrait) and (max-width: 900px) {
   .sandstrike-shell {
     gap: 1.25rem;

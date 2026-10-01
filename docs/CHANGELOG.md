@@ -16,3 +16,17 @@
 - Added the self-reviewed Phase B implementation plan set for the browser
   foundation, worm-movement gate, and Rampage vertical slice, with ordered TDD,
   review, verification, documentation, and persistent handoff steps.
+- Pinned the Phaser 4.2.1, TypeScript, Vite, Vitest, and Playwright toolchain and
+  added root/GitHub Pages static-host builds with production smoke coverage.
+- Added an accessible Phaser application shell with retry-safe boot, one canvas,
+  deterministic fixed-step simulation, semantic keyboard/touch/gamepad input,
+  and an E2E-only diagnostics bridge.
+- Added the first procedural 14-segment worm with momentum, rate-limited turning,
+  Burst, ballistic breach/re-entry phases, bounded path-history following,
+  velocity-aware camera tracking, and debug visualization.
+- Added interruption-safe pause/resume behavior, portrait protection, independent
+  multi-touch controls, safe-area-aware responsive layout, and full-viewport
+  mobile/tablet landscape play.
+- Passed the Phase B movement-feel gate across desktop and representative
+  915x412, 844x390, and 1024x768 touch layouts; recorded a GO decision for the
+  Rampage vertical slice in `docs/BALANCE.md`.

@@ -211,4 +211,106 @@ test.describe("responsive movement controls", () => {
     expect(Number.isFinite(resumedSnapshot?.worm.head.position.y)).toBe(true);
     expect(failures).toEqual([]);
   });
+
+  test("supports simultaneous steering and Burst at representative landscape sizes", async ({
+    page,
+  }) => {
+    const failures = collectFailures(page);
+    await bootMovement(page);
+
+    for (const [index, viewport] of [
+      { width: 915, height: 412 },
+      { width: 844, height: 390 },
+      { width: 1024, height: 768 },
+    ].entries()) {
+      await page.setViewportSize(viewport);
+      await configureAndSettle(page, 300 + index);
+
+      const joystick = page.locator('[data-touch-control="joystick"]');
+      const boost = page.locator('[data-touch-control="boost"]');
+      const primary = page.locator('[data-touch-control="primary"]');
+      await expect(joystick).toBeVisible();
+      await expect(boost).toBeVisible();
+      await expect(primary).toBeVisible();
+
+      const joystickBounds = await joystick.boundingBox();
+      const boostBounds = await boost.boundingBox();
+      const primaryBounds = await primary.boundingBox();
+      expect(joystickBounds).not.toBeNull();
+      expect(boostBounds).not.toBeNull();
+      expect(primaryBounds).not.toBeNull();
+      if (!joystickBounds || !boostBounds || !primaryBounds) {
+        throw new Error("Representative touch controls have no layout bounds.");
+      }
+      for (const bounds of [joystickBounds, boostBounds, primaryBounds]) {
+        expect(bounds.x).toBeGreaterThanOrEqual(0);
+        expect(bounds.y).toBeGreaterThanOrEqual(0);
+        expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width);
+        expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height);
+      }
+
+      const startTick = await page.evaluate(
+        () => window.__SANDSTRIKE_TEST__?.snapshot().tick ?? 0,
+      );
+      const joystickCenter = {
+        x: joystickBounds.x + joystickBounds.width / 2,
+        y: joystickBounds.y + joystickBounds.height / 2,
+      };
+      await joystick.dispatchEvent("pointerdown", {
+        bubbles: true,
+        clientX: joystickCenter.x,
+        clientY: joystickCenter.y,
+        isPrimary: true,
+        pointerId: 60 + index * 2,
+        pointerType: "touch",
+      });
+      await joystick.dispatchEvent("pointermove", {
+        bubbles: true,
+        clientX: joystickBounds.x + joystickBounds.width,
+        clientY: joystickBounds.y + joystickBounds.height,
+        isPrimary: true,
+        pointerId: 60 + index * 2,
+        pointerType: "touch",
+      });
+      await boost.dispatchEvent("pointerdown", {
+        bubbles: true,
+        clientX: boostBounds.x + boostBounds.width / 2,
+        clientY: boostBounds.y + boostBounds.height / 2,
+        isPrimary: true,
+        pointerId: 61 + index * 2,
+        pointerType: "touch",
+      });
+      await page.waitForFunction(
+        (tick) =>
+          (window.__SANDSTRIKE_TEST__?.snapshot().tick ?? 0) >= tick + 12,
+        startTick,
+      );
+      await joystick.dispatchEvent("pointerup", {
+        bubbles: true,
+        clientX: joystickBounds.x + joystickBounds.width,
+        clientY: joystickBounds.y + joystickBounds.height,
+        isPrimary: true,
+        pointerId: 60 + index * 2,
+        pointerType: "touch",
+      });
+      await boost.dispatchEvent("pointerup", {
+        bubbles: true,
+        clientX: boostBounds.x + boostBounds.width / 2,
+        clientY: boostBounds.y + boostBounds.height / 2,
+        isPrimary: true,
+        pointerId: 61 + index * 2,
+        pointerType: "touch",
+      });
+
+      const snapshot = await page.evaluate(() =>
+        window.__SANDSTRIKE_TEST__?.snapshot(),
+      );
+      expect(snapshot?.worm.burstCooldownSeconds ?? 0).toBeGreaterThan(1.3);
+      expect(snapshot?.worm.head.tangent.y ?? 0).toBeGreaterThan(0);
+      expect(Number.isFinite(snapshot?.worm.head.position.x)).toBe(true);
+      expect(Number.isFinite(snapshot?.worm.head.position.y)).toBe(true);
+    }
+
+    expect(failures).toEqual([]);
+  });
 });

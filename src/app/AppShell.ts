@@ -173,6 +173,7 @@ export class AppShell {
     window.removeEventListener("resize", this.handleResize);
     window.removeEventListener("orientationchange", this.handleResize);
     this.destroyGame();
+    this.root?.classList.remove("sandstrike-playing");
     this.root?.replaceChildren();
     this.root = undefined;
     this.host = undefined;
@@ -228,6 +229,7 @@ export class AppShell {
     this.status.textContent = "Movement preview ready.";
     this.startButton.disabled = false;
     this.startButton.textContent = "Focus game";
+    this.root?.classList.add("sandstrike-playing");
     this.refreshLayout();
     this.focusCanvas();
   }
@@ -256,6 +258,7 @@ export class AppShell {
     this.controls?.clear();
     this.controls = undefined;
     this.pause.clear();
+    this.root?.classList.remove("sandstrike-playing");
     const game = this.game;
     this.game = undefined;
     game?.destroy(true);
