@@ -297,6 +297,24 @@ h1 {
 .hud-threat { position: absolute; left: 50%; top: max(75px, calc(env(safe-area-inset-top) + 75px)); transform: translateX(-50%); white-space: nowrap; }
 .hud-cooldowns { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; gap: 20px; font-size: 13px; white-space: nowrap; }
 .settings-overlay { position: absolute; z-index: 90; inset: 0; background: #100b18e8; display: grid; place-items: center; padding: 14px; }
+.settings-overlay { position: fixed; z-index: 150; }
+.menu-action { display: block; width: 100%; min-height: 48px; padding: 12px 18px; margin: 10px 0; border: 1px solid #ffca7b70; border-radius: 12px; background: #34202e; color: #fff0c9; font: inherit; font-weight: 750; cursor: pointer; }
+.menu-action:first-of-type { color: #25121a; background: linear-gradient(135deg, #ffda98, #ee8e56); }
+.planned-mode { margin-top: 20px; font-size: 14px; color: #c4b297; }
+.pause-card > button, .confirm-actions button { min-height: 48px; margin-top: 10px; padding: 8px 14px; border: 1px solid #ffca7b70; border-radius: 12px; color: #fff0c9; background: #34202e; font-weight: 750; cursor: pointer; }
+.confirm-actions[hidden] { display: none; }
+.confirm-actions { margin-top: 16px; border-top: 1px solid #ffca7b40; padding-top: 12px; }
+.results-overlay { position: absolute; z-index: 80; inset: 0; display: grid; place-items: center; padding: 20px; background: #100b18e8; }
+.results-card { width: min(100%, 620px); max-height: 100%; overflow-y: auto; border: 1px solid #ffcc8160; background: #241826; padding: 28px; border-radius: 24px; }
+.result-score { font-size: clamp(36px, 6vw, 64px); font-weight: 900; color: #ffd395; margin-bottom: 8px; }
+.results-card dl { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.results-card dt { font-size: 13px; color: #c9b692; }
+.results-card dd { margin: 4px 0 0; font-weight: 750; }
+.result-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.result-actions button { min-height: 48px; padding: 10px 16px; border: 1px solid #ffcc8160; border-radius: 12px; background: #3d2735; color: #fff1cd; cursor: pointer; font-weight: 750; }
+.context-prompt { position: absolute; z-index: 25; top: 130px; left: 50%; transform: translateX(-50%); max-width: 60%; border-radius: 10px; padding: 8px 14px; background: #160f1ce0; font-size: 13px; text-align: center; pointer-events: none; }
+.preview__copy[hidden] { display: none; }
+@media (max-width: 900px) { .preview__copy { display: block; } .pause-card { max-height: 100%; overflow-y: auto; } .results-card { padding: 16px 24px; } .results-card dl { gap: 8px; } }
 .settings-overlay[hidden] { display: none; }
 .settings-card { width: min(100%, 600px); max-height: 100%; overflow-y: auto; border: 1px solid #ffcf8455; background: #241826; border-radius: 20px; padding: 20px; }
 .settings-card h2 { margin-bottom: 8px; }

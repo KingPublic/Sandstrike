@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { startRampage, restartWithConfiguration } from "./helpers";
 
 function collectFailures(page: Page): string[] {
   const failures: string[] = [];
@@ -17,16 +18,12 @@ function collectFailures(page: Page): string[] {
 }
 
 async function bootMovement(page: Page): Promise<void> {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Start vertical slice" }).click();
-  await expect(page.getByRole("status")).toContainText("Movement preview ready");
+  await startRampage(page);
   await page.waitForFunction(() => window.__SANDSTRIKE_TEST__ !== undefined);
 }
 
 async function configureAndSettle(page: Page, seed: number): Promise<void> {
-  await page.evaluate((nextSeed) => {
-    window.__SANDSTRIKE_TEST__?.configureNextRun({ seed: nextSeed });
-  }, seed);
+  await restartWithConfiguration(page, { seed });
   await page.waitForFunction(
     () => (window.__SANDSTRIKE_TEST__?.snapshot().tick ?? 0) >= 3,
   );
@@ -131,7 +128,7 @@ test.describe("responsive movement controls", () => {
       page.getByRole("heading", { name: "Rotate to landscape" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Resume movement" }),
+      page.getByRole("button", { name: "Resume run" }),
     ).toBeVisible();
     const portraitTick = await page.evaluate(
       () => window.__SANDSTRIKE_TEST__?.snapshot().tick ?? -1,
@@ -144,7 +141,7 @@ test.describe("responsive movement controls", () => {
     ).toBe(portraitTick);
 
     await page.setViewportSize({ width: 844, height: 390 });
-    const resume = page.getByRole("button", { name: "Resume movement" });
+    const resume = page.getByRole("button", { name: "Resume run" });
     await expect(resume).toBeEnabled();
     await resume.click();
     await page.waitForFunction(

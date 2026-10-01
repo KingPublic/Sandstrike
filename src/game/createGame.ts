@@ -7,8 +7,13 @@ import { PreloadScene } from "./scenes/PreloadScene";
 import type { SessionSnapshot } from "./domain/session/SessionSnapshot";
 import type { PresentationSettings } from "./rendering/FeedbackController";
 import type { PhaserAudioAdapter } from "./infrastructure/phaser/PhaserAudioAdapter";
+import type { SessionController } from "./application/SessionController";
+import type { RunResult } from "./domain/modes/RunResult";
+import type { ActionFrame } from "./input/ActionFrame";
 
 export interface GameBootstrapOptions {
+  readonly controller?: SessionController;
+  readonly onResult?: (result: RunResult) => void;
   readonly onSnapshot?: (snapshot: SessionSnapshot) => void;
   readonly settings?: () => PresentationSettings;
   readonly audio?: PhaserAudioAdapter;
@@ -20,6 +25,8 @@ export interface GameBootstrapOptions {
 }
 
 export interface GameplayControlPort {
+  enqueueActions(frames: readonly ActionFrame[]): void;
+  actorIds(): readonly string[];
   readonly touchInput: TouchInput;
   clear(): void;
   resetTiming(): void;

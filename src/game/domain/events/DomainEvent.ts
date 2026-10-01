@@ -1,6 +1,7 @@
 import type { Vec2 } from "../math/Vector2";
 import type { Contact } from "../collision/CollisionTypes";
 import type { ActorId, RemovalCause } from "../actors/Actor";
+import type { RunResult } from "../modes/RunResult";
 
 interface WormEventBase {
   readonly tick: number;
@@ -8,6 +9,7 @@ interface WormEventBase {
 }
 
 export type DomainEvent =
+  | Readonly<{ type: "run-ended"; tick: number; result: RunResult }>
   | Readonly<WormEventBase & { type: "worm-defeated" }>
   | Readonly<WormEventBase & { type: "low-health-warning" }>
   | Readonly<{ type: "score-awarded"; tick: number; points: number; total: number }>

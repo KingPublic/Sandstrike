@@ -3,6 +3,12 @@ import { RampageHud } from "../game/ui/hud/RampageHud";
 import { SettingsPanel } from "../game/ui/hud/SettingsPanel";
 import { defaultPresentationSettings, type PresentationSettings } from "../game/rendering/FeedbackController";
 import { PhaserAudioAdapter } from "../game/infrastructure/phaser/PhaserAudioAdapter";
+import { SessionController } from "../game/application/SessionController";
+import { NavigationCoordinator } from "./NavigationCoordinator";
+import { MenuView } from "../game/ui/MenuView";
+import { ResultsView } from "../game/ui/ResultsView";
+import { installE2EDebugBridge, type NextRunConfiguration } from "../game/debug/E2EDebugBridge";
+import type { RunResult } from "../game/domain/modes/RunResult";
 
 import {
   createGame,
@@ -35,13 +41,17 @@ export class AppShell {
   private settingsPanel: SettingsPanel | undefined;
   private settings: PresentationSettings = defaultPresentationSettings;
   private readonly audio = new PhaserAudioAdapter();
+  private readonly controller = new SessionController();
+  private navigation = new NavigationCoordinator();
+  private menu: MenuView | undefined;
+  private results: ResultsView | undefined;
+  private nextConfiguration: NextRunConfiguration | undefined;
+  private lastConfiguration: NextRunConfiguration = { seed: 0x5a17d };
+  private removeTestBridge: (() => void) | undefined;
+  private onboardingShown = false;
   private readonly pause = new PauseCoordinator((paused, reasons) => {
     this.applyPauseState(paused, reasons);
   });
-
-  private readonly handleStart = (): void => {
-    this.startPreview();
-  };
 
   private readonly handleResume = (): void => {
     this.resumeWhenSafe();
@@ -65,6 +75,9 @@ export class AppShell {
   private readonly handleResize = (): void => {
     this.refreshLayout();
   };
+  private readonly handleBack = (): void => {
+    if (this.controller.active) { this.pause.add("user"); history.pushState({ sandstrike: true }, "", location.href); }
+  };
 
   mount(root: HTMLElement): void {
     this.destroy();
@@ -84,20 +97,7 @@ export class AppShell {
           </p>
         </header>
         <section class="preview" aria-labelledby="preview-title">
-          <div class="preview__copy">
-            <p class="preview__kicker">Phase B systems check</p>
-            <h2 id="preview-title">Worm movement laboratory</h2>
-            <p>
-              Shape underground momentum, breach the surface, and test the same
-              action layer with keyboard, touch, or gamepad.
-            </p>
-            <button class="primary-action" type="button">
-              Start vertical slice
-            </button>
-            <div class="boot-status" role="status" aria-live="polite">
-              Ready to initialize the movement preview.
-            </div>
-          </div>
+          <div class="preview__copy" data-menu-view></div>
           <div class="game-frame">
             <div class="game-surface" data-game-host></div>
             <div class="game-frame__edge" aria-hidden="true"></div>
@@ -114,11 +114,15 @@ export class AppShell {
                 <p class="preview__kicker">Simulation secured</p>
                 <h2 id="pause-title">Paused</h2>
                 <p id="pause-message">Resume when you are ready.</p>
-                <button class="resume-action" type="button">Resume movement</button>
+                <button class="resume-action" type="button">Resume run</button>
+                <button class="pause-restart" type="button">Restart run</button>
+                <button class="pause-end" type="button">End run</button>
+                <div class="confirm-actions" hidden><p data-confirm-message></p><button type="button" data-confirm>Confirm end run</button><button type="button" data-cancel>Cancel</button></div>
               </div>
             </div>
           </div>
         </section>
+        <div class="boot-status" role="status" aria-live="polite">Ready for Rampage.</div>
         <footer class="shell-footer">
           <span>Original browser-first action</span>
           <span>Keyboard / touch / gamepad</span>
@@ -128,20 +132,27 @@ export class AppShell {
 
     this.host = this.requireElement("[data-game-host]");
     this.status = this.requireElement(".boot-status");
-    this.startButton = this.requireButton(".primary-action");
+    this.menu = new MenuView(this.requireElement("[data-menu-view]"), (action) => { this.handleMenuAction(action); });
+    this.navigation = new NavigationCoordinator(); this.renderMenu();
     this.gameFrame = this.requireElement(".game-frame");
     this.pauseOverlay = this.requireElement(".pause-overlay");
     this.pauseTitle = this.requireElement("#pause-title");
     this.pauseMessage = this.requireElement("#pause-message");
     this.resumeButton = this.requireButton(".resume-action");
-    this.startButton.addEventListener("click", this.handleStart);
     this.resumeButton.addEventListener("click", this.handleResume);
+    this.requireElement(".pause-restart").addEventListener("click", () => { this.requestConfirmation("restart"); });
+    this.requireElement(".pause-end").addEventListener("click", () => { this.requestConfirmation("quit"); });
+    this.requireElement("[data-cancel]").addEventListener("click", () => { this.navigation.cancel(); this.requireElement(".confirm-actions").hidden = true; this.resumeButton?.focus(); });
+    this.requireElement("[data-confirm]").addEventListener("click", () => { const state = this.navigation.confirm(); this.requireElement(".confirm-actions").hidden = true; if (state === "run") this.retryRun(); else { const result = this.controller.requestEnd().result; if (result) this.showResults(result); } });
+    this.pauseOverlay.addEventListener("keydown", (event) => { if (event.key !== "Tab") return; const items = [...(this.pauseOverlay?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)") ?? [])].filter((button) => button.getClientRects().length > 0); const first = items[0]; const last = items.at(-1); if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); } });
+    this.settingsPanel = new SettingsPanel(this.requireElement(".sandstrike-shell"), (settings) => { this.settings = settings; this.root?.classList.toggle("high-contrast", settings.highContrast); this.root?.classList.toggle("reduced-motion", settings.reducedMotion); this.refreshLayout(); }, () => { if (this.navigation.state === "settings") { this.navigation.close(); this.renderMenu(); } if (this.controller.active) this.resumeButton?.focus(); }, this.settings);
     document.addEventListener("visibilitychange", this.handleVisibility);
     window.addEventListener("blur", this.handleWindowBlur);
     window.addEventListener("focus", this.handleWindowFocus);
     window.addEventListener("resize", this.handleResize);
     window.addEventListener("orientationchange", this.handleResize);
-    queueMicrotask(() => this.startButton?.focus());
+    window.addEventListener("popstate", this.handleBack);
+    if (__SANDSTRIKE_E2E__) this.removeTestBridge = installE2EDebugBridge({ snapshot: () => this.controller.snapshot(), presentation: () => Object.freeze({ actorIds: this.controls?.actorIds() ?? Object.freeze([]) }), configureNextRun: (configuration) => { if (this.controller.active) throw new Error("Configure the next run before starting."); this.nextConfiguration = Object.freeze({ ...configuration }); }, enqueueActions: (frames) => { this.controls?.enqueueActions(frames); } });
   }
 
   showError(message: string, retry: () => void): void {
@@ -173,14 +184,19 @@ export class AppShell {
   }
 
   destroy(): void {
-    this.startButton?.removeEventListener("click", this.handleStart);
+    this.removeTestBridge?.(); this.removeTestBridge = undefined;
+    this.settingsPanel?.destroy(); this.settingsPanel = undefined;
+    this.results?.destroy(); this.results = undefined;
+    this.audio.destroy();
     this.resumeButton?.removeEventListener("click", this.handleResume);
     document.removeEventListener("visibilitychange", this.handleVisibility);
     window.removeEventListener("blur", this.handleWindowBlur);
     window.removeEventListener("focus", this.handleWindowFocus);
     window.removeEventListener("resize", this.handleResize);
     window.removeEventListener("orientationchange", this.handleResize);
+    window.removeEventListener("popstate", this.handleBack);
     this.destroyGame();
+    this.controller.destroy();
     this.root?.classList.remove("sandstrike-playing");
     this.root?.replaceChildren();
     this.root = undefined;
@@ -195,7 +211,7 @@ export class AppShell {
   }
 
   private startPreview(): void {
-    if (!this.host || !this.status || !this.startButton) {
+    if (!this.host || !this.status) {
       return;
     }
 
@@ -207,15 +223,21 @@ export class AppShell {
     this.status.setAttribute("role", "status");
     this.status.classList.remove("boot-status--error");
     this.status.textContent = "Preparing the arena...";
-    this.startButton.disabled = true;
+    if (this.startButton) this.startButton.disabled = true;
     this.audio.unlock();
+    const configuration = this.nextConfiguration ?? { ...this.lastConfiguration, seed: this.lastConfiguration.seed + 7919 };
+    this.nextConfiguration = undefined; this.lastConfiguration = configuration;
+    this.controller.start(configuration);
+    if (this.navigation.state !== "run") this.navigation.go("run");
+    history.pushState({ sandstrike: true }, "", location.href);
     if (this.gameFrame) {
       this.hud = new RampageHud(this.gameFrame, () => { this.pause.add("user"); }, () => { this.pause.add("user"); this.settingsPanel?.open(); });
-      this.settingsPanel = new SettingsPanel(this.gameFrame, (settings) => { this.settings = settings; this.root?.classList.toggle("high-contrast", settings.highContrast); this.root?.classList.toggle("reduced-motion", settings.reducedMotion); this.refreshLayout(); }, () => { this.resumeButton?.focus(); }, this.settings);
     }
 
     try {
       this.game = createGame(this.host, {
+        controller: this.controller,
+        onResult: (result) => { this.showResults(result); },
         onSnapshot: (snapshot) => this.hud?.update(snapshot, this.settings.reducedMotion),
         settings: () => this.settings,
         audio: this.audio,
@@ -238,21 +260,22 @@ export class AppShell {
   }
 
   private handleReady(): void {
-    if (!this.status || !this.startButton || !this.game) {
+    if (!this.status || !this.game) {
       return;
     }
 
-    this.status.textContent = "Movement preview ready.";
-    this.startButton.disabled = false;
-    this.startButton.textContent = "Focus game";
+    this.status.textContent = "Rampage ready.";
+    if (this.startButton) this.startButton.disabled = false;
     this.root?.classList.add("sandstrike-playing");
     this.refreshLayout();
     this.focusCanvas();
+    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt"; prompt.textContent = "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
   }
 
   private handleFatalError(): void {
     this.destroyGame();
-    this.showError("The movement preview could not start. Your menu is still safe.", () => {
+    this.controller.destroy();
+    this.showError("Rampage could not start. Your menu is still safe.", () => {
       this.startPreview();
     });
   }
@@ -264,13 +287,13 @@ export class AppShell {
     }
 
     canvas.tabIndex = 0;
-    canvas.setAttribute("aria-label", "Sandstrike movement preview");
+    canvas.setAttribute("aria-label", "Sandstrike Rampage playfield");
     canvas.focus({ preventScroll: true });
   }
 
   private destroyGame(): void {
     this.hud?.destroy(); this.hud = undefined;
-    this.settingsPanel?.destroy(); this.settingsPanel = undefined;
+    this.results?.destroy(); this.results = undefined;
     this.touchControls?.destroy();
     this.touchControls = undefined;
     this.controls?.clear();
@@ -339,6 +362,8 @@ export class AppShell {
     this.touchControls?.clearPointers();
 
     if (paused) {
+      this.controller.pause();
+      if (this.navigation.state === "run") this.navigation.go("pause");
       if (this.game?.scene.isActive("Gameplay")) {
         this.game.scene.pause("Gameplay");
       }
@@ -350,6 +375,8 @@ export class AppShell {
     if (this.game?.scene.isPaused("Gameplay")) {
       this.game.scene.resume("Gameplay");
     }
+    this.controller.resume();
+    if (this.navigation.state === "pause") this.navigation.go("run");
     if (this.pauseOverlay) {
       this.pauseOverlay.hidden = true;
     }
@@ -387,7 +414,7 @@ export class AppShell {
       this.pauseMessage.textContent =
         "Input was cleared to prevent a stuck direction or Burst.";
     } else {
-      this.pauseTitle.textContent = "Movement paused";
+      this.pauseTitle.textContent = "Run paused";
       this.pauseMessage.textContent =
         "The worm is frozen and all held actions have been cleared.";
     }
@@ -405,6 +432,38 @@ export class AppShell {
     this.audio.unlock();
     this.refreshLayout();
   }
+
+  private renderMenu(): void { this.menu?.render(this.navigation.state); }
+  private handleMenuAction(action: string): void {
+    switch (action) {
+      case "enter": this.navigation.go("menu"); break;
+      case "play": this.navigation.go("selection"); break;
+      case "choose": this.navigation.go("preview"); break;
+      case "selection": this.navigation.go("selection"); break;
+      case "menu": this.navigation.go("menu"); break;
+      case "help": this.navigation.open("how-to-play"); break;
+      case "credits": this.navigation.open("credits"); break;
+      case "close": this.navigation.close(); break;
+      case "settings": this.navigation.open("settings"); this.settingsPanel?.open(); return;
+      case "start": this.startButton = this.root?.querySelector<HTMLButtonElement>('[data-menu-action="start"]') ?? undefined; this.startPreview(); return;
+      default: return;
+    }
+    this.renderMenu();
+  }
+  private requestConfirmation(action: "quit" | "restart"): void {
+    this.navigation.request(action); this.requireElement(".confirm-actions").hidden = false;
+    this.requireElement("[data-confirm-message]").textContent = action === "quit" ? "End this run and view Results?" : "Restart and discard this run?";
+    const confirm = this.requireButton("[data-confirm]"); confirm.textContent = action === "quit" ? "Confirm end run" : "Confirm restart"; confirm.focus();
+  }
+  private showResults(result: RunResult): void {
+    if (this.results || !this.gameFrame) return;
+    if (this.navigation.state !== "results") this.navigation.go("results");
+    this.controller.pause(); this.controls?.clear(); this.touchControls?.clearPointers(); this.game?.scene.pause("Gameplay");
+    if (this.pauseOverlay) this.pauseOverlay.hidden = true;
+    this.results = new ResultsView(this.gameFrame, result, { retry: () => { this.retryRun(); }, changeMode: () => { this.returnToMenu(true); }, menu: () => { this.returnToMenu(false); } });
+  }
+  private retryRun(): void { this.destroyGame(); this.startPreview(); }
+  private returnToMenu(selection: boolean): void { this.destroyGame(); this.controller.destroy(); this.navigation.go(selection ? "selection" : "menu"); this.renderMenu(); }
 
   private readSafeArea(): SafeAreaInsets {
     const probe = this.root?.querySelector(".safe-area-probe");

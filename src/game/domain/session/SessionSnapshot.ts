@@ -7,6 +7,7 @@ import type { ScoreState } from "../scoring/ScoreSystem";
 import type { ThreatState } from "../spawning/ThreatDirector";
 
 export interface SessionSnapshot {
+  readonly sessionId: string;
   readonly tick: number;
   readonly seed: number;
   readonly score: ScoreState;

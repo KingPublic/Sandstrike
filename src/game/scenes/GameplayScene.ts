@@ -2,41 +2,32 @@ import Phaser from "phaser";
 
 import { movementBalance } from "../data/movementBalance";
 import { DebugOverlay } from "../debug/DebugOverlay";
-import {
-  installE2EDebugBridge,
-  type NextRunConfiguration,
-} from "../debug/E2EDebugBridge";
 import type { DomainEvent } from "../domain/events/DomainEvent";
-import { FixedStepRunner } from "../domain/session/FixedStepRunner";
-import { GameSession } from "../domain/session/GameSession";
-import { MovementPipeline } from "../domain/session/MovementPipeline";
+import { SessionController } from "../application/SessionController";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
-import { FlatTerrainProfile } from "../domain/terrain/FlatTerrainProfile";
 import { GamepadInput } from "../input/GamepadInput";
 import { InputRouter } from "../input/InputRouter";
 import { KeyboardInput } from "../input/KeyboardInput";
 import { ScriptedInput } from "../input/ScriptedInput";
 import { TouchInput } from "../input/TouchInput";
+import type { ActionFrame } from "../input/ActionFrame";
 import { CameraController } from "../rendering/CameraController";
 import { WorldRenderer } from "../rendering/WorldRenderer";
 import { WormView } from "../rendering/WormView";
 import { ActorViews } from "../rendering/ActorViews";
 import { EffectsRenderer } from "../rendering/EffectsRenderer";
 import { FeedbackController, defaultPresentationSettings } from "../rendering/FeedbackController";
-import { spawnActor } from "../data/actors";
 import {
   GAME_LIFECYCLE_REGISTRY_KEY,
   type GameBootstrapOptions,
 } from "../createGame";
-
-const DEFAULT_SEED = 0x5a17d;
 
 export class GameplayScene extends Phaser.Scene {
   private keyboard: KeyboardInput | undefined;
   private touch: TouchInput | undefined;
   private scripted: ScriptedInput | undefined;
   private inputRouter: InputRouter | undefined;
-  private pipeline: MovementPipeline | undefined;
+  private controller: SessionController | undefined;
   private wormView: WormView | undefined;
   private cameraController: CameraController | undefined;
   private debugOverlay: DebugOverlay | undefined;
@@ -46,7 +37,7 @@ export class GameplayScene extends Phaser.Scene {
   private effects: EffectsRenderer | undefined;
   private feedback = new FeedbackController();
   private totalDroppedMs = 0;
-  private removeTestBridge: (() => void) | undefined;
+  private reportedResult = false;
 
   constructor() {
     super("Gameplay");
@@ -74,32 +65,25 @@ export class GameplayScene extends Phaser.Scene {
       this.cameras.main,
       movementBalance,
     );
-    this.configureSession({ seed: DEFAULT_SEED });
+    this.controller = lifecycle.controller ?? new SessionController();
+    if (!this.controller.active) this.controller.start();
+    this.controller.attachInput(this.inputRouter);
+    this.snapshot = this.controller.snapshot();
+    this.cameraController.snap(this.snapshot);
+    this.wormView.render(this.snapshot.worm, 1);
     lifecycle.onControlsReady?.(
       Object.freeze({
+        enqueueActions: (frames: readonly ActionFrame[]) => { this.scripted?.enqueueActions(frames); },
+        actorIds: () => this.actorViews?.actorIds() ?? Object.freeze([]),
         touchInput: this.touch,
         clear: () => {
           this.inputRouter?.clear();
         },
         resetTiming: () => {
-          this.pipeline?.resetTiming();
+          this.controller?.resetTiming();
         },
       }),
     );
-
-    if (__SANDSTRIKE_E2E__) {
-      this.removeTestBridge = installE2EDebugBridge({
-        presentation: () => Object.freeze({ actorIds: this.actorViews?.actorIds() ?? Object.freeze([]) }),
-        snapshot: () => this.requireSnapshot(),
-        configureNextRun: (configuration) => {
-          this.inputRouter?.clear();
-          this.configureSession(configuration);
-        },
-        enqueueActions: (frames) => {
-          this.scripted?.enqueueActions(frames);
-        },
-      });
-    }
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.shutdown();
@@ -109,7 +93,7 @@ export class GameplayScene extends Phaser.Scene {
 
   override update(_time: number, deltaMs: number): void {
     if (
-      !this.pipeline ||
+      !this.controller ||
       !this.wormView ||
       !this.cameraController ||
       !this.debugOverlay ||
@@ -118,7 +102,7 @@ export class GameplayScene extends Phaser.Scene {
       return;
     }
 
-    const frame = this.pipeline.advance(deltaMs);
+    const frame = this.controller.advance(deltaMs);
     if (frame.lastAction?.pause.pressed) {
       this.lifecycle().onPauseRequested?.();
     }
@@ -144,6 +128,7 @@ export class GameplayScene extends Phaser.Scene {
       if (command.haptic && typeof navigator.vibrate === "function") navigator.vibrate(12);
     }
     lifecycle.onSnapshot?.(frame.snapshot);
+    if (this.controller.result && !this.reportedResult) { this.reportedResult = true; lifecycle.onResult?.(this.controller.result); }
     this.debugOverlay.update({
       snapshot: frame.snapshot,
       report: frame.report,
@@ -157,48 +142,6 @@ export class GameplayScene extends Phaser.Scene {
     });
   }
 
-  private configureSession(configuration: NextRunConfiguration): void {
-    if (!this.inputRouter) {
-      return;
-    }
-    const fixtureMovement =
-      configuration.fixtureId === "surface-breach" || configuration.fixtureId === "combat-breach"
-        ? {
-            ...movementBalance,
-            initialPosition: { x: 0, y: 28 },
-            initialDirection: { x: 0, y: -1 },
-            initialSpeed: movementBalance.cruiseSpeed,
-          }
-        : movementBalance;
-    const session = new GameSession({
-      seed: configuration.seed,
-      movement: fixtureMovement,
-      terrain: new FlatTerrainProfile(0),
-      ...(configuration.fixtureId === "surface-breach" ? {} : { mode: "rampage" as const, actors: [spawnActor("opening.prey.1", "actor.prey", { x: 260, y: -10 }), spawnActor("opening.prey.2", "actor.prey", { x: 440, y: -10 }), spawnActor("opening.prey.3", "actor.prey", { x: -320, y: -10 }), ...(configuration.fixtureId === "combat-breach" ? [spawnActor("opening.infantry", "actor.infantry", { x: 180, y: -16 })] : [])] }),
-    });
-    this.pipeline = new MovementPipeline(
-      new FixedStepRunner(),
-      this.inputRouter,
-      session,
-    );
-    this.snapshot = session.snapshot();
-    this.actorViews?.reset();
-    this.effects?.reset();
-    this.feedback = new FeedbackController();
-    this.lifecycle().onSnapshot?.(this.snapshot);
-    this.recentEvents = [];
-    this.totalDroppedMs = 0;
-    this.cameraController?.snap(this.snapshot);
-    this.wormView?.render(this.snapshot.worm, 1);
-  }
-
-  private requireSnapshot(): SessionSnapshot {
-    if (!this.snapshot) {
-      throw new Error("Gameplay snapshot is not ready.");
-    }
-    return this.snapshot;
-  }
-
   private lifecycle(): GameBootstrapOptions {
     return (
       (this.registry.get(
@@ -208,8 +151,6 @@ export class GameplayScene extends Phaser.Scene {
   }
 
   private shutdown(): void {
-    this.removeTestBridge?.();
-    this.removeTestBridge = undefined;
     this.keyboard?.destroy();
     this.inputRouter?.clear();
     this.wormView?.destroy();
@@ -220,7 +161,7 @@ export class GameplayScene extends Phaser.Scene {
     this.touch = undefined;
     this.scripted = undefined;
     this.inputRouter = undefined;
-    this.pipeline = undefined;
+    this.controller = undefined;
     this.wormView = undefined;
     this.cameraController = undefined;
     this.debugOverlay = undefined;

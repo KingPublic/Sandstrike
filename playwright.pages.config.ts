@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: "static-hosting.spec.ts",
+  testMatch: ["static-hosting.spec.ts", "rampage-flow.spec.ts"],
   timeout: 30_000,
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),

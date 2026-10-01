@@ -31,8 +31,12 @@ import type {
 import type { TerrainProfile } from "../terrain/TerrainProfile";
 import type { SessionSnapshot } from "./SessionSnapshot";
 import type { SessionStepResult } from "./SessionStepResult";
+import { RampageRules } from "../modes/RampageRules";
+import type { RunResult } from "../modes/RunResult";
+import type { SessionCommand } from "./SessionCommand";
 
 export interface GameSessionOptions {
+  readonly sessionId?: string;
   readonly mode?: "rampage";
   readonly seed: number;
   readonly movement: WormMovementConfig;
@@ -60,6 +64,9 @@ export class GameSession {
   private readonly combo = new ComboSystem();
   private readonly spawning = new SpawnDirector();
   private readonly threat = new ThreatDirector();
+  private readonly rules: RampageRules;
+  private readonly commands: SessionCommand[] = [];
+  private ended: RunResult | undefined;
 
   constructor(private readonly options: GameSessionOptions) {
     if (!Number.isSafeInteger(options.seed)) {
@@ -70,6 +77,7 @@ export class GameSession {
       throw new RangeError("Session step must be finite and positive.");
     }
     this.stepSeconds = stepSeconds;
+    this.rules = new RampageRules(stepSeconds);
     if (options.mode === "rampage") validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.rampage });
     const bounds = rampageBalance.arena;
     this.locomotion = new WormLocomotion(options.mode === "rampage" ? { ...options.movement, worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } } : options.movement);
@@ -93,6 +101,7 @@ export class GameSession {
   }
 
   step(action: ActionFrame): SessionStepResult {
+    if (this.ended) return Object.freeze({ snapshot: this.snapshot(), events: Object.freeze([]), result: undefined });
     if (action.tick !== this.nextTick) {
       throw new RangeError(
         `Expected action tick ${String(this.nextTick)}, received ${String(action.tick)}.`,
@@ -152,14 +161,27 @@ export class GameSession {
     for (const actor of changes.spawned) this.events.publish({ type: "actor-spawned", tick: this.currentTick, actorId: actor.id, definitionId: actor.definitionId, position: actor.position });
     for (const { actor, cause } of changes.removed) this.events.publish({ type: "actor-removed", tick: this.currentTick, actorId: actor.id, cause, position: actor.position });
     const events = this.events.drain();
-    return Object.freeze({
-      snapshot: this.snapshot(),
-      events: Object.freeze(events),
-    });
+    return this.resolveBoundary(events);
+  }
+
+  queueCommand(command: SessionCommand): void {
+    if (this.ended) return;
+    if (!Number.isSafeInteger(command.requestedTick) || command.requestedTick < 0 || command.requestedTick > this.currentTick) throw new RangeError("Invalid control-command boundary.");
+    if (this.commands.length === 0) this.commands.push(Object.freeze({ ...command }));
+  }
+
+  flushControlCommands(): SessionStepResult { return this.ended ? Object.freeze({ snapshot: this.snapshot(), events: Object.freeze([]), result: undefined }) : this.resolveBoundary([]); }
+
+  private resolveBoundary(events: readonly DomainEvent[]): SessionStepResult {
+    const snapshot = this.snapshot();
+    const update = this.rules.observe(snapshot, events, this.commands.splice(0));
+    this.ended ??= update.result;
+    return Object.freeze({ snapshot, events: Object.freeze([...events, ...update.events]), result: update.result });
   }
 
   snapshot(): SessionSnapshot {
     return Object.freeze({
+      sessionId: this.options.sessionId ?? `seed.${String(this.options.seed)}`,
       tick: this.currentTick,
       seed: this.options.seed,
       score: this.score.snapshot(),

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { startRampage } from "./helpers";
 
 test.use({ hasTouch: true });
 for (const viewport of [{ width: 1440, height: 900 }, { width: 1280, height: 720 }, { width: 1024, height: 768 }, { width: 915, height: 412 }, { width: 844, height: 390 }]) {
@@ -8,11 +9,8 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1280, height: 720
     page.on("console", (message) => { if (message.type() === "error") failures.push(message.text()); });
     page.on("requestfailed", (request) => failures.push(request.url()));
     await page.setViewportSize(viewport);
-    await page.goto("/");
-    await page.getByRole("button", { name: "Start vertical slice" }).click();
+    await startRampage(page, { seed: 91, fixtureId: "combat-breach" });
     await expect(page.locator("[data-rampage-hud]")).toBeVisible();
-    await page.waitForFunction(() => window.__SANDSTRIKE_TEST__ !== undefined);
-    await page.evaluate(() => window.__SANDSTRIKE_TEST__?.configureNextRun({ seed: 91, fixtureId: "combat-breach" }));
     expect(await page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().seed)).toBe(91);
     await page.waitForFunction(() => (window.__SANDSTRIKE_TEST__?.snapshot().tick ?? 0) >= 10);
     const canvas = await page.locator("canvas").boundingBox();
@@ -35,7 +33,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1280, height: 720
     await page.waitForTimeout(100);
     expect(await page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot())).toEqual(frozen);
     await page.getByRole("button", { name: "Close settings" }).click();
-    await expect(page.getByRole("button", { name: "Resume movement" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Resume run" })).toBeVisible();
     expect(failures).toEqual([]);
   });
 }

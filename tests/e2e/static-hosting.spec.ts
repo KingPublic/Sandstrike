@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { openRampagePreview } from "./helpers";
 
 function collectHostingFailures(page: Page): string[] {
   const failures: string[] = [];
@@ -35,9 +36,10 @@ test("boots the compiled game at its configured static-host path", async ({
     page.getByRole("heading", { level: 1, name: "Sandstrike" }),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: "Start vertical slice" }).click();
+  await openRampagePreview(page);
+  await page.getByRole("button", { name: "Start Rampage" }).click();
   await expect(page.locator("canvas")).toHaveCount(1);
-  await expect(page.getByRole("status")).toContainText("Movement preview ready");
+  await expect(page.getByRole("status")).toContainText("Rampage ready");
 
   const hasTestBridge = await page.evaluate(() =>
     Object.prototype.hasOwnProperty.call(window, "__SANDSTRIKE_TEST__"),
