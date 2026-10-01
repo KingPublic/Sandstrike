@@ -1,0 +1,27 @@
+import type { WormMovementConfig } from "../domain/movement/WormMovementTypes";
+
+export const movementBalance: WormMovementConfig = Object.freeze({
+  segmentCount: 14,
+  segmentSpacing: 24,
+  pathCapacity: 128,
+  pathMinSampleDistance: 4,
+  pathMaxTickGap: 4,
+  initialPosition: Object.freeze({ x: 0, y: 180 }),
+  initialDirection: Object.freeze({ x: 1, y: 0 }),
+  initialSpeed: 120,
+  minimumUndergroundSpeed: 90,
+  undergroundAcceleration: 260,
+  cruiseSpeed: 360,
+  lowSpeedTurnRate: 2.4,
+  highSpeedTurnFactor: 0.45,
+  airTurnFactor: 0.35,
+  gravity: 720,
+  burstSpeedGain: 100,
+  burstSpeedCap: 460,
+  burstCooldownSeconds: 1.8,
+  surfaceHysteresis: 6,
+  maxForcedReentrySeconds: 0.25,
+  cameraLookAheadX: 180,
+  cameraLookAheadY: 120,
+  cameraSmoothingHalfLife: 0.12,
+});

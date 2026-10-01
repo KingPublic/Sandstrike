@@ -67,6 +67,14 @@ describe("PathHistory", () => {
     expect(Number.isFinite(newest.tangent.y)).toBe(true);
   });
 
+  it("uses travel direction when opposing tangent interpolation cancels out", () => {
+    const history = createHistory();
+    history.reset({ x: 0, y: 0 }, RIGHT, 0);
+    history.append({ x: 4, y: 0 }, { x: -1, y: 0 }, 1);
+
+    expect(history.sampleDistanceBehind(2).tangent).toEqual(RIGHT);
+  });
+
   it("preserves chronological sampling after fixed-capacity wrap", () => {
     const history = createHistory(3);
     history.reset({ x: 0, y: 0 }, RIGHT, 0);

@@ -173,10 +173,14 @@ export class PathHistory {
       olderX + (newerX - olderX) * alpha,
       olderY + (newerY - olderY) * alpha,
     );
-    const tangent = this.normalizeTangent({
+    const blendedTangent = {
       x: olderTangentX + (newerTangentX - olderTangentX) * alpha,
       y: olderTangentY + (newerTangentY - olderTangentY) * alpha,
-    });
+    };
+    const tangent =
+      Math.hypot(blendedTangent.x, blendedTangent.y) > NORMAL_EPSILON
+        ? this.normalizeTangent(blendedTangent)
+        : this.normalizeTangent({ x: newerX - olderX, y: newerY - olderY });
     return Object.freeze({ position, tangent });
   }
 
