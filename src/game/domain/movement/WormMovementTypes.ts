@@ -8,6 +8,7 @@ export type WormMotionPhase =
   | "reentering";
 
 export interface WormMovementConfig {
+  readonly worldBounds?: Readonly<{ left: number; right: number; top: number; bottom: number }>;
   readonly segmentCount: number;
   readonly segmentSpacing: number;
   readonly pathCapacity: number;

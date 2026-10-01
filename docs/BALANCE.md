@@ -146,3 +146,25 @@ deal 10 damage, and use 24 reusable logical slots. Swept relative contacts retir
 each projectile after one hit; the worm's 30-tick protection blocks simultaneous
 hits. The 400-tick seed-70 encounter reproduces events and diagnostics exactly.
 Fresh checkpoint: 89/89 domain tests, typecheck and lint pass.
+
+## Phase B Rampage pacing hypothesis (2026-10-01)
+
+Prototype bounds: 4,800 px wide, head limited to x ±2,382, y -1,182 to 3,182.
+Boundary contact reflects momentum without rebuilding the follower history.
+Prey yields 100 base points, infantry 250. Alternating categories adds 25%;
+repeating a category yields half score and half chain credit. Additional targets
+within a breach add 25% of their base value. Awards round down after multiplying.
+Chain 3 / 6 grants 2x / 3x, capped at 3x; grace lasts 180 ticks followed by 45
+visible decay ticks. Target IDs are credited once; untyped removals award nothing.
+
+Spawns stay 60 px apart and beyond the 600 px camera half-width plus 60 px lead,
+with 40 px arena margins. Caps are 8 prey / 4 infantry; replacement cadence is
+120 / 300 ticks. Health below 40 prioritizes food until two prey are available.
+Band 1 triggers at tick 2,700 (45 seconds) or 1,000 base points, with a 120-tick
+warning before military spawns. No health inflation or band above 1 is present.
+
+The seed-811 fixture runs 5,400 ticks with circular steering and Bite every 25
+ticks. Two runs reproduce all snapshots/events, preserve caps and legal head
+positions, announce once, activate band 1 at tick 2,820, and overflow no events.
+Fresh checkpoint: 103/103 tests, typecheck/lint pass. These are mechanical pacing
+hypotheses; browser playtesting and presentation readability remain to be checked.

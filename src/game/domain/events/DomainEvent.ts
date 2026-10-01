@@ -8,6 +8,9 @@ interface WormEventBase {
 }
 
 export type DomainEvent =
+  | Readonly<{ type: "score-awarded"; tick: number; points: number; total: number }>
+  | Readonly<{ type: "response-warning"; tick: number; band: 1 }>
+  | Readonly<{ type: "response-band-changed"; tick: number; band: 1 }>
   | Readonly<{ type: "infantry-telegraph"; tick: number; actorId: ActorId; aimPoint: Vec2; position: Vec2 }>
   | Readonly<{ type: "projectile-fired"; tick: number; actorId: ActorId; projectileId: ActorId; position: Vec2 }>
   | Readonly<{ type: "ability-activated"; tick: number; actorId: ActorId; abilityId: string; position: Vec2 }>

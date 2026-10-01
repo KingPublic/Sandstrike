@@ -77,6 +77,16 @@ export class WormLocomotion {
       previousPosition.x + this.velocity.x * dtSeconds,
       previousPosition.y + this.velocity.y * dtSeconds,
     );
+    const bounds = this.config.worldBounds;
+    if (bounds) {
+      const x = clamp(this.position.x, bounds.left, bounds.right);
+      const y = clamp(this.position.y, bounds.top, bounds.bottom);
+      const vx = x !== this.position.x ? -this.velocity.x : this.velocity.x;
+      const vy = y !== this.position.y ? -this.velocity.y : this.velocity.y;
+      this.position = freezeVec2(x, y);
+      this.velocity = freezeVec2(vx, vy);
+      this.headingRadians = Math.atan2(vy, vx);
+    }
 
     const currentDepth = this.depthAt(this.position, terrain);
     const phaseEvent = this.resolvePhaseTransition(
@@ -305,6 +315,8 @@ export class WormLocomotion {
   }
 
   private validateConfig(config: WormMovementConfig): void {
+    const bounds = config.worldBounds;
+    if (bounds && ([bounds.left, bounds.right, bounds.top, bounds.bottom].some((value) => !Number.isFinite(value)) || bounds.right <= bounds.left || bounds.bottom <= bounds.top)) throw new RangeError("Invalid movement bounds.");
     if (
       !isFiniteVec2(config.initialPosition) ||
       !isFiniteVec2(config.initialDirection) ||

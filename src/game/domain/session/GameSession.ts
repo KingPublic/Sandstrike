@@ -1,5 +1,12 @@
 import type { ActionFrame } from "../../input/ActionFrame";
-import { spawnActor } from "../../data/actors";
+import { spawnActor, actorDefinitions } from "../../data/actors";
+import { rampageBalance } from "../../data/rampageBalance";
+import { modes } from "../../data/modes";
+import { validateDefinitions } from "../../data/validateDefinitions";
+import { ScoreSystem } from "../scoring/ScoreSystem";
+import { ComboSystem } from "../scoring/ComboSystem";
+import { SpawnDirector } from "../spawning/SpawnDirector";
+import { ThreatDirector } from "../spawning/ThreatDirector";
 import { abilities } from "../../data/abilities";
 import { AbilitySystem } from "../abilities/AbilitySystem";
 import { CombatSystem } from "../combat/CombatSystem";
@@ -26,6 +33,7 @@ import type { SessionSnapshot } from "./SessionSnapshot";
 import type { SessionStepResult } from "./SessionStepResult";
 
 export interface GameSessionOptions {
+  readonly mode?: "rampage";
   readonly seed: number;
   readonly movement: WormMovementConfig;
   readonly terrain: TerrainProfile;
@@ -48,6 +56,10 @@ export class GameSession {
   private readonly infantry = new Map<string, InfantryController>();
   private readonly perceived = new Map<string, Readonly<{ position: Vec2; observedTick: number }>>();
   private readonly projectiles: ProjectileSystem;
+  private readonly score = new ScoreSystem();
+  private readonly combo = new ComboSystem();
+  private readonly spawning = new SpawnDirector();
+  private readonly threat = new ThreatDirector();
 
   constructor(private readonly options: GameSessionOptions) {
     if (!Number.isSafeInteger(options.seed)) {
@@ -58,7 +70,9 @@ export class GameSession {
       throw new RangeError("Session step must be finite and positive.");
     }
     this.stepSeconds = stepSeconds;
-    this.locomotion = new WormLocomotion(options.movement);
+    if (options.mode === "rampage") validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.rampage });
+    const bounds = rampageBalance.arena;
+    this.locomotion = new WormLocomotion(options.mode === "rampage" ? { ...options.movement, worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } } : options.movement);
     const worm = this.locomotion.snapshot();
     this.actors = new ActorRegistry([
       createActor({ ...spawnActor("worm", "actor.worm", worm.head.position), direction: worm.head.tangent, velocity: worm.head.velocity, health: options.playerHealth ?? spawnActor("worm", "actor.worm", worm.head.position).health }),
@@ -117,6 +131,19 @@ export class GameSession {
       }
     }
     for (const event of this.combat.resolve(this.actors, commands)) this.events.publish(event);
+    const combatEvents = this.events.drain();
+    const combo = this.combo.step(combatEvents, this.currentTick);
+    const award = this.score.consume(combatEvents, combo);
+    for (const event of combatEvents) this.events.publish(event);
+    if (award.points > 0) this.events.publish({ type: "score-awarded", tick: this.currentTick, points: award.points, total: this.score.snapshot().points });
+    if (this.options.mode === "rampage") {
+      const previousThreat = this.threat.snapshot();
+      const threat = this.threat.step({ tick: this.currentTick, basePoints: this.score.snapshot().basePoints }, combatEvents);
+      if (previousThreat.warningStartedTick === undefined && threat.warningStartedTick !== undefined) this.events.publish({ type: "response-warning", tick: this.currentTick, band: 1 });
+      if (previousThreat.band !== threat.band) this.events.publish({ type: "response-band-changed", tick: this.currentTick, band: 1 });
+      const player = this.actors.get("worm");
+      if (player) for (const command of this.spawning.step({ tick: this.currentTick, actors: this.actors.snapshot(), playerPosition: player.position, playerHealth: player.health, band: threat.band, cameraHalfWidth: 600, surfaceY: this.options.terrain.surfaceY(player.position.x) }, this.random.stream("spawn"))) this.actors.deferSpawn(spawnActor(command.id, command.definitionId, command.position));
+    }
     const changes = this.actors.commit();
     for (const { actor } of changes.removed) { this.infantry.delete(actor.id); this.perceived.delete(actor.id); }
     for (const actor of changes.spawned) this.events.publish({ type: "actor-spawned", tick: this.currentTick, actorId: actor.id, definitionId: actor.definitionId, position: actor.position });
@@ -132,6 +159,9 @@ export class GameSession {
     return Object.freeze({
       tick: this.currentTick,
       seed: this.options.seed,
+      score: this.score.snapshot(),
+      combo: this.combo.snapshot(),
+      threat: this.threat.snapshot(),
       worm: this.locomotion.snapshot(),
       actors: this.actors.snapshot(),
       abilities: Object.freeze([this.bite.snapshot(this.currentTick)]),
