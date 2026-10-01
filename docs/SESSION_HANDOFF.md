@@ -1,4 +1,4 @@
-﻿# SESSION HANDOFF — Project Sandstrike
+# SESSION HANDOFF — Project Sandstrike
 
 Updated: 2026-10-01. Phase A approved; all three Phase B implementation plans complete.
 
@@ -6,8 +6,8 @@ Updated: 2026-10-01. Phase A approved; all three Phase B implementation plans co
 
 **GO for the Phase B prototype and Phase C planning.** This is a playable worm
 Rampage slice, not yet the complete two-role game or production art release.
-Implementation branch: phase-b-vertical-slice; Task 8 checkpoint is the commit
-containing this handoff. Earlier checkpoints: movement GO b1533cd, contacts
+Active directory: C:/Users/Adrian/Games/Sandstrike. Active branch: phase-b-ready.
+Phase B implementation checkpoint: 7ca0d47; root-relocation checkpoint contains this update. Earlier checkpoints: movement GO b1533cd, contacts
 88a0fab/cd43855, combat 21ebb14, infantry 67862ff, pacing 309be1d,
 presentation 189d708, run flow 1b3e6a0, persistence 74586e8.
 
@@ -62,10 +62,10 @@ presentation 189d708, run flow 1b3e6a0, persistence 74586e8.
 ## User workflow and exact next action
 
 User explicitly requests subsequent development directly in
-C:/Users/Adrian/Games/Sandstrike, not additional worktrees. Root was clean on main
-at 0524b46. After this checkpoint, switch root to a development branch
-phase-b-ready from phase-b-vertical-slice, retaining main unchanged. Reuse installed
-node_modules if safe. Verify root state and record completed relocation before stop.
+C:/Users/Adrian/Games/Sandstrike, not additional worktrees. Root was clean on main at 0524b46. Relocation is complete: root is on
+phase-b-ready from verified checkpoint 7ca0d47, with installed node_modules moved
+into root. main remains unchanged. All subsequent development happens in root.
+The old worktree is only a historical checkout and is not the active workspace.
 
 After relocation, the next development action is use Superpowers writing-plans
 for Phase C from the approved GAME_DESIGN/ARCHITECTURE and measured Phase B limits:
