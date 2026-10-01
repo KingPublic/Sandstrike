@@ -1,6 +1,7 @@
 # ARCHITECTURE — Project Sandstrike
 
-Status: **Phase A review draft; no implementation exists yet.**
+Status: **Phase A specification approved by the user on 2026-10-01; no
+implementation exists yet.**
 
 Last updated: 2026-10-01
 

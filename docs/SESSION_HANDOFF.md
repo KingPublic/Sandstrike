@@ -2,13 +2,13 @@
 
 Updated: 2026-10-01 09:35 +08:00 (Asia/Makassar)
 
-Status: awaiting-review — Phase A drafts verified; explicit user approval required
+Status: active — Phase A approved; Phase B implementation planning in progress
 
-Current phase: Phase A — research and specification only
+Current phase: Phase B planning — no game code has been created yet
 
-Current gate: written `GAME_DESIGN.md` and `ARCHITECTURE.md` must be reviewed by
-the user before `superpowers:writing-plans` creates the Phase B implementation
-plan. No game scaffold or implementation is authorized by this checkpoint.
+Current gate: `superpowers:writing-plans` must produce and self-review the Phase B
+implementation plan. The user must then review that plan and select native or
+subagent-driven execution before game scaffolding begins.
 
 Branch: `main`
 
@@ -18,10 +18,9 @@ Working tree: Phase A documentation changes are intentionally uncommitted.
 
 ## Last user instruction
 
-Continue the process, read `README_START_HERE.md` and the other Markdown files
-containing requirements, preserve a durable resume record, and stop at the
-appropriate review/token checkpoint. The original scope restriction remains:
-Phase A only, with no game implementation yet.
+The user explicitly approved the written Phase A specifications and instructed:
+“silahkan lanjutkan dan kerjakan semua rencana yang sudah disusun.” Continue into
+planning and staged execution while preserving every Superpowers review gate.
 
 The user prefers sustained progress while context is available. If observable
 usage approaches 1% remaining, refresh this handoff first, stop safely, and ask
@@ -54,6 +53,7 @@ do not consume tokens artificially to reach it or skip a required review gate.
 - Corrected the bootstrap chronology: reliable evidence shows the JTR game was
   public by 2006; 2007 is an update/coverage point.
 - Received user approval for the staged two-role MVP direction.
+- Received explicit user approval for the complete written Phase A specifications.
 - Replaced the bootstrap GDD with a complete Phase A review draft.
 - Added a complete Phase A architecture review draft.
 - Added accepted and proposed entries D-005 through D-013.
@@ -114,10 +114,10 @@ Final verification run: 2026-10-01 09:35 +08:00.
 
 ## Open decisions requiring user input
 
-Review the written design and architecture. Requested corrections should be made
-inside Phase A. Explicit approval accepts the concrete choices around D-011 and
-D-012 and permits creation of the Phase B implementation plan; it does not itself
-authorize game code.
+After the Phase B plan is written and self-reviewed, the user must confirm that it
+captures the intended work and select its execution method: subagent-driven or
+native. No implementation-plan artifact existed when Phase A was approved, so the
+approval cannot be applied to that future artifact automatically.
 
 ## Risks or blockers
 
@@ -127,30 +127,26 @@ ergonomics, AI readability, Phaser 4 integration, and phone frame pacing.
 
 ## Exact next action
 
-Present `GAME_DESIGN.md` and `ARCHITECTURE.md` to the user for explicit written-spec
-approval or requested corrections. A later **“lanjutkan proyek”** resumes at this
-recorded review gate; it does not by itself approve an unreviewed artifact. Invoke
-`superpowers:writing-plans` only after the user explicitly approves the written
-specifications. Do not scaffold or implement until the plan has also been reviewed
-and its execution method selected.
+Use `superpowers:writing-plans` to write and self-review the Phase B implementation
+plan under `docs/superpowers/plans/`. Present it to the user for review and an
+execution-method selection. Do not scaffold or implement before that response.
 
 ## Ordered follow-up actions
 
-1. Ask the user to review the written Phase A specifications.
-2. Apply requested corrections inside Phase A and reverify, if any.
-3. On explicit approval, use `superpowers:writing-plans` for the Phase B plan.
-4. Present that plan for review and execution-method selection.
-5. Only after that gate, start Phase B with TDD and the compatibility/movement
+1. Write and self-review the Phase B implementation plan.
+2. Present that plan for review and execution-method selection.
+3. Only after that gate, create an isolated worktree and start Phase B with TDD
+   and the compatibility/movement
    spikes; use systematic debugging for any failure.
 
 ## Active plan
 
 - `docs/REFERENCE_RESEARCH.md`: research pass complete and independently reviewed.
-- `docs/GAME_DESIGN.md`: verified written review draft; awaiting user review.
-- `docs/ARCHITECTURE.md`: verified written review draft; awaiting user review.
-- `docs/DECISIONS.md`: accepted constraints and provisional implementation choices
-  are distinguished; concrete D-011/D-012 choices await spec approval.
-- `docs/SESSION_HANDOFF.md`: current and set to `awaiting-review`.
+- `docs/GAME_DESIGN.md`: approved Phase A specification.
+- `docs/ARCHITECTURE.md`: approved Phase A specification.
+- `docs/DECISIONS.md`: accepted constraints and provisional spike choices are
+  distinguished; D-011/D-012 are accepted.
+- `docs/SESSION_HANDOFF.md`: active; Phase B plan handoff is the next gate.
 
 ## Resume protocol
 
@@ -159,6 +155,6 @@ and its execution method selected.
 2. Inspect `git status`, `git diff`, and recent commits.
 3. Verify this handoff against repository state; repository state wins if stale.
 4. Continue from **Exact next action** without repeating completed research.
-5. If the current gate is `awaiting-review`, present the relevant artifact and ask
-   for explicit approval before advancing it.
+5. If the current gate requires review, present the relevant artifact and ask for
+   explicit approval before advancing it.
 6. Refresh this file before the next intentional stop.

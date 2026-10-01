@@ -173,9 +173,8 @@ Consequences:
 Phase B needs an isolated locomotion spike and deterministic tests for path
 sampling and state transitions before content grows.
 
-Status: head authority and path/history following are accepted requirements from
-`AGENTS.md`; the custom-kinematics and collision-adapter details remain pending
-written-spec review and Phase B evidence.
+Status: accepted with the written architecture on 2026-10-01. Phase B spike
+evidence may supersede the collision-adapter detail through a newer decision.
 
 ## D-012 — Domain logic remains testable outside Phaser scenes
 
@@ -192,8 +191,7 @@ Consequences:
 Adapters translate between domain events and Phaser rendering, audio, input and
 collision. Cross-module dependencies follow declared public contracts.
 
-Status: domain/rendering separation is an accepted requirement from `AGENTS.md`;
-the concrete module/port layout remains pending written-spec review.
+Status: accepted with the written architecture on 2026-10-01.
 
 ## D-013 — Persistent session handoff
 

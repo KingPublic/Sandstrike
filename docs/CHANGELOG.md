@@ -12,3 +12,4 @@
   path history, observable AI, versioned saves, static deployment, and testing.
 - Recorded the accepted MVP decisions and introduced a persistent session
   handoff protocol.
+- Marked the Phase A game-design and architecture specifications as user-approved.

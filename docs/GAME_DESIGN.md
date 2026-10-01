@@ -1,8 +1,6 @@
 # GAME DESIGN — Project Sandstrike
 
-Status: Phase A review draft. The staged two-role direction was approved in
-conversation on 2026-10-01; this written specification still requires review
-before implementation planning.
+Status: **Phase A specification approved by the user on 2026-10-01.**
 
 Project Sandstrike is a working title.
 
