@@ -112,3 +112,22 @@ Known evidence limits:
   adjacent rendered samples at the same world point when the path retraces
   itself. No jitter, NaN, phase chatter, or segment-order reversal was observed;
   later visual polish may add self-occlusion treatment without changing motion.
+
+## Phase B combat prototype hypothesis (2026-10-01)
+
+Status: provisional domain fixtures; browser combat/feedback gate pending.
+Baseline: contact pipeline `cd43855`; fixtures cover Bite, impact, simultaneous
+contacts, capped healing, armor, and tick-based invulnerability.
+
+| Parameter | Value | Intended effect |
+|---|---:|---|
+| Worm / prey health | 100 / 1 | Prey provides reliable sustain without a drawn-out fight. |
+| Bite | 6 active ticks, 24 cooldown ticks, 15 damage | Intentional short-range attack with a readable rhythm. |
+| Bite logical shape | 34 px circle, 20 px forward offset | Forgiving reach independent of the visual head. |
+| Prey healing | 8, capped at maximum health | Encourages returning to the surface under pressure. |
+| Impact | 220 px/s threshold; 10-40 damage through 460 px/s | Rewards committed momentum and Burst timing. |
+| Post-hit protection | 30 simulation ticks | Prevents simultaneous projectiles from erasing health unfairly. |
+
+Consumption, removal and healing occur once per actor even when Bite and impact
+share one tick. Infantry yields no healing. Attack-offset sweeps use both previous
+and current poses to retain turning hits.

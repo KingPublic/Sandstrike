@@ -52,6 +52,13 @@ describe("CollisionWorld", () => {
     expect(new CollisionWorld().query(masked, masked)).toHaveLength(0);
   });
 
+  it("sweeps a rotating forward attack offset from its previous pose", () => {
+    const beforeProfile = { ...collisionProfiles.worm, shape: { kind: "circle", radius: 2, offset: { x: -50, y: 0 } } } as const;
+    const afterProfile = { ...beforeProfile, shape: { ...beforeProfile.shape, offset: { x: 50, y: 0 } } };
+    const target = actor("target", 0, 0, collisionProfiles.prey);
+    expect(new CollisionWorld().query([actor("worm", 0, 0, beforeProfile), target], [actor("worm", 0, 0, afterProfile), target])).toHaveLength(1);
+  });
+
   it("returns unique contacts in stable priority/id order regardless of insertion", () => {
     const actors = [actor("worm", 0, 0, collisionProfiles.worm), actor("z"), actor("a"), actor("shot", 0, 0, collisionProfiles.projectile)];
     const world = new CollisionWorld();

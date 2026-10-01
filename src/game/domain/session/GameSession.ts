@@ -1,5 +1,9 @@
 import type { ActionFrame } from "../../input/ActionFrame";
-import { collisionProfiles } from "../../data/collisionProfiles";
+import { spawnActor } from "../../data/actors";
+import { abilities } from "../../data/abilities";
+import { AbilitySystem } from "../abilities/AbilitySystem";
+import { CombatSystem } from "../combat/CombatSystem";
+import { impactDamage, type DamageCommand } from "../combat/DamageResolver";
 import { createActor, type ActorState } from "../actors/Actor";
 import { ActorRegistry } from "../actors/ActorRegistry";
 import { CollisionWorld } from "../collision/CollisionWorld";
@@ -21,6 +25,7 @@ export interface GameSessionOptions {
   readonly terrain: TerrainProfile;
   readonly stepSeconds?: number;
   readonly actors?: readonly ActorState[];
+  readonly playerHealth?: number;
 }
 
 export class GameSession {
@@ -30,6 +35,8 @@ export class GameSession {
   private readonly actors: ActorRegistry;
   private readonly collisions = new CollisionWorld();
   private readonly events = new EventQueue();
+  private readonly bite = new AbilitySystem(abilities.bite, ["worm"]);
+  private readonly combat = new CombatSystem();
 
   constructor(private readonly options: GameSessionOptions) {
     if (!Number.isSafeInteger(options.seed)) {
@@ -43,7 +50,7 @@ export class GameSession {
     this.locomotion = new WormLocomotion(options.movement);
     const worm = this.locomotion.snapshot();
     this.actors = new ActorRegistry([
-      createActor({ id: "worm", definitionId: "actor.worm", faction: "worm", position: worm.head.position, direction: worm.head.tangent, velocity: worm.head.velocity, health: 100, maxHealth: 100, armor: 0, tags: ["worm"], collision: collisionProfiles.worm, lifecycle: "active" }),
+      createActor({ ...spawnActor("worm", "actor.worm", worm.head.position), direction: worm.head.tangent, velocity: worm.head.velocity, health: options.playerHealth ?? spawnActor("worm", "actor.worm", worm.head.position).health }),
       ...(options.actors ?? []),
     ]);
   }
@@ -75,9 +82,22 @@ export class GameSession {
     const wormActor = this.actors.get("worm");
     if (!wormActor) throw new Error("Session has no player worm.");
     this.actors.update({ ...wormActor, position: worm.head.position, direction: worm.head.tangent, velocity: worm.head.velocity });
-    for (const contact of this.collisions.query(previousActors, this.actors.snapshot())) {
+    const ability = this.bite.step(this.currentTick, action.primary.pressed);
+    if (ability.activated) this.events.publish({ type: "ability-activated", tick: this.currentTick, actorId: "worm", abilityId: abilities.bite.id, position: worm.head.position });
+    const currentActors = this.actors.snapshot();
+    const commands: DamageCommand[] = [];
+    for (const contact of this.collisions.query(previousActors, currentActors)) {
       this.events.publish({ type: "contact", tick: this.currentTick, contact });
+      if (contact.sourceId === "worm") commands.push({ sourceId: "worm", targetId: contact.targetId, tick: this.currentTick, abilityId: "ability.impact", amount: impactDamage(worm.speed), tags: ["impact"], priority: 2 });
     }
+    if (ability.state.active) {
+      const withBite = (actor: ActorState): ActorState => actor.id === "worm" ? createActor({ ...actor, collision: this.bite.contactProfile(actor.direction) }) : actor;
+      for (const contact of this.collisions.query(previousActors.map(withBite), currentActors.map(withBite))) {
+        if (contact.sourceId !== "worm") continue;
+        commands.push({ sourceId: "worm", targetId: contact.targetId, tick: this.currentTick, abilityId: abilities.bite.id, amount: abilities.bite.damage, tags: abilities.bite.debugTags, priority: 1 });
+      }
+    }
+    for (const event of this.combat.resolve(this.actors, commands)) this.events.publish(event);
     const changes = this.actors.commit();
     for (const actor of changes.spawned) this.events.publish({ type: "actor-spawned", tick: this.currentTick, actorId: actor.id, definitionId: actor.definitionId, position: actor.position });
     for (const { actor, cause } of changes.removed) this.events.publish({ type: "actor-removed", tick: this.currentTick, actorId: actor.id, cause, position: actor.position });
@@ -94,6 +114,7 @@ export class GameSession {
       seed: this.options.seed,
       worm: this.locomotion.snapshot(),
       actors: this.actors.snapshot(),
+      abilities: Object.freeze([this.bite.snapshot(this.currentTick)]),
       diagnostics: Object.freeze({ eventOverflowCount: this.events.overflowCount }),
     });
   }

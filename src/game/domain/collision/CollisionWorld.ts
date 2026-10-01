@@ -47,8 +47,10 @@ function swept(source: ActorState, target: ActorState, history: ReadonlyMap<stri
   const oldSource = history.get(source.id) ?? source;
   const oldTarget = history.get(target.id) ?? target;
   const offset = shape.offset ?? { x: 0, y: 0 };
+  const oldShape = oldSource.collision.shape;
+  const oldOffset = oldShape.kind === "circle" ? (oldShape.offset ?? { x: 0, y: 0 }) : offset;
   const path: Segment = {
-    from: { x: oldSource.position.x - oldTarget.position.x + offset.x, y: oldSource.position.y - oldTarget.position.y + offset.y },
+    from: { x: oldSource.position.x - oldTarget.position.x + oldOffset.x, y: oldSource.position.y - oldTarget.position.y + oldOffset.y },
     to: { x: source.position.x - target.position.x + offset.x, y: source.position.y - target.position.y + offset.y },
     radius: shape.radius,
   };
