@@ -65,7 +65,10 @@ User explicitly requests subsequent development directly in
 C:/Users/Adrian/Games/Sandstrike, not additional worktrees. Root was clean on main at 0524b46. Relocation is complete: root is on
 phase-b-ready from verified checkpoint 7ca0d47, with installed node_modules moved
 into root. main remains unchanged. All subsequent development happens in root.
-The old worktree is only a historical checkout and is not the active workspace.
+Cleanup completed at the user's request: the old worktree and its fully
+incorporated local branch phase-b-vertical-slice were removed. Only the root
+checkout on phase-b-ready is active. All implementation commits remain reachable
+on this branch; main was not changed by the cleanup.
 
 After relocation, the next development action is use Superpowers writing-plans
 for Phase C from the approved GAME_DESIGN/ARCHITECTURE and measured Phase B limits:
