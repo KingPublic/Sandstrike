@@ -58,4 +58,5 @@ export type WormMotionEvent =
       type: "burst";
       tick: number;
       speed: number;
+      position: Vec2;
     }>;

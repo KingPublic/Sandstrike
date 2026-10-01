@@ -200,6 +200,7 @@ export class WormLocomotion {
         type: "burst",
         tick: this.tick,
         speed: this.speed,
+        position: freezeVec2(this.position.x, this.position.y),
       }),
     );
   }

@@ -39,12 +39,10 @@ test("boots the compiled game at its configured static-host path", async ({
   await expect(page.locator("canvas")).toHaveCount(1);
   await expect(page.getByRole("status")).toContainText("Movement preview ready");
 
-  if (testInfo.project.metadata.buildKind === "production") {
-    const hasTestBridge = await page.evaluate(() =>
-      Object.prototype.hasOwnProperty.call(window, "__SANDSTRIKE_TEST__"),
-    );
-    expect(hasTestBridge).toBe(false);
-  }
+  const hasTestBridge = await page.evaluate(() =>
+    Object.prototype.hasOwnProperty.call(window, "__SANDSTRIKE_TEST__"),
+  );
+  expect(hasTestBridge).toBe(testInfo.project.metadata.buildKind === "e2e");
 
   expect(failures).toEqual([]);
 });

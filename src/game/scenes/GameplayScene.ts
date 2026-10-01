@@ -1,95 +1,185 @@
 import Phaser from "phaser";
 
+import { movementBalance } from "../data/movementBalance";
+import { DebugOverlay } from "../debug/DebugOverlay";
+import {
+  installE2EDebugBridge,
+  type NextRunConfiguration,
+} from "../debug/E2EDebugBridge";
+import type { DomainEvent } from "../domain/events/DomainEvent";
+import { FixedStepRunner } from "../domain/session/FixedStepRunner";
+import { GameSession } from "../domain/session/GameSession";
+import { MovementPipeline } from "../domain/session/MovementPipeline";
+import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
+import { FlatTerrainProfile } from "../domain/terrain/FlatTerrainProfile";
+import { GamepadInput } from "../input/GamepadInput";
+import { InputRouter } from "../input/InputRouter";
+import { KeyboardInput } from "../input/KeyboardInput";
+import { ScriptedInput } from "../input/ScriptedInput";
+import { TouchInput } from "../input/TouchInput";
+import { CameraController } from "../rendering/CameraController";
+import { WorldRenderer } from "../rendering/WorldRenderer";
+import { WormView } from "../rendering/WormView";
 import {
   GAME_LIFECYCLE_REGISTRY_KEY,
   type GameBootstrapOptions,
 } from "../createGame";
 
+const DEFAULT_SEED = 0x5a17d;
+
 export class GameplayScene extends Phaser.Scene {
+  private keyboard: KeyboardInput | undefined;
+  private touch: TouchInput | undefined;
+  private scripted: ScriptedInput | undefined;
+  private inputRouter: InputRouter | undefined;
+  private pipeline: MovementPipeline | undefined;
+  private wormView: WormView | undefined;
+  private cameraController: CameraController | undefined;
+  private debugOverlay: DebugOverlay | undefined;
+  private snapshot: SessionSnapshot | undefined;
+  private recentEvents: DomainEvent[] = [];
+  private totalDroppedMs = 0;
+  private removeTestBridge: (() => void) | undefined;
+
   constructor() {
     super("Gameplay");
   }
 
   create(): void {
-    this.drawDesertPreview();
+    const lifecycle = this.lifecycle();
+    const debug = lifecycle.debug ?? (import.meta.env.DEV || __SANDSTRIKE_E2E__);
+    new WorldRenderer(this).create();
 
-    this.add
-      .text(640, 104, "MOVEMENT SLICE PENDING", {
-        color: "#fff4d1",
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "30px",
-        fontStyle: "bold",
-        letterSpacing: 5,
-        shadow: {
-          offsetX: 0,
-          offsetY: 4,
-          color: "#160d1d",
-          blur: 10,
-          fill: true,
+    this.keyboard = new KeyboardInput(window);
+    this.touch = new TouchInput();
+    this.scripted = new ScriptedInput();
+    this.inputRouter = new InputRouter([
+      this.keyboard,
+      this.touch,
+      new GamepadInput(),
+      this.scripted,
+    ]);
+    this.wormView = new WormView(this, debug);
+    this.debugOverlay = new DebugOverlay(this, debug);
+    this.cameraController = new CameraController(
+      this.cameras.main,
+      movementBalance,
+    );
+    this.configureSession({ seed: DEFAULT_SEED });
+
+    if (__SANDSTRIKE_E2E__) {
+      this.removeTestBridge = installE2EDebugBridge({
+        snapshot: () => this.requireSnapshot(),
+        configureNextRun: (configuration) => {
+          this.inputRouter?.clear();
+          this.configureSession(configuration);
         },
-      })
-      .setOrigin(0.5);
+        enqueueActions: (frames) => {
+          this.scripted?.enqueueActions(frames);
+        },
+      });
+    }
 
-    this.add
-      .text(640, 154, "Renderer online / terrain profile reserved", {
-        color: "#e3cba0",
-        fontFamily: "system-ui, sans-serif",
-        fontSize: "18px",
-      })
-      .setOrigin(0.5);
-
-    const lifecycle = this.registry.get(
-      GAME_LIFECYCLE_REGISTRY_KEY,
-    ) as GameBootstrapOptions | undefined;
-    lifecycle?.onReady?.();
-  }
-
-  private drawDesertPreview(): void {
-    const graphics = this.add.graphics();
-    const skyBands = [0x17101f, 0x25162a, 0x452334, 0x804233, 0xd07b46];
-
-    skyBands.forEach((color, index) => {
-      graphics.fillStyle(color, 1);
-      graphics.fillRect(0, index * 82, 1280, 84);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.shutdown();
     });
-
-    for (let radius = 90; radius >= 28; radius -= 14) {
-      graphics.fillStyle(0xffc873, 0.05 + (90 - radius) / 320);
-      graphics.fillCircle(1015, 190, radius);
-    }
-
-    this.drawDune(graphics, 0xd08a52, 390, 50, 0.9);
-    this.drawDune(graphics, 0xb46a43, 455, 120, 1.15);
-    this.drawDune(graphics, 0x7d4436, 525, 18, 0.82);
-
-    graphics.fillStyle(0x4a2c2c, 1);
-    graphics.fillRect(0, 575, 1280, 145);
-    graphics.lineStyle(3, 0xf2bd72, 0.55);
-    graphics.lineBetween(0, 575, 1280, 575);
-
-    for (let index = 0; index < 46; index += 1) {
-      const x = (index * 197) % 1280;
-      const y = 600 + ((index * 43) % 106);
-      graphics.fillStyle(index % 3 === 0 ? 0xd78d54 : 0x8d523c, 0.42);
-      graphics.fillCircle(x, y, 1 + (index % 3));
-    }
+    lifecycle.onReady?.();
   }
 
-  private drawDune(
-    graphics: Phaser.GameObjects.Graphics,
-    color: number,
-    baseline: number,
-    phase: number,
-    amplitude: number,
-  ): void {
-    const points: Phaser.Math.Vector2[] = [new Phaser.Math.Vector2(0, 720)];
-    for (let x = 0; x <= 1280; x += 32) {
-      const wave = Math.sin((x + phase) / 180) * 34 * amplitude;
-      const detail = Math.sin((x + phase * 2) / 71) * 9;
-      points.push(new Phaser.Math.Vector2(x, baseline + wave + detail));
+  override update(_time: number, deltaMs: number): void {
+    if (
+      !this.pipeline ||
+      !this.wormView ||
+      !this.cameraController ||
+      !this.debugOverlay ||
+      !this.inputRouter
+    ) {
+      return;
     }
-    points.push(new Phaser.Math.Vector2(1280, 720));
-    graphics.fillStyle(color, 1);
-    graphics.fillPoints(points, true);
+
+    const frame = this.pipeline.advance(deltaMs);
+    this.snapshot = frame.snapshot;
+    this.totalDroppedMs += frame.report.droppedMs;
+    this.recentEvents.push(...frame.events);
+    if (this.recentEvents.length > 12) {
+      this.recentEvents = this.recentEvents.slice(-12);
+    }
+
+    this.wormView.render(frame.snapshot.worm, frame.report.alpha);
+    this.cameraController.update(frame.snapshot, deltaMs / 1000);
+    this.debugOverlay.update({
+      snapshot: frame.snapshot,
+      report: frame.report,
+      fps: this.game.loop.actualFps,
+      frameMs: deltaMs,
+      totalDroppedMs: this.totalDroppedMs,
+      activeInputSource: this.inputRouter.activeSourceId,
+      pauseReasons: Object.freeze([]),
+      camera: this.cameraController.debugBounds(),
+      recentEvents: this.recentEvents,
+    });
+  }
+
+  private configureSession(configuration: NextRunConfiguration): void {
+    if (!this.inputRouter) {
+      return;
+    }
+    const fixtureMovement =
+      configuration.fixtureId === "surface-breach"
+        ? {
+            ...movementBalance,
+            initialPosition: { x: 0, y: 28 },
+            initialDirection: { x: 0, y: -1 },
+            initialSpeed: movementBalance.cruiseSpeed,
+          }
+        : movementBalance;
+    const session = new GameSession({
+      seed: configuration.seed,
+      movement: fixtureMovement,
+      terrain: new FlatTerrainProfile(0),
+    });
+    this.pipeline = new MovementPipeline(
+      new FixedStepRunner(),
+      this.inputRouter,
+      session,
+    );
+    this.snapshot = session.snapshot();
+    this.recentEvents = [];
+    this.totalDroppedMs = 0;
+    this.cameraController?.snap(this.snapshot);
+    this.wormView?.render(this.snapshot.worm, 1);
+  }
+
+  private requireSnapshot(): SessionSnapshot {
+    if (!this.snapshot) {
+      throw new Error("Gameplay snapshot is not ready.");
+    }
+    return this.snapshot;
+  }
+
+  private lifecycle(): GameBootstrapOptions {
+    return (
+      (this.registry.get(
+        GAME_LIFECYCLE_REGISTRY_KEY,
+      ) as GameBootstrapOptions | undefined) ?? {}
+    );
+  }
+
+  private shutdown(): void {
+    this.removeTestBridge?.();
+    this.removeTestBridge = undefined;
+    this.keyboard?.destroy();
+    this.inputRouter?.clear();
+    this.wormView?.destroy();
+    this.debugOverlay?.destroy();
+    this.keyboard = undefined;
+    this.touch = undefined;
+    this.scripted = undefined;
+    this.inputRouter = undefined;
+    this.pipeline = undefined;
+    this.wormView = undefined;
+    this.cameraController = undefined;
+    this.debugOverlay = undefined;
+    this.snapshot = undefined;
   }
 }

@@ -17,6 +17,7 @@
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "test": "vitest run",
+    "test:integration": "vitest run tests/integration",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:pages": "playwright test --config=playwright.pages.config.ts",

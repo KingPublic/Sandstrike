@@ -7,6 +7,7 @@ import { PreloadScene } from "./scenes/PreloadScene";
 export interface GameBootstrapOptions {
   readonly onReady?: () => void;
   readonly onFatalError?: (error: Error) => void;
+  readonly debug?: boolean;
 }
 
 export const GAME_LIFECYCLE_REGISTRY_KEY = "sandstrike.lifecycle";
