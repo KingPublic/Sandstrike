@@ -8,10 +8,12 @@ This folder contains persistent instructions and a master prompt for starting an
 - `AGENTS.md` — keep at repository root so future Codex sessions retain project rules.
 - `docs/REFERENCE_RESEARCH.md` — living source/evidence ledger.
 - `docs/GAME_DESIGN.md` — living GDD.
+- `docs/ARCHITECTURE.md` — module boundaries and technical design.
 - `docs/DECISIONS.md` — design/architecture decision log.
 - `docs/ASSET_LICENSES.md` — asset provenance.
 - `docs/BALANCE.md` — tuning record.
 - `docs/CHANGELOG.md` — meaningful changes.
+- `docs/SESSION_HANDOFF.md` — latest verified checkpoint and exact resume action.
 
 ## Recommended use
 
@@ -21,6 +23,10 @@ This folder contains persistent instructions and a master prompt for starting an
 4. Paste `MASTER_PROMPT_CODEX.md` into Codex.
 5. Let Codex complete **Phase A research/design first**.
 6. Review that checkpoint before allowing scaffolding/code.
+
+For a later session, a short request such as “lanjutkan proyek” means: read the
+handoff, verify it against Git, and continue from its recorded next action without
+repeating completed research.
 
 
 ## Cross-platform target

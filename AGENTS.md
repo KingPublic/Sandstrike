@@ -22,7 +22,8 @@ Before substantial work, read:
 3. `docs/GAME_DESIGN.md`
 4. `docs/ARCHITECTURE.md`
 5. `docs/DECISIONS.md`
-6. relevant source files/tests
+6. `docs/SESSION_HANDOFF.md`
+7. relevant source files/tests
 
 Do not re-derive settled decisions unless new evidence requires revision.
 
@@ -135,6 +136,7 @@ Maintain:
 - `docs/ASSET_LICENSES.md`
 - `docs/BALANCE.md`
 - `docs/CHANGELOG.md`
+- `docs/SESSION_HANDOFF.md`
 
 When behavior/design changes, update the relevant document in the same task.
 
@@ -142,11 +144,13 @@ When behavior/design changes, update the relevant document in the same task.
 
 When starting a later Codex session:
 1. read the docs above;
-2. inspect recent commits/diff;
-3. identify the exact requested change;
-4. reuse existing systems where appropriate;
-5. avoid rebuilding already-working systems;
-6. document material decisions.
+2. read `docs/SESSION_HANDOFF.md` and verify it against repository state;
+3. inspect recent commits/diff;
+4. identify the exact requested change;
+5. resume from the recorded next action when the user asks to continue;
+6. reuse existing systems where appropriate;
+7. avoid rebuilding already-working systems;
+8. document material decisions and refresh the handoff before stopping.
 
 When a reference source changes:
 1. append a dated research entry;

@@ -358,11 +358,14 @@ Add:
 
 MVP persistence:
 - local best scores;
-- unlocks;
 - settings;
-- upgrades;
-- achievements;
+- accessibility/control preferences;
+- onboarding flags;
 - save version.
+
+The accepted staged-MVP decision D-009 supersedes the earlier bootstrap idea of
+including unlocks, upgrades, and achievements here. Those systems belong to
+Phase D after both roles and their core loops have passed the MVP gates.
 
 ## 11. Ability System
 
@@ -382,26 +385,24 @@ Avoid giant switch statements tied to specific characters.
 
 ## 12. Menu / UX Flow
 
-Target:
+Two-role MVP target:
 
 Boot
 → Preload
 → Title
 → Main Menu
    - Play
-   - Character
-   - Upgrades
-   - Achievements
    - How to Play
    - Settings
    - Credits
-→ Mode Select
-→ Character Select
-→ Loadout / Ability Preview
+→ Role + Mode Select
+→ Controls / Objective Preview
 → Game
 → Pause
 → Results
-→ progression/unlocks
+
+Character selection, loadouts, upgrades, achievements, and progression screens
+are Phase D additions. They are not empty or inactive menu entries in the MVP.
 
 Add a clear role indicator:
 - WORM
@@ -538,13 +539,17 @@ Create and maintain these files:
 - `docs/ASSET_LICENSES.md` — asset provenance/licenses.
 - `docs/BALANCE.md` — tunable values and rationale.
 - `docs/CHANGELOG.md` — meaningful changes.
+- `docs/SESSION_HANDOFF.md` — latest verified checkpoint, limitations and exact
+  next action for a later session.
 
 Before any substantial new task:
 1. read `AGENTS.md`;
-2. read relevant docs above;
-3. inspect existing code;
-4. do not rediscover decisions already documented;
-5. update docs when the implementation changes the design.
+2. read `docs/SESSION_HANDOFF.md` and the relevant docs above;
+3. verify the handoff against Git status, diff and recent commits;
+4. inspect existing code;
+5. do not rediscover decisions already documented;
+6. update docs when the implementation changes the design;
+7. refresh the handoff before an intentional stop or context/token boundary.
 
 ## 16. Development Method
 
@@ -663,7 +668,10 @@ Do not move to five characters before the vertical slice feels good.
 2. add Worm AI;
 3. add Hunt mode;
 4. tune prediction/traps/combat;
-5. add AI debug overlay.
+5. add AI debug overlay;
+6. complete Rampage response bands 2–3 with one light vehicle and one aerial
+   threat;
+7. harden and verify the integrated two-role MVP against both role gates.
 
 ### Phase D — Content + progression
 Then expand roster, modes, upgrades, environments, achievements, polish and deployment.
