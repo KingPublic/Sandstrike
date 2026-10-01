@@ -131,3 +131,18 @@ contacts, capped healing, armor, and tick-based invulnerability.
 Consumption, removal and healing occur once per actor even when Bite and impact
 share one tick. Infantry yields no healing. Attack-offset sweeps use both previous
 and current poses to retain turning hits.
+
+## Phase B infantry hypothesis (2026-10-01)
+
+Domain tests pass; visual/audio telegraph feedback remains for presentation.
+Infantry has 25 health, repositions at 90 px/s for 24 ticks, locks perceived aim
+for a 36-tick telegraph, and waits 53 recovery ticks after its one-tick fire state
+(90 ticks between shots). Visibility is limited to 900 px and 18 px below the
+surface; remembered positions expire after 60 ticks. Named seeded AI streams
+cannot consume the spawn stream.
+
+Projectiles travel at 480 px/s, expire after 2.5 seconds or leaving world bounds,
+deal 10 damage, and use 24 reusable logical slots. Swept relative contacts retire
+each projectile after one hit; the worm's 30-tick protection blocks simultaneous
+hits. The 400-tick seed-70 encounter reproduces events and diagnostics exactly.
+Fresh checkpoint: 89/89 domain tests, typecheck and lint pass.

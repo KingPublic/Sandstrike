@@ -8,6 +8,12 @@ import { createActor, type ActorState } from "../actors/Actor";
 import { ActorRegistry } from "../actors/ActorRegistry";
 import { CollisionWorld } from "../collision/CollisionWorld";
 import { EventQueue } from "../events/EventQueue";
+import { RandomSource } from "../random/RandomSource";
+import { InfantryController } from "../ai/InfantryController";
+import type { PerceptionSnapshot } from "../ai/PerceptionSnapshot";
+import { ProjectileSystem } from "../actors/enemies/ProjectileSystem";
+import { aiBalance } from "../../data/aiBalance";
+import type { Vec2 } from "../math/Vector2";
 import type { DomainEvent } from "../events/DomainEvent";
 import { freezeVec2 } from "../math/Vector2";
 import { WormLocomotion } from "../movement/WormLocomotion";
@@ -26,6 +32,7 @@ export interface GameSessionOptions {
   readonly stepSeconds?: number;
   readonly actors?: readonly ActorState[];
   readonly playerHealth?: number;
+  readonly initialProjectiles?: readonly Readonly<{ position: Vec2; direction: Vec2 }>[];
 }
 
 export class GameSession {
@@ -37,6 +44,10 @@ export class GameSession {
   private readonly events = new EventQueue();
   private readonly bite = new AbilitySystem(abilities.bite, ["worm"]);
   private readonly combat = new CombatSystem();
+  private readonly random: RandomSource;
+  private readonly infantry = new Map<string, InfantryController>();
+  private readonly perceived = new Map<string, Readonly<{ position: Vec2; observedTick: number }>>();
+  private readonly projectiles: ProjectileSystem;
 
   constructor(private readonly options: GameSessionOptions) {
     if (!Number.isSafeInteger(options.seed)) {
@@ -53,6 +64,10 @@ export class GameSession {
       createActor({ ...spawnActor("worm", "actor.worm", worm.head.position), direction: worm.head.tangent, velocity: worm.head.velocity, health: options.playerHealth ?? spawnActor("worm", "actor.worm", worm.head.position).health }),
       ...(options.actors ?? []),
     ]);
+    this.random = new RandomSource(options.seed);
+    this.projectiles = new ProjectileSystem(this.actors);
+    for (const shot of options.initialProjectiles ?? []) this.projectiles.spawn("fixture", shot.position, shot.direction, 0);
+    this.actors.commit();
   }
 
   get tick(): number {
@@ -82,11 +97,15 @@ export class GameSession {
     const wormActor = this.actors.get("worm");
     if (!wormActor) throw new Error("Session has no player worm.");
     this.actors.update({ ...wormActor, position: worm.head.position, direction: worm.head.tangent, velocity: worm.head.velocity });
+    this.stepInfantry();
+    const projectileFrame = this.projectiles.step(this.stepSeconds, this.collisions, this.currentTick, previousActors);
+    for (const event of projectileFrame.events) this.events.publish(event);
     const ability = this.bite.step(this.currentTick, action.primary.pressed);
     if (ability.activated) this.events.publish({ type: "ability-activated", tick: this.currentTick, actorId: "worm", abilityId: abilities.bite.id, position: worm.head.position });
     const currentActors = this.actors.snapshot();
-    const commands: DamageCommand[] = [];
+    const commands: DamageCommand[] = [...projectileFrame.commands];
     for (const contact of this.collisions.query(previousActors, currentActors)) {
+      if (contact.kind === "projectile") continue;
       this.events.publish({ type: "contact", tick: this.currentTick, contact });
       if (contact.sourceId === "worm") commands.push({ sourceId: "worm", targetId: contact.targetId, tick: this.currentTick, abilityId: "ability.impact", amount: impactDamage(worm.speed), tags: ["impact"], priority: 2 });
     }
@@ -99,6 +118,7 @@ export class GameSession {
     }
     for (const event of this.combat.resolve(this.actors, commands)) this.events.publish(event);
     const changes = this.actors.commit();
+    for (const { actor } of changes.removed) { this.infantry.delete(actor.id); this.perceived.delete(actor.id); }
     for (const actor of changes.spawned) this.events.publish({ type: "actor-spawned", tick: this.currentTick, actorId: actor.id, definitionId: actor.definitionId, position: actor.position });
     for (const { actor, cause } of changes.removed) this.events.publish({ type: "actor-removed", tick: this.currentTick, actorId: actor.id, cause, position: actor.position });
     const events = this.events.drain();
@@ -115,8 +135,32 @@ export class GameSession {
       worm: this.locomotion.snapshot(),
       actors: this.actors.snapshot(),
       abilities: Object.freeze([this.bite.snapshot(this.currentTick)]),
-      diagnostics: Object.freeze({ eventOverflowCount: this.events.overflowCount }),
+      ai: Object.freeze([...this.infantry].sort(([a], [b]) => a.localeCompare(b)).map(([actorId, controller]) => Object.freeze({ actorId, decision: controller.snapshot() }))),
+      diagnostics: Object.freeze({ eventOverflowCount: this.events.overflowCount, projectileCount: this.projectiles.activeCount }),
     });
+  }
+
+  private stepInfantry(): void {
+    const worm = this.locomotion.snapshot();
+    for (const actor of this.actors.snapshot()) {
+      if (!actor.tags.includes("infantry") || actor.lifecycle !== "active") continue;
+      let controller = this.infantry.get(actor.id);
+      if (!controller) { controller = new InfantryController(); this.infantry.set(actor.id, controller); }
+      const visible = worm.head.position.y <= this.options.terrain.surfaceY(worm.head.position.x) + aiBalance.surfaceVisibilityMargin && Math.hypot(worm.head.position.x - actor.position.x, worm.head.position.y - actor.position.y) <= aiBalance.perceptionRange;
+      if (visible) this.perceived.set(actor.id, { position: worm.head.position, observedTick: this.currentTick });
+      const perception: PerceptionSnapshot = Object.freeze({ selfId: actor.id, selfPosition: actor.position, tick: this.currentTick, visibleTarget: visible ? Object.freeze({ id: "worm", position: worm.head.position }) : undefined, recentTarget: this.perceived.get(actor.id) });
+      const previousState = controller.snapshot().state;
+      const decision = controller.step(perception, this.currentTick, this.random.stream(`ai.${actor.id}`));
+      const position = { x: actor.position.x + decision.moveX * aiBalance.repositionSpeed * this.stepSeconds, y: actor.position.y };
+      this.actors.update({ ...actor, position, velocity: { x: decision.moveX * aiBalance.repositionSpeed, y: 0 } });
+      if (decision.state === "telegraph" && previousState !== "telegraph" && decision.aimPoint) this.events.publish({ type: "infantry-telegraph", tick: this.currentTick, actorId: actor.id, aimPoint: decision.aimPoint, position });
+      if (decision.fire && decision.aimPoint) {
+        const direction = { x: decision.aimPoint.x - position.x, y: decision.aimPoint.y - position.y };
+        if (Math.hypot(direction.x, direction.y) === 0) direction.x = 1;
+        const projectileId = this.projectiles.spawn(actor.id, position, direction, this.currentTick);
+        if (projectileId) this.events.publish({ type: "projectile-fired", tick: this.currentTick, actorId: actor.id, projectileId, position });
+      }
+    }
   }
 }
 

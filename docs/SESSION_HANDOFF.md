@@ -2,11 +2,11 @@
 
 Updated: 2026-10-01 16:46 +08:00 (Asia/Makassar)
 
-Status: active — Foundation/Movement complete; Rampage Tasks 1-2 verified
+Status: active — Foundation/Movement complete; Rampage Tasks 1-3 verified
 
 Current phase: Phase B Rampage vertical slice in progress
 
-Current gate: movement-feel GO; next is Rampage Task 3 infantry/seeded projectiles
+Current gate: movement-feel GO; next is Rampage Task 4 scoring/directors
 
 Branch: `phase-b-vertical-slice`
 
@@ -87,13 +87,15 @@ budget work rather than hidden.
 ## Exact next action
 
 Read the Rampage ledger under `.superpowers/sdd/2026-10-01-phase-b-rampage-slice/`
-and Task 3 brief. Tasks 1-2 added swept collision, actor registry/deferred removal,
+and Task 4 brief. Tasks 1-2 added swept collision, actor registry/deferred removal,
 bounded immutable events, Bite/impact, armor, tick invulnerability, and capped prey
 healing. Contact commits: `88a0fab`, `cd43855`; combat checkpoint is the commit
-containing this update. Fresh verification: 80/80 Vitest, typecheck and lint exit 0.
+containing this update. Task 3 adds seeded perception-only infantry, telegraphs,
+pooled swept projectiles and read-only AI diagnostics through the existing bridge
+snapshot. Fresh verification: 89/89 Vitest, typecheck and lint exit 0.
 Browser combat presentation is not implemented yet.
 
-Execute Task 3 with test-driven development. Continue tasks
+Execute Task 4 with test-driven development. Continue tasks
 in order through the complete Phase B gate, whole-branch code review, and fresh
 verification.
 
@@ -102,7 +104,7 @@ verification.
 - `docs/superpowers/plans/2026-10-01-phase-b-foundation.md`: complete.
 - `docs/superpowers/plans/2026-10-01-phase-b-worm-movement.md`: complete after
   the movement-gate checkpoint.
-- `docs/superpowers/plans/2026-10-01-phase-b-rampage-slice.md`: active, Task 3 next.
+- `docs/superpowers/plans/2026-10-01-phase-b-rampage-slice.md`: active, Task 4 next.
 - `docs/superpowers/plans/2026-10-01-phase-b-plan-set.md`: cross-plan contracts
   and final Phase B gate remain authoritative.
 
