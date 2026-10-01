@@ -1,1 +1,10 @@
+node_modules/
+dist/
+coverage/
 .worktrees/
+test-results/
+playwright-report/
+blob-report/
+.env.local
+.env.*.local
+npm-debug.log*

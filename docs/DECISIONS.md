@@ -209,3 +209,23 @@ Every material checkpoint or intentional stop refreshes the handoff with scope,
 files, verification evidence, limitations and the next gated action.
 
 Status: accepted at the user's request on 2026-10-01.
+
+## D-014 — Node 20-compatible Vitest baseline
+
+Decision:
+Pin `vitest@4.1.11` for Phase B while the project runtime baseline remains Node.js
+20.19.3. Keep Vite at 8.3.1 and all other accepted direct versions unchanged.
+
+Why:
+The first foundation install reproduced an npm Arborist peer-graph crash. A
+peer-bypassing diagnostic exposed the underlying engine mismatch: Vitest 5.0.3
+requires Node.js 22.12 or newer, while Vitest 4.1.11 officially supports Node 20
+and Vite 8. The older major is the smallest compatible correction and avoids
+forcing a machine-wide Node upgrade during the browser-toolchain spike.
+
+Consequences:
+The lockfile and verification commands must resolve Vitest 4.1.11 exactly. A
+later Node 22 baseline may reassess Vitest 5 through a separate compatibility
+ruling; no upgrade happens implicitly.
+
+Status: accepted from Phase B compatibility evidence on 2026-10-01.

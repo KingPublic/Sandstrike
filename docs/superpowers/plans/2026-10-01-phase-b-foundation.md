@@ -15,7 +15,7 @@ tests; browser smoke tests treat console and asset failures as test failures.
 
 **Tech Stack:** Node.js `^20.19.0 || >=22.12.0`, npm, Phaser 4.2.1,
 TypeScript 6.0.3, Vite 8.3.1,
-Vitest 5.0.3, Playwright 1.63.0, ESLint 10.11.0, typescript-eslint 8.71.0,
+Vitest 4.1.11, Playwright 1.63.0, ESLint 10.11.0, typescript-eslint 8.71.0,
 `@types/node` 26.6.3, plain HTML/CSS.
 
 **Spec:** `docs/ARCHITECTURE.md` sections 3–5, 17–19 and
@@ -89,7 +89,7 @@ Vitest 5.0.3, Playwright 1.63.0, ESLint 10.11.0, typescript-eslint 8.71.0,
 
   Run: `npm ls --depth=0`
 
-  Expected: exactly Phaser 4.2.1, TypeScript 6.0.3, Vite 8.3.1, Vitest 5.0.3,
+  Expected: exactly Phaser 4.2.1, TypeScript 6.0.3, Vite 8.3.1, Vitest 4.1.11,
   Playwright 1.63.0, ESLint 10.11.0, typescript-eslint 8.71.0, and
   `@types/node` 26.6.3; no invalid peer dependency.
 
