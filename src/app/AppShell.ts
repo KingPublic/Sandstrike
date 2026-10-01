@@ -9,6 +9,8 @@ import { MenuView } from "../game/ui/MenuView";
 import { ResultsView } from "../game/ui/ResultsView";
 import { installE2EDebugBridge, type NextRunConfiguration } from "../game/debug/E2EDebugBridge";
 import type { RunResult } from "../game/domain/modes/RunResult";
+import { SaveCoordinator } from "../game/application/SaveCoordinator";
+import { LocalStorageSaveRepository } from "../game/infrastructure/storage/LocalStorageSaveRepository";
 
 import {
   createGame,
@@ -49,6 +51,7 @@ export class AppShell {
   private lastConfiguration: NextRunConfiguration = { seed: 0x5a17d };
   private removeTestBridge: (() => void) | undefined;
   private onboardingShown = false;
+  private readonly saves = new SaveCoordinator(new LocalStorageSaveRepository(), __SANDSTRIKE_E2E__ ? "e2e" : import.meta.env.DEV ? "development" : "production");
   private readonly pause = new PauseCoordinator((paused, reasons) => {
     this.applyPauseState(paused, reasons);
   });
@@ -81,6 +84,7 @@ export class AppShell {
 
   mount(root: HTMLElement): void {
     this.destroy();
+    const loaded = this.saves.load(); this.settings = loaded.data.settings; this.onboardingShown = loaded.data.onboarding.rampageSeen;
     this.root = root;
     root.innerHTML = `
       <main class="sandstrike-shell">
@@ -123,6 +127,7 @@ export class AppShell {
           </div>
         </section>
         <div class="boot-status" role="status" aria-live="polite">Ready for Rampage.</div>
+        <p class="save-notice" data-save-notice aria-live="polite" hidden></p>
         <footer class="shell-footer">
           <span>Original browser-first action</span>
           <span>Keyboard / touch / gamepad</span>
@@ -145,13 +150,14 @@ export class AppShell {
     this.requireElement("[data-cancel]").addEventListener("click", () => { this.navigation.cancel(); this.requireElement(".confirm-actions").hidden = true; this.resumeButton?.focus(); });
     this.requireElement("[data-confirm]").addEventListener("click", () => { const state = this.navigation.confirm(); this.requireElement(".confirm-actions").hidden = true; if (state === "run") this.retryRun(); else { const result = this.controller.requestEnd().result; if (result) this.showResults(result); } });
     this.pauseOverlay.addEventListener("keydown", (event) => { if (event.key !== "Tab") return; const items = [...(this.pauseOverlay?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)") ?? [])].filter((button) => button.getClientRects().length > 0); const first = items[0]; const last = items.at(-1); if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); } });
-    this.settingsPanel = new SettingsPanel(this.requireElement(".sandstrike-shell"), (settings) => { this.settings = settings; this.root?.classList.toggle("high-contrast", settings.highContrast); this.root?.classList.toggle("reduced-motion", settings.reducedMotion); this.refreshLayout(); }, () => { if (this.navigation.state === "settings") { this.navigation.close(); this.renderMenu(); } if (this.controller.active) this.resumeButton?.focus(); }, this.settings);
+    this.settingsPanel = new SettingsPanel(this.requireElement(".sandstrike-shell"), (settings) => { this.settings = settings; this.saves.updateSettings(settings); this.refreshSaveNotice(); this.root?.classList.toggle("high-contrast", settings.highContrast); this.root?.classList.toggle("reduced-motion", settings.reducedMotion); this.refreshLayout(); }, () => { if (this.navigation.state === "settings") { this.navigation.close(); this.renderMenu(); } if (this.controller.active) this.resumeButton?.focus(); }, this.settings, () => { this.saves.resetConfirmed(true); this.onboardingShown = false; this.refreshSaveNotice(); return this.saves.snapshot().settings; });
     document.addEventListener("visibilitychange", this.handleVisibility);
     window.addEventListener("blur", this.handleWindowBlur);
     window.addEventListener("focus", this.handleWindowFocus);
     window.addEventListener("resize", this.handleResize);
     window.addEventListener("orientationchange", this.handleResize);
     window.addEventListener("popstate", this.handleBack);
+    this.root.classList.toggle("high-contrast", this.settings.highContrast); this.root.classList.toggle("reduced-motion", this.settings.reducedMotion); this.refreshSaveNotice();
     if (__SANDSTRIKE_E2E__) this.removeTestBridge = installE2EDebugBridge({ snapshot: () => this.controller.snapshot(), presentation: () => Object.freeze({ actorIds: this.controls?.actorIds() ?? Object.freeze([]) }), configureNextRun: (configuration) => { if (this.controller.active) throw new Error("Configure the next run before starting."); this.nextConfiguration = Object.freeze({ ...configuration }); }, enqueueActions: (frames) => { this.controls?.enqueueActions(frames); } });
   }
 
@@ -460,8 +466,11 @@ export class AppShell {
     if (this.navigation.state !== "results") this.navigation.go("results");
     this.controller.pause(); this.controls?.clear(); this.touchControls?.clearPointers(); this.game?.scene.pause("Gameplay");
     if (this.pauseOverlay) this.pauseOverlay.hidden = true;
-    this.results = new ResultsView(this.gameFrame, result, { retry: () => { this.retryRun(); }, changeMode: () => { this.returnToMenu(true); }, menu: () => { this.returnToMenu(false); } });
+    const acceptance = this.saves.acceptRunResult(result); this.refreshSaveNotice();
+    const record = acceptance.newRecord ? "New local record" : `Local best · ${this.saves.snapshot().rampage.bestScore.toLocaleString("en-US")}`;
+    this.results = new ResultsView(this.gameFrame, result, { retry: () => { this.retryRun(); }, changeMode: () => { this.returnToMenu(true); }, menu: () => { this.returnToMenu(false); } }, record);
   }
+  private refreshSaveNotice(): void { const notice = this.root?.querySelector<HTMLElement>("[data-save-notice]"); if (!notice) return; const status = this.saves.status(); notice.hidden = status.diagnostics.length === 0; notice.textContent = status.memoryOnly ? "Saving unavailable. Progress and settings are kept for this session." : status.diagnostics.at(-1) ?? ""; }
   private retryRun(): void { this.destroyGame(); this.startPreview(); }
   private returnToMenu(selection: boolean): void { this.destroyGame(); this.controller.destroy(); this.navigation.go(selection ? "selection" : "menu"); this.renderMenu(); }
 

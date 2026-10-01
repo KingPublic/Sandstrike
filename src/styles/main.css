@@ -314,6 +314,10 @@ h1 {
 .result-actions button { min-height: 48px; padding: 10px 16px; border: 1px solid #ffcc8160; border-radius: 12px; background: #3d2735; color: #fff1cd; cursor: pointer; font-weight: 750; }
 .context-prompt { position: absolute; z-index: 25; top: 130px; left: 50%; transform: translateX(-50%); max-width: 60%; border-radius: 10px; padding: 8px 14px; background: #160f1ce0; font-size: 13px; text-align: center; pointer-events: none; }
 .preview__copy[hidden] { display: none; }
+.save-notice { position: fixed; z-index: 170; left: 50%; bottom: max(6px, env(safe-area-inset-bottom)); transform: translateX(-50%); max-width: 70%; margin: 0; padding: 5px 12px; border-radius: 8px; background: #241626eb; font-size: 11px; color: #f7d9a2; pointer-events: none; }
+.save-notice[hidden], [data-reset-confirmation][hidden] { display: none; }
+.reset-controls { margin-top: 16px; padding-top: 12px; border-top: 1px solid #ffd39a35; }
+.reset-controls button { margin-right: 8px; }
 @media (max-width: 900px) { .preview__copy { display: block; } .pause-card { max-height: 100%; overflow-y: auto; } .results-card { padding: 16px 24px; } .results-card dl { gap: 8px; } }
 .settings-overlay[hidden] { display: none; }
 .settings-card { width: min(100%, 600px); max-height: 100%; overflow-y: auto; border: 1px solid #ffcf8455; background: #241826; border-radius: 20px; padding: 20px; }

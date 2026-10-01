@@ -2,11 +2,11 @@
 
 Updated: 2026-10-01 16:46 +08:00 (Asia/Makassar)
 
-Status: active — Foundation/Movement complete; Rampage Tasks 1-6 verified
+Status: active — Foundation/Movement complete; Rampage Tasks 1-7 verified
 
 Current phase: Phase B Rampage vertical slice in progress
 
-Current gate: movement-feel GO; next is Rampage Task 7 persistence
+Current gate: movement-feel GO; next is Rampage Task 8 final verification/review gate
 
 Branch: `phase-b-vertical-slice`
 
@@ -87,7 +87,7 @@ budget work rather than hidden.
 ## Exact next action
 
 Read the Rampage ledger under `.superpowers/sdd/2026-10-01-phase-b-rampage-slice/`
-and Task 7 brief. Tasks 1-2 added swept collision, actor registry/deferred removal,
+and Task 8 brief. Tasks 1-2 added swept collision, actor registry/deferred removal,
 bounded immutable events, Bite/impact, armor, tick invulnerability, and capped prey
 healing. Contact commits: `88a0fab`, `cd43855`; combat checkpoint is the commit
 containing this update. Task 3 adds seeded perception-only infantry, telegraphs,
@@ -97,7 +97,7 @@ definition validation and band 0–1 pacing. Seed-811 90-second replay passes tw
 Fresh verification: 103/103 Vitest, typecheck and lint exit 0.
 Task 5 presentation is verified: 108/108 tests, lint/typecheck/production build, and 11/11 root Chromium E2E pass. Five captures inspected with combat-breach infantry aim-lock. Settings remain in memory; run/menu/Results/save flow is next. Physical audio/touch/haptics remain unavailable; no music track is implemented.
 
-Execute Task 7 with test-driven development. Continue tasks
+Execute Task 8 with test-driven development. Continue tasks
 in order through the complete Phase B gate, whole-branch code review, and fresh
 verification.
 
@@ -106,7 +106,7 @@ verification.
 - `docs/superpowers/plans/2026-10-01-phase-b-foundation.md`: complete.
 - `docs/superpowers/plans/2026-10-01-phase-b-worm-movement.md`: complete after
   the movement-gate checkpoint.
-- `docs/superpowers/plans/2026-10-01-phase-b-rampage-slice.md`: active, Task 7 next.
+- `docs/superpowers/plans/2026-10-01-phase-b-rampage-slice.md`: active, Task 8 next.
 - `docs/superpowers/plans/2026-10-01-phase-b-plan-set.md`: cross-plan contracts
   and final Phase B gate remain authoritative.
 
@@ -131,3 +131,22 @@ gamepad RT=Bite/RB=Burst. Input/listener count remains stable across retry. Root
 
 Exact next action: Task 7 save v1, strict validation, backup/recovery, memory fallback
 and one accepted result update. Do not rebuild existing menu or movement systems.
+
+## Persistence work in progress
+
+Task 7 save v1, strict shape/range/unknown-key validation, backup and memory fallback
+are implemented. Future versions remain intact until explicit reset confirmation.
+Reset then clears both primary and backup, and clears stale diagnostics. Results
+acceptance deduplicates session IDs; settings save only when changed. 125/125 tests
+passed before the final reset-diagnostics fix; full fresh gate is running. Browser
+empty/corrupt/future/throwing/reload checks passed (5/5); valid/backup cases were
+added and must run next. Task 7 is not committed yet.
+
+Task 7 fresh npm run verify passed: 125/125 tests, lint/typecheck/build.
+Seven storage browser cases are running after a Node JSON import-attribute repair;
+wait for and inspect their result before recording Task 7 complete.
+
+Task 7 checkpoint: fresh verify 125/125, lint/typecheck/build pass; browser recovery
+7/7 passes, including valid primary, backup, corrupt, future, denied storage, reload
+and explicit reset. No supported pre-v1 format exists. Exact next action: Task 8
+full-flow smoke, performance evidence, root/Pages production gates and fresh review.
