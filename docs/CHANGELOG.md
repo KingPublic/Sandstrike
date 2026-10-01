@@ -13,3 +13,6 @@
 - Recorded the accepted MVP decisions and introduced a persistent session
   handoff protocol.
 - Marked the Phase A game-design and architecture specifications as user-approved.
+- Added the self-reviewed Phase B implementation plan set for the browser
+  foundation, worm-movement gate, and Rampage vertical slice, with ordered TDD,
+  review, verification, documentation, and persistent handoff steps.

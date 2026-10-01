@@ -1,26 +1,29 @@
 # SESSION HANDOFF — Project Sandstrike
 
-Updated: 2026-10-01 09:35 +08:00 (Asia/Makassar)
+Updated: 2026-10-01 10:21 +08:00 (Asia/Makassar)
 
-Status: active — Phase A approved; Phase B implementation planning in progress
+Status: awaiting review — Phase B implementation plan set is complete
 
-Current phase: Phase B planning — no game code has been created yet
+Current phase: Phase B execution handoff — no game code has been created yet
 
-Current gate: `superpowers:writing-plans` must produce and self-review the Phase B
-implementation plan. The user must then review that plan and select native or
-subagent-driven execution before game scaffolding begins.
+Current gate: the user must review the saved Phase B plan set and select Native or
+Subagent-driven execution before an isolated worktree or game scaffold is created.
 
 Branch: `main`
 
-HEAD at checkpoint: `aa17115`
+Verified baseline HEAD before this checkpoint: `b7f590d`
 
-Working tree: Phase A documentation changes are intentionally uncommitted.
+Checkpoint commit: the commit containing this handoff and the Phase B plan files;
+verify the live hash and working tree on resume because Git state outranks this
+record.
 
 ## Last user instruction
 
 The user explicitly approved the written Phase A specifications and instructed:
 “silahkan lanjutkan dan kerjakan semua rencana yang sudah disusun.” Continue into
-planning and staged execution while preserving every Superpowers review gate.
+planning and staged execution while preserving every Superpowers review gate. The
+next required response is plan review plus execution-method selection; no method
+has been selected yet.
 
 The user prefers sustained progress while context is available. If observable
 usage approaches 1% remaining, refresh this handoff first, stop safely, and ask
@@ -63,41 +66,60 @@ do not consume tokens artificially to reach it or skip a required review gate.
   follow-up review found no remaining Critical or Important issue.
 - Recovered cleanly from a subagent usage-limit failure: its completed
   `GAME_DESIGN.md` write was present and was validated before continuing.
+- Verified the current Phase B toolchain candidates against primary package and
+  official compatibility sources, including the deliberate TypeScript 6.0.3 pin
+  under the typescript-eslint supported range.
+- Split Phase B into three ordered, independently verifiable implementation plans:
+  foundation, worm movement, and the Rampage vertical slice.
+- Defined cross-plan public contracts for base paths, semantic input, fixed-step
+  simulation, terrain/path locomotion, session results/events, and persistence.
+- Added explicit TDD RED/GREEN steps, focused commits, movement and Phase B gates,
+  static-host checks, responsive/touch checks, performance evidence, code review,
+  documentation, and persistent handoff work.
+- Self-reviewed the complete plan set against the approved GDD and architecture;
+  corrected Node engine enforcement, boot-error recovery, shared session/event
+  contracts, input mapping, menu/onboarding coverage, accessibility feedback,
+  dependency boundaries, storage policy, and provisional tuning gaps.
+- Stopped three parallel plan-writer agents after they consumed substantial usage
+  without producing artifacts, then completed the plan set directly. Their
+  interrupted state has no repository changes to recover.
 
-## Files changed
+## Files changed at this checkpoint
 
-- `AGENTS.md`
-- `MASTER_PROMPT_CODEX.md`
-- `README_START_HERE.md`
-- `docs/REFERENCE_RESEARCH.md`
-- `docs/GAME_DESIGN.md`
-- `docs/ARCHITECTURE.md` (new)
-- `docs/DECISIONS.md`
-- `docs/BALANCE.md`
+- `docs/superpowers/plans/2026-10-01-phase-b-plan-set.md` (new)
+- `docs/superpowers/plans/2026-10-01-phase-b-foundation.md` (new)
+- `docs/superpowers/plans/2026-10-01-phase-b-worm-movement.md` (new)
+- `docs/superpowers/plans/2026-10-01-phase-b-rampage-slice.md` (new)
 - `docs/CHANGELOG.md`
-- `docs/SESSION_HANDOFF.md` (new)
+- `docs/SESSION_HANDOFF.md`
 
-`docs/ASSET_LICENSES.md` remains unchanged because no asset was added.
+No source, package manifest, lockfile, runtime configuration, asset, or game code
+was added. `docs/ASSET_LICENSES.md` remains unchanged because no asset was added.
 
 ## Verification evidence
 
-Final verification run: 2026-10-01 09:35 +08:00.
+Final plan verification run: 2026-10-01 10:21 +08:00.
 
-- `git diff --check`: exit 0; only the repository's existing LF-to-CRLF checkout
-  notices were printed.
-- Required-document inventory: 11 expected Markdown files, 0 missing.
-- Markdown structure scan: 11 files checked, 0 unbalanced fenced blocks.
-- Placeholder/overclaim scan for `TODO`, `TBD`, `FIXME`, unsupported pass/deploy
-  claims, and superseded persistence wording: 0 matches.
-- Repository inventory: no source directory, package manifest, scaffold, or game
-  implementation was added during Phase A.
-- Requirements audit: confirmed research, two distinct role loops, shared input,
-  responsive/mobile behavior, persistence boundary, AI observability, deployment,
-  tests, risks, and acceptance gates are represented in the draft documents.
-- Independent follow-up review: 0 remaining Critical or Important findings.
-- Runtime checks such as lint, typecheck, tests, build, Playwright, and gameplay
-  inspection are not applicable because the repository still contains no runtime
-  project. They become mandatory once Phase B implementation is authorized.
+- Plan inventory: 4 files, 19 implementation tasks, and 122 executable checklist
+  steps across the three ordered child plans.
+- Required plan headers: 0 missing `Goal`, `Architecture`, `Tech Stack`, `Spec`,
+  `Global Constraints`, `Review Focus`, or agentic-worker instruction fields.
+- Markdown scan: 0 unbalanced fenced blocks, placeholder markers, encoding
+  artifacts, trailing whitespace findings, or broken local plan links.
+- Cross-plan file ordering: 0 duplicate `Create` declarations and 0 `Modify`
+  declarations before a file exists in plan order.
+- Contract review: `FixedStepRunner`, `ActionFrame`, `PathHistory`,
+  `GameSession`/`SessionStepResult`, `DomainEvent`, and persistence names/signatures
+  are consistent across the index and child plans.
+- Review-focus mapping: every listed high-risk input/failure class has an owning
+  task with a unit, integration, browser, or explicit manual verification step.
+- Independent plan review initially found 0 Critical and 3 Important issues:
+  fixed-step input/event handling, deterministic end-run ownership, and E2E bridge
+  isolation. All three were corrected; targeted re-review found 0 remaining
+  Critical or Important issue.
+- `git diff --check`: exit 0.
+- Runtime lint, typecheck, unit tests, build, Playwright, and gameplay inspection
+  remain inapplicable because implementation has intentionally not started.
 
 ## Known limitations and unresolved evidence
 
@@ -105,48 +127,67 @@ Final verification run: 2026-10-01 09:35 +08:00.
   and audio were not directly verified.
 - Current mobile store images are promotional composites, so runtime HUD and touch
   ergonomics remain unverified.
-- Exact Sandstrike balance, camera framing, touch steering, tracking cue strength,
-  and trap behavior remain prototype hypotheses listed in `GAME_DESIGN.md`.
-- Phaser 4.2.1 is verified from the official release record, but scale, input,
-  audio, physics, and ecosystem compatibility require the first Phase B smoke
-  spike. Other dependency versions have not been selected.
+- Exact Sandstrike balance, camera framing, touch steering, feedback density, and
+  threat pacing remain explicit prototype hypotheses; plan values are starting
+  fixtures rather than accepted balance.
+- The planned dependency versions are source-verified but have not been installed
+  together. Phaser scale/input/audio behavior, browser compatibility, and package
+  peer compatibility require the foundation spike.
 - No runtime performance or deployment claim has been tested yet.
+- Real-device touch, audio, haptics, and gamepad evidence depends on available
+  hardware during execution; emulation must be labeled honestly.
 
 ## Open decisions requiring user input
 
-After the Phase B plan is written and self-reviewed, the user must confirm that it
-captures the intended work and select its execution method: subagent-driven or
-native. No implementation-plan artifact existed when Phase A was approved, so the
-approval cannot be applied to that future artifact automatically.
+The user must confirm that the four-file plan set captures the intended Phase B
+work and select one execution method:
+
+- **Native:** the root agent executes all tasks sequentially, then one fresh
+  reviewer checks the whole branch.
+- **Subagent-driven:** a fresh implementer and reviewer cycle handles each task,
+  followed by a whole-branch review.
+
+No implementation-plan artifact existed when Phase A was approved, so that prior
+approval cannot be applied to this new artifact automatically.
 
 ## Risks or blockers
 
-There is no repository blocker. Primary future risks are worm movement feel,
-high-speed breach collision, fair Hunter tracking information, mobile touch
-ergonomics, AI readability, Phaser 4 integration, and phone frame pacing.
+There is no repository blocker. The current procedural blocker is the required
+plan-review/execution-method gate. Technical risks are worm movement feel,
+high-speed breach collision, mobile touch ergonomics, infantry readability,
+Phaser 4 integration, package compatibility, and phone frame pacing.
 
 ## Exact next action
 
-Use `superpowers:writing-plans` to write and self-review the Phase B implementation
-plan under `docs/superpowers/plans/`. Present it to the user for review and an
-execution-method selection. Do not scaffold or implement before that response.
+Present the complete Phase B plan set to the user. After the user confirms it and
+selects Native or Subagent-driven execution, invoke
+`superpowers:using-git-worktrees`, create an isolated execution worktree from this
+checkpoint, and begin the foundation plan at Task 1. Do not scaffold or implement
+before that response.
 
 ## Ordered follow-up actions
 
-1. Write and self-review the Phase B implementation plan.
-2. Present that plan for review and execution-method selection.
-3. Only after that gate, create an isolated worktree and start Phase B with TDD
-   and the compatibility/movement
-   spikes; use systematic debugging for any failure.
+1. Receive explicit review of the Phase B plan set and the chosen execution method.
+2. Create and verify an isolated worktree using `superpowers:using-git-worktrees`.
+3. Execute the foundation plan task-by-task with its required Superpowers method.
+4. Pass the movement-feel gate before Rampage content.
+5. Pass the full Phase B gate, request code review, verify again, and refresh this
+   handoff before Phase C planning.
 
 ## Active plan
 
 - `docs/REFERENCE_RESEARCH.md`: research pass complete and independently reviewed.
 - `docs/GAME_DESIGN.md`: approved Phase A specification.
 - `docs/ARCHITECTURE.md`: approved Phase A specification.
-- `docs/DECISIONS.md`: accepted constraints and provisional spike choices are
-  distinguished; D-011/D-012 are accepted.
-- `docs/SESSION_HANDOFF.md`: active; Phase B plan handoff is the next gate.
+- `docs/DECISIONS.md`: D-001 through D-013 are the current decision record.
+- `docs/superpowers/plans/2026-10-01-phase-b-plan-set.md`: execution index and
+  cross-plan contract/exit gate.
+- `docs/superpowers/plans/2026-10-01-phase-b-foundation.md`: first execution plan.
+- `docs/superpowers/plans/2026-10-01-phase-b-worm-movement.md`: second plan,
+  blocked until foundation passes.
+- `docs/superpowers/plans/2026-10-01-phase-b-rampage-slice.md`: third plan,
+  blocked until the movement-feel go decision.
+- `docs/SESSION_HANDOFF.md`: active; user plan review is the next gate.
 
 ## Resume protocol
 
