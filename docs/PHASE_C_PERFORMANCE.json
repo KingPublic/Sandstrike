@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-02",
+  "environment": "Headless Chromium on this development host; 1440x900 CSS viewport; not physical hardware evidence",
+  "hunt": {
+    "initialTick": 16,
+    "finalTick": 294,
+    "samples": 180,
+    "frameMedian": 30.00333333333332,
+    "frameP95": 36.66999999999998,
+    "frameP99": 38.34000000000005,
+    "maxActors": 3,
+    "maxProjectiles": 0,
+    "maxParticles": 8,
+    "maxDroppedMs": 0,
+    "simulationP95": 0.6999999992549419
+  },
+  "rampage": {
+    "initialTick": 8,
+    "finalTick": 269,
+    "samples": 178,
+    "frameMedian": 16.666666666666664,
+    "frameP95": 35.00999999999995,
+    "frameP99": 36.67000000000007,
+    "maxActors": 13,
+    "maxProjectiles": 3,
+    "maxParticles": 32,
+    "maxDroppedMs": 0,
+    "simulationP95": 0.6000000005587935
+  }
+}

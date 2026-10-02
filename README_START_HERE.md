@@ -2,13 +2,13 @@
 
 Sandstrike is an original browser-first 2D action game with two asymmetric roles:
 an underground monster and a human hunter. The project targets desktop and
-landscape-first mobile play from one shared simulation. Phase B implements the
-playable worm Rampage slice. Hunter mode is the next planned phase.
+landscape-first mobile play from one shared simulation. Phase C adds playable
+Ranger Hunt and completes Rampage response bands 0-3.
 
 ## Play the current slice
 
 From the project root, run `npm ci` once, then `npm run dev` and open the local
-URL printed by Vite. Choose Enter desert → Play → Rampage → Start Rampage.
+URL printed by Vite. Choose Enter desert → Play → Rampage or Hunt → Start.
 
 - Keyboard: WASD or arrow keys steer, Space bites, Shift bursts, Escape pauses.
 - Touch: drag the joystick; use Bite and Burst with another finger. Landscape
@@ -19,11 +19,17 @@ URL printed by Vite. Choose Enter desert → Play → Rampage → Start Rampage.
   and the main menu. Restart/end/reset require explicit confirmation.
 - Settings control feedback, volume, touch handedness/opacity and accessibility.
   Muted play retains critical text/shape cues. There is no music track yet.
+- Hunt: WASD/arrows move, mouse aims, click/Space fires, Q places or recovers a
+  snare, Shift dodges, R/Control reloads. Touch uses independent movement,
+  captured Fire/Aim drag, Snare and Dodge. Gamepad uses both sticks, RT fire,
+  LT reload, LB snare, RB dodge. Protect the relay and shoot exposed worm regions.
 
 Burrow, turn upward to breach, strike prey for healing and chain varied targets.
-Infantry locks its aim before firing. The current slice has response bands 0–1,
-one original procedural worm, prey and infantry; broader content remains planned.
-Best score, onboarding and settings save locally. If storage is unavailable,
+Infantry, armored vehicles and aerial threats lock aim before firing. Each new
+response band has its own warning and bounded population. Hunt uses a seeded AI
+worm, broad tracking, temporary snare reveal and explicit victory/defeat outcomes.
+Both modes' records, Hunt victories, onboarding and settings save locally.
+Save v2 migrates v1 records. If storage is unavailable,
 play continues with memory-only progress for that session.
 
 ## Files
@@ -38,6 +44,7 @@ play continues with memory-only progress for that session.
 - `docs/BALANCE.md` — tuning record.
 - `docs/CHANGELOG.md` — meaningful changes.
 - `docs/SESSION_HANDOFF.md` — latest verified checkpoint and exact resume action.
+- `docs/PHASE_C_VERIFICATION.md` — actual two-role evidence and release limits.
 
 ## Start development
 
