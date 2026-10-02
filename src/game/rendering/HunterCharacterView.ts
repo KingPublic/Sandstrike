@@ -9,11 +9,20 @@ export function drawHunterCharacter(g: Phaser.GameObjects.Graphics, actor: Actor
   const h = snapshot.hunt, v = kit.visual, airborne = h?.hunter.grounded === false;
   const speed = Math.min(1, Math.abs(actor.velocity.x) / 180), stride = Math.sin(tick * .25) * 5 * speed;
   const bob = airborne ? -1 : Math.abs(Math.sin(tick * .25)) * speed;
+  if ((actor.invulnerableUntilTick ?? 0) > snapshot.tick) g.lineStyle(2, 0xa4f4dc, .65).strokeEllipse(0, -2, 32, 48);
   g.fillStyle(0x111b27, .22).fillEllipse(0, 17, 28, 7);
-  g.lineStyle(4, v.plate).lineBetween(-4, 4 + bob, -5 - stride, airborne ? 11 : 15).lineBetween(4, 4 + bob, 5 + stride, airborne ? 9 : 16);
+  const crouch = airborne ? 3 : 0;
+  g.lineStyle(5, v.plate).lineBetween(-4, 4 + bob, -5 - stride * .55, 10 - crouch).lineBetween(-5 - stride * .55, 10 - crouch, -5 - stride, airborne ? 11 : 15).lineBetween(4, 4 + bob, 5 + stride * .55, 10 - crouch).lineBetween(5 + stride * .55, 10 - crouch, 5 + stride, airborne ? 9 : 16);
+  g.lineStyle(2, v.body).lineBetween(-4, 4 + bob, -5 - stride * .55, 9 - crouch).lineBetween(4, 4 + bob, 5 + stride * .55, 9 - crouch);
+  g.fillStyle(0x18212c).fillRoundedRect(-9 - stride, airborne ? 9 : 13, 10, 4, 1).fillRoundedRect(3 + stride, airborne ? 7 : 14, 10, 4, 1);
   g.fillStyle(v.body).fillRoundedRect(-8, -9 + bob, 16, 19, 4);
   g.fillStyle(v.light, .28).fillRect(-6, -7 + bob, 5, 13);
+  g.fillStyle(v.plate, .6).fillRoundedRect(-6, -5 + bob, 12, 9, 2);
+  g.lineStyle(2, v.light, .4).lineBetween(-5, -3 + bob, 5, -3 + bob);
+  g.fillStyle(0x152330).fillRect(-8, 6 + bob, 16, 3);
+  for (const x of [-5, 2]) g.fillStyle(v.body).fillRoundedRect(x, 4 + bob, 4, 5, 1);
   g.fillStyle(0xf0c89e).fillCircle(0, -14 + bob, 5.5);
+  g.fillStyle(0xa48270, .5).fillEllipse(3, -12 + bob, 4, 7);
   if (v.silhouette === "hood") g.lineStyle(4, v.plate).strokeCircle(0, -14 + bob, 7).lineBetween(-7, -12, -10, 3);
   else if (v.silhouette === "visor") { g.fillStyle(v.plate).fillRoundedRect(-8, -21 + bob, 16, 14, 4); g.fillStyle(v.light).fillRect(-5, -17 + bob, 12, 3); g.fillStyle(v.plate).fillRoundedRect(-12, -8 + bob, 24, 9, 3); }
   else { g.fillStyle(v.plate).fillRoundedRect(-7, -22 + bob, 14, 7, 2); if (v.silhouette === "cap") g.fillRect(2, -18 + bob, 8, 3); }
@@ -25,5 +34,7 @@ export function drawHunterCharacter(g: Phaser.GameObjects.Graphics, actor: Actor
   const dx = Math.cos(angle), dy = Math.sin(angle), length = (h?.rpg.owned && !h.rpg.reloading) ? 30 : kit.id === "field-medic" ? 13 : kit.id === "siegebreaker" ? 26 : 20;
   g.lineStyle(3, 0xf0c89e).lineBetween(0, -4 + bob, dx * 10, dy * 10 - 4 + bob);
   g.lineStyle((h?.rpg.owned && !h.rpg.reloading) ? 7 : 4, v.plate).lineBetween(dx * 4, dy * 4 - 4 + bob, dx * length, dy * length - 4 + bob);
+  g.lineStyle(1.5, v.light, .45).lineBetween(dx * 6, dy * 6 - 5 + bob, dx * length, dy * length - 5 + bob);
+  if (h?.rpg.owned && !h.rpg.reloading) g.lineStyle(9, 0x324d43).lineBetween(dx * 15, dy * 15 - 4 + bob, dx * 25, dy * 25 - 4 + bob);
   if (h?.shot) g.fillStyle(v.light).fillTriangle(dx * length, dy * length - 4, dx * (length + 11) - dy * 4, dy * (length + 11) + dx * 4 - 4, dx * (length + 11) + dy * 4, dy * (length + 11) - dx * 4 - 4);
 }

@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { drawTowerDetails, drawTerrainDetails, drawWeather } from "./WorldDetails";
 import { themes, type ThemeId } from "../data/themes";
 import type { AscentWorldSnapshot } from "../domain/world/AscentWorld";
 import type { Platform } from "../domain/world/PlatformContacts";
@@ -9,6 +10,7 @@ export class WorldRenderer {
   readonly bounds = Object.freeze({ left: LEFT, right: RIGHT, top: TOP, bottom: BOTTOM });
   private backdrop: Phaser.GameObjects.Graphics | undefined;
   private hazard: Phaser.GameObjects.Graphics | undefined;
+  private weather: Phaser.GameObjects.Graphics | undefined;
   private hazardY = Number.NaN;
   constructor(private readonly scene: Phaser.Scene, private themeId: ThemeId = "desert") {}
   setTheme(themeId: ThemeId): void { this.themeId = themeId; this.create(); }
@@ -18,6 +20,7 @@ export class WorldRenderer {
   createAscent(world: AscentWorldSnapshot): void {
     this.draw(false, world.bounds.top);
     const g = this.scene.add.graphics().setDepth(-60);
+    drawTowerDetails(g, world, themes[this.themeId]);
     for (const platform of world.platforms) this.platform(g, platform);
     const theme = themes[this.themeId];
     const hazard = this.scene.add.graphics().setDepth(-50);
@@ -34,12 +37,24 @@ export class WorldRenderer {
     this.hazard.y = world.surfaceY;
   }
 
+  updateAtmosphere(tick: number, view: Readonly<{ left: number; right: number; top: number; bottom: number }>, reducedMotion: boolean): void {
+    this.weather ??= this.scene.add.graphics().setDepth(-25);
+    if (reducedMotion) { this.weather.clear(); return; }
+    drawWeather(this.weather, this.themeId, themes[this.themeId].light, tick, view);
+  }
+
   private platform(g: Phaser.GameObjects.Graphics, platform: Platform): void {
     const theme = themes[this.themeId];
     const height = platform.id === "summit" ? 46 : 26;
     g.fillStyle(theme.structure, .95); g.fillRect(platform.left, platform.y, platform.right - platform.left, height);
     g.fillStyle(theme.surface, .85); g.fillRect(platform.left, platform.y - 5, platform.right - platform.left, 6);
     g.lineStyle(2, theme.light, .35); g.strokeRect(platform.left, platform.y, platform.right - platform.left, height);
+    g.fillStyle(0x09101b, .3).fillRect(platform.left + 4, platform.y + height - 8, platform.right - platform.left - 8, 8);
+    for (let x = platform.left + 12; x < platform.right - 8; x += 40) {
+      g.fillStyle(theme.light, .25).fillCircle(x, platform.y + 10, 2);
+      g.lineStyle(2, theme.light, .12).lineBetween(x, platform.y + 16, x + 20, platform.y + 16);
+    }
+    if (platform.id === "summit") { g.lineStyle(4, theme.light, .4).lineBetween(platform.left, platform.y - 8, platform.right, platform.y - 8); }
   }
 
   private draw(withGround: boolean, top = TOP): void {
@@ -66,6 +81,7 @@ export class WorldRenderer {
       g.lineStyle(2, theme.light, .26); g.lineBetween(LEFT, 8, RIGHT, 8);
       for (let i = 0; i < 180; i++) { g.fillStyle(theme.surface, .18); g.fillCircle(LEFT + (i * 977) % (RIGHT - LEFT), 36 + (i * 193) % 3050, 1 + i % 4); }
     }
+    if (withGround) drawTerrainDetails(g, theme);
     this.structures(g);
   }
   private structures(g: Phaser.GameObjects.Graphics): void {

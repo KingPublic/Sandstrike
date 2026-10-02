@@ -17,25 +17,39 @@ Read in this order, then check `git status`, recent commits and the actual sourc
    `docs/DECISIONS.md`, `docs/BALANCE.md`, `docs/ASSET_LICENSES.md`, and
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
 
-Current checkpoint (2026-10-02, resumed session): **Foundation, Ascent and
-Survival Roster code are implemented** directly in root. The latest committed
-physics correction is b1bac82 (ballistic building-height player breaches).
-The local final checkpoint is `feat: complete survival roster and revised saves`;
-consult git log for its SHA. All work stays on phase-b-ready.
-Five worms and five Hunters have real distinct skills, original animated silhouettes
-and five starting firearms. Character/theme selections survive retry/reload.
-Save3 preserves genuine v1/v2 records under legacyRecords, with separate revised
-record envelopes. Rooftop RPG has firing priority while loaded; the starting
-firearm can fire during RPG reload. The ten-kit browser selection/retry cases pass.
-One final review identified four Important defects, reproduced and corrected:
-moving-surface presentation/contacts, fatal same-tick boss impact, buried support,
-and post-minute decoy targeting. Visual inspection additionally found the legacy
-camera top clipping the rooftop; camera/sky now use ascent bounds.
-Final evidence:222tests/lint/typecheck/productionbuild pass;12focused root browser
-cases,5Pages cases and normal root/Pages smoke pass. See SURVIVAL_VERIFICATION.md.
-Exact next action: natural pacing/control playtest and focused tuning, then visual
-polish. The5-6min target and physical hardware remain unverified. Do not replay old
-Phase A/B/C or the completed redesign.
+Current checkpoint (2026-10-02, latest execution): **the approved survival revision,
+pacing pass and presentation pass are implemented** in the root on phase-b-ready.
+Local checkpoint subject: feat: polish survival presentation and tune full-run pacing.
+Use git log/status for the actual commit/dirty state; no push or merge was performed.
+
+The latest user explicitly asked to SKIP Superpowers skills and further plan/review
+cycles. This overrides older workflow requests. Execute focused fixes, use necessary
+checks only, and let the user assess the game. Do not reopen completed plans.
+
+New in this checkpoint:
+- Authored alternating end stairs and long industrial catwalks, directional route
+  cues, summit progress, boss health meter and squad/air counts.
+- 3600 HP summit boss, unchanged 3-second shield and RPG; first RPG pickup restores
+  living Hunter health once. One-use 35 HP medical caches along the long floors.
+- Hunter contact damage now grants 1 second recovery; Dodge protects its 0.2-second
+  movement window. Immunity has a visible outline. No healing/revival of dead actors.
+- Engineer drops the beacon behind travel direction. All ten kits remain distinct.
+- Original menu illustration, articulated worm jaws/head, Hunter armor/limbs,
+  industrial supports and bounded dust/snow; reduced motion respected.
+- Building-height ballistic player worm fix from b1bac82 is retained.
+
+Measured seed33 full runs: Ranger5:59, Siege5:53, Scout5:46, Medic5:58,
+Engineer6:03. These are deterministic input runs, not a human difficulty guarantee;
+Scout grapple was not used. Four baseline runs precede the extra cache placement;
+only failed Engineer was rerun after the focused change. See SURVIVAL_PLAYTHROUGH.json.
+Verification: lint/typecheck pass;225 earlier domain tests, one new HUD regression and5 full-run cases pass
+across focused runs. Root browser10 distinct cases, Pages boss1, production root/Pages
+smoke1each pass. dist is a normal root production build. See SURVIVAL_VERIFICATION.md.
+
+Exact next action: user plays via npm run dev and reports an observed issue. Resume
+from that feedback; no mandatory plan/review/testing cycle remains for this checkpoint.
+Physical devices, gamepad/audio/haptics, sustained performance and human difficulty
+still need real feedback. Visuals are stylized original procedural art, not photorealism.
 
 Required target: 5 worms + 5 Hunters, unique active skills, automatic mouth feeding,
 responsive building-height breaches, compact desktop menu, allied Hunt NPCs/helicopters, climbable
@@ -46,7 +60,7 @@ desert outpost, urban ruins, frozen facility; shared physics/world rules.
 
 Checkpoint after every playable task: list files, observed tests/build/browser
 results, known limits, commit/dirty state and exact next task here and in handoff.
-Keep plan ledgers under ignored `.superpowers/sdd/`. Never label plans as shipped
+Do not start new Superpowers ledgers after the explicit user override. Never label plans as shipped
 features or report unrun tests as passing. Preserve v1/v2 saves and protect future
 schemas. Run focused tests; repeat a passed check only for a relevant change/failure.
 User reported18% account quota and wants a handoff at1%; the agent cannot observe
@@ -175,3 +189,21 @@ npm run test:smoke:pages
 
 The repository-subpath behavior is covered independently from the root build;
 asset or chunk responses at HTTP 400 and above fail the smoke test.
+
+## Latest user correction: remove gameplay text clutter (2026-10-02)
+Completed after the pacing pass, within the user20-minute cutoff. Debug was
+incorrectly enabled automatically for Rampage under npm run dev. It is now explicit
+via the dev-menu Debug mode checkbox for either role. Normal play has no debug
+panel/hitbox paths, floating Bite/Breach/Protected labels, tremor labels, technical
+height/hazard/generation/bot counters, or7-second controls banner. Essential
+health/ammo/skill, objective direction and boss meter remain; graphical threat cues
+and particle/audio feedback are retained. Debug still exposes diagnostics.
+
+Focused evidence: lint/typecheck pass;6 HUD unit cases pass, including the new
+ordinary-vs-debug case. Four affected browser cases pass (normal/debug Hunter2,
+mobile/tablet2). Actual Vite dev Rampage was visually checked both ordinary and
+explicit-debug, no page errors; captures dev-rampage-clean/debug.png and
+survival-hunt-clean.png. Production root/Pages smoke pass again after this change.
+Total evidence231 domain tests and10 distinct root browser cases across scoped
+runs; no repeat of the five full-game simulations for a text-only correction.
+Final dist remains normal root production. Next action remains user feedback.

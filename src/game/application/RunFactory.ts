@@ -6,6 +6,7 @@ import { movementBalance } from "../data/movementBalance";
 import { FlatTerrainProfile } from "../domain/terrain/FlatTerrainProfile";
 import { ascentArena } from "../data/ascentArena";
 import { spawnActor } from "../data/actors";
+import { huntBalance } from "../data/huntBalance";
 import type { ThemeId } from "../data/themes";
 
 /** Historical relay objectives kept as regression fixtures; every other Hunt run is the ascent. */
@@ -31,7 +32,7 @@ export class RunFactory {
         // "ascent-kill" starts the worm at 1 HP with a lethal fixture shot so the
         // remove/return cycle is reachable in deterministic runs and browser checks.
         const kill = fixture === "ascent-kill";
-        return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", ascent: true, ...(fixture === "ascent-buried" ? { ascentSurface: 0 } : {}), seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement: huntMovementBalance, terrain: new FlatTerrainProfile(0), characterId: character.id, actors: [{ ...hunter, armor: character.armor }], ...(kill ? { playerHealth: 1, initialProjectiles: [{ position: { x: 0, y: 900 }, direction: { x: 1, y: 0 } }] } : {}) });
+        return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", ascent: true, ...(fixture === "ascent-buried" ? { ascentSurface: 0 } : {}), seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement: huntMovementBalance, terrain: new FlatTerrainProfile(0), characterId: character.id, actors: [{ ...hunter, armor: character.armor, hitInvulnerabilityTicks: huntBalance.hitRecoveryTicks }], ...(kill ? { playerHealth: 1, initialProjectiles: [{ position: { x: 0, y: 900 }, direction: { x: 1, y: 0 } }] } : {}) });
       }
       const hunter = spawnActor("hunter", "actor.hunter", { x: -180, y: -16 }), relay = spawnActor("relay", "actor.relay", { x: 0, y: -30 });
       const defeat = fixture === "hunter-defeat" || fixture === "relay-defeat";

@@ -1,91 +1,95 @@
 # SESSION HANDOFF - Project Sandstrike
 
-Updated 2026-10-02, resumed session. Root C:/Users/Adrian/Games/Sandstrike.
-Branch phase-b-ready. No extra worktree, branch switch, push or merge; user handles
-remote integration. Communicate in Bahasa Indonesia.
+Updated 2026-10-02, latest execution. Root C:/Users/Adrian/Games/Sandstrike.
+Branch phase-b-ready. Work directly in root; no new worktree, branch switch, push
+or merge. User handles remote integration. Communicate in Bahasa Indonesia.
 
-## Resume rules
-Read AGENTS, this file, the approved survival spec/plan-set, relevant design,
-architecture, decisions, balance, assets and reference research before source.
-README_START_HERE is the entry point. Check actual git state; earlier Phase A/B/C
-plans and relay objectives are historical, not a request to rebuild.
-User approved ten-kit survival design and asks immediate execution with only
-necessary tests; don't reopen settled plan/design approvals. Latest correction:
-player breaches only building-height, held upward input must not defeat gravity.
-A short "lanjutkan" resumes the exact next action below.
-Account quota cannot be observed. User earlier reported18%; don't invent a usage
-reading. Checkpoint continuously; if user says1%, save exact state and ask when to resume.
+## Resume instructions
+1. Read README_START_HERE.md, AGENTS.md and this file.
+2. Read relevant sections of GAME_DESIGN, ARCHITECTURE, DECISIONS, BALANCE,
+   ASSET_LICENSES and REFERENCE_RESEARCH; then relevant source/tests.
+3. Check git status/log against this record. The approved survival specification
+   under docs/superpowers/specs is design history; do not replay completed plans.
+4. Latest user explicitly waived Superpowers skills, repeated planning/review and
+   unnecessary retesting. Follow that override and directly execute observed fixes.
 
-## Current state
-Foundation and Ascent committed:287afc2,ef34688,ee44d17,59e9589,26d3b5b.
-Latest physics commit:b1bac82. Final local roster checkpoint subject:
-`feat: complete survival roster and revised saves` (resolve SHA with git log).
-All implementation/evidence committed in root; no remote action.
-- Compact menus: desert, ruins, frozen; one physics/world with frozen per-run theme.
-- Rampage automatic swept-mouth feeding; Space selected skill, Shift Burst.
-- Player profile650 cruise/800burst/2000gravity; ballistic vy preserved under steering.
-  Kit speed changes scale gravity by speed squared. Hunt AI uses separate800/950/640
-  profile for tower pursuit; historical fixtures retain legacy physics.
-- Ten kits via characters.ts: DuneSandguard, Cinderfire, Ironshock/armor,
-  Stormcontrolledsurge, Riftvenom; Rangermark, Siegeshield, Scoutgrapple,
-  Engineerdecoy, Medicfriendlyheal. All immediately selectable, no placeholders.
-- Original procedural animation/silhouettes in WormView, HunterCharacterView,
-  CharacterSkillView; five firearms have different cadence/magazine/damage/burst.
-- Hunt vertical jump/drop/one-way ledges, rising hazard5px/s initiallyy200,
-  ordinary worm600tick return/fiercer generation, two ground allies/one helicopter.
-- Summit freezes hazard at arena clearance420, one600HP boss,90tick entrance,
- 30/180/900 shield windup/immunity/cooldown. RPG80damage/tworockets, crate restock.
-  Loaded RPG takes firing priority; firearm fallback during reload, pending burst
-  cancels on RPG priority. AI enemy per-hit recovery0, explicit shield preserved.
-- Revised result metadata gameplayVersion3/characterId/themeId; save3 selection,
-  current buckets and legacyRecords. Genuinev1/v2 bytes backed up; future schemas
-  stay untouched with memory fallback. Debug Hunt remains practice.
+A short 'lanjutkan' resumes from the next action below. Account quota cannot be
+observed; never invent its percentage. If user reports1%, checkpoint and stop.
 
-## Final review corrections
-One read-only fresh whole-range review073b9d9..b1bac82+roster working tree.
-Four Important confirmed and reproduced RED then fixed:
-1. surfaceY through CPU clipping, tracking, aim, Rifle/RPG rays, cue/feedback.
-2. Hunt impacts already emitted by live sources remain eligible if the source dies
-   earlier in the same resolution. Hunter fatal damage wins terminal priority.
-   Rampage dead-source feeding/healing restrictions remain unchanged.
-3. Ground replacement uses safe ledge; deeply buried support expires, is promptly
-   replaced and dead controller records are pruned; population remains capped.
-4. Ascent sensed target/decoy no longer loses to legacy relay utility after60s;
-   fallback fixed arenax0 does not read hidden live Hunter coordinates.
-Also added clipped visible boss shield and original summit crate marker.
-Visual inspection found camera bounds still started-1200, cutting off summit-1600;
-CameraController/sky use world bounds, with a real browser visibility assertion.
-No second review loop; four defects have focused regression evidence.
+## Completed state
+Foundation, Ascent and roster were committed through dc48e23. Building-height
+ballistic player worm correction is b1bac82; this checkpoint retains it.
+Latest local checkpoint subject: feat: polish survival presentation and tune full-run pacing.
+Resolve its SHA using git log; no remote publication.
 
-## Final evidence
-npm run verify exits0:222tests in73files, lint/typecheck/build pass;18.77s tests,
-630ms normal production build. dist is ordinary root production without test bridge.
-12distinct root revised browser cases pass across scoped runs,5Pages cases pass;
-normal production root/Pages smoke1each pass. All ten selections/active skills,
-retry/reload, role reset, compact menu, keyboard/touch ballistic arc, mobile/tablet
-jump/skill/pause/portrait interruption, actual rooftop camera and RPG/boss checked.
-Five review regressions demonstrated RED then GREEN; four Important corrected.
-Final camera regression and prior Rampage death restrictions pass. Captures visually
-inspected in docs/verification, including building-breach,10characters,mobileHUD,
-rooftop player/markedcrate. SURVIVAL_VERIFICATION.md records exact gates and limitations.
-SURVIVAL_PERFORMANCE.json:5s host boss sample241frames,median20ms/p9524.99ms,
-simulationmax1.5ms,3actors/16particles/1ally; not physical-device60fps evidence.
-No need to rerun unchanged passing checks merely to resume.
+- 5 worms and 5 Hunters, distinct skills/starting guns, 3 themes, persisted selection.
+- Save3 preserves genuine v1/v2 records and future-schema protections.
+- Automatic mouth feeding; Space worm skill / Shift burst; Hunter jump/fire/Q/dodge.
+- Hunt ordinary worms return after10s with escalation; two allied Hunters/one heli.
+- New route: base and17 ledges,90px intermediary step,180px between main catwalks,
+  alternating stairs at x+/-3250, floors span+/-3350, world bounds+/-3600.
+  First jump remains reachable, run180/jump660/gravity1800 unchanged. No waiting timer.
+- Hazard rises5px/s; summit freezes it and starts a3600HP boss with3s immunity.
+  RPG80damage/two rockets, restock4s; first pickup restores living Hunter once.
+- Medical caches:3 on each wide ledge (24 total), each35HP, capped at max health,
+  one use, not wasted at full health, player only, never revive dead actors.
+- Hunter hit recovery60ticks; dodge protection12ticks; steady visible outline.
+  Ordinary AI worm hit recovery remains0; boss explicit immunity unchanged.
+- Engineer beacon120px behind facing/travel direction,5s active, existing sensing.
+- New inline SVG menu illustration, tangent-oriented worm head/teeth/carapace,
+  Hunter armor/boots/limbs, tower panels/braces, route arrows, weather24streaks/flakes.
+  No added dependency or external asset. Reduced motion disables ambient weather.
+- HUD: accessible boss meter, ascent progress, direction/distance to next ledge,
+  theme hazard label, squad/air counts, shield cue; responsive compact touch layout.
+
+## Verified evidence
+- Lint and typecheck exit0.225 tests/75files pass with survivalCompletion excluded.
+- Five full-run cases pass across focused runs;231 total tests across76files.
+  The first long-run test exceeded Vitest's default5s timeout despite Victory;
+  the test now has60s per kit. Engineer initially died from repeated impacts on
+  long walks; distributed caches corrected the failed case, rerun Engineer only.
+- Seed33 normal simulation, exposed-target aiming, no teleport/health overrides,
+  no Scout traversal skill: Ranger358.93s, Siege353.32s, Scout346.30s,
+  Medic358.02s, Engineer363.00s; summit at247.53-248.87s. All finish Victory.
+  Four initial successes precede the extra caches; Engineer is measured after them.
+  SURVIVAL_PLAYTHROUGH.json records exact measurements. Human timing may differ.
+- Root browser10 distinct cases: boss1, revised role switch1, mobile/tablet2,
+  performance1, ten-kit selection/retry2, small menu1. Earlier menu3cases also pass.
+- Pages boss1 passes; normal production root1/Pages1 smoke pass, no test bridge.
+- Actual captures inspected: compact menu, tangent worm head, mobile Hunter HUD,
+  rooftop camera/player/RPG/boss meter. Fatal browser/console errors absent in checks.
+- Final dist is ordinary root production. Nonfatal Phaser bundle-size warning remains.
+  No full old Phase B/C E2E rerun; no new review-agent or Superpowers workflow.
 
 ## Exact next action
-Natural run pacing/control playtest, then focused tuning and presentation polish.
-Use the current game, record actual player/device observations, and adjust only
-observed defects: player building-height arc, platform climb readability, target5-6min
-whole run, boss shield/RPG timing and surviving allied support. Every Hunter must
-finish without traversal skill. Do not add arbitrary timers or rebuild systems.
-Physical phone/tablet/gamepad and audio/haptics need human checks; no AAA art promise.
-Current functional redesign plans are implemented. Follow existing shared interfaces
-and save3; root branch staysphase-b-ready, user controls push/merge.
+Current approved functional redesign and this pacing/presentation pass are delivered.
+Let the user play: npm run dev from root. Fix the next concrete observation using
+existing action/domain/rendering interfaces; do not rebuild working systems or
+start a generic new phase/plan. User judges visual feel and difficulty.
 
-## Known limits
-Procedural original prototype art, not photorealistic/GOTY production assets.
-Natural5-6min total/1-2min boss, difficulty, real hardware/audio/haptics and sustained
-60fps not established. Host samples are short and don't prove physical performance.
-No backend/runtimeLLM/music/campaign/new dependency. Nonfatal Phaser bundle warning.
-Static Vercel and GitHub Pages builds remain required; E2E bridge must be absent in
-normal builds. Historical evidence remains in PHASE_B/PHASE_C_VERIFICATION docs.
+## Practical limits
+Procedural stylized visuals, not photorealistic/GOTY production assets. Seed33 is
+one automated route with precise aim;5-6min is guidance, no forced timer or human
+acceptance. Scout grapple can shorten traversal. Long horizontal walks need user
+judgment. Physical phone/tablet/gamepad/audio/haptics and sustained60fps remain
+unverified. Latest short host sample in SURVIVAL_PERFORMANCE.json is not device proof.
+No backend, runtimeLLM, music/campaign or new engine dependency. Preserve static
+Vercel/Pages deployment and keep test hooks out of ordinary builds.
+
+## Latest user correction: remove gameplay text clutter (2026-10-02)
+Completed after the pacing pass, within the user20-minute cutoff. Debug was
+incorrectly enabled automatically for Rampage under npm run dev. It is now explicit
+via the dev-menu Debug mode checkbox for either role. Normal play has no debug
+panel/hitbox paths, floating Bite/Breach/Protected labels, tremor labels, technical
+height/hazard/generation/bot counters, or7-second controls banner. Essential
+health/ammo/skill, objective direction and boss meter remain; graphical threat cues
+and particle/audio feedback are retained. Debug still exposes diagnostics.
+
+Focused evidence: lint/typecheck pass;6 HUD unit cases pass, including the new
+ordinary-vs-debug case. Four affected browser cases pass (normal/debug Hunter2,
+mobile/tablet2). Actual Vite dev Rampage was visually checked both ordinary and
+explicit-debug, no page errors; captures dev-rampage-clean/debug.png and
+survival-hunt-clean.png. Production root/Pages smoke pass again after this change.
+Total evidence231 domain tests and10 distinct root browser cases across scoped
+runs; no repeat of the five full-game simulations for a text-only correction.
+Final dist remains normal root production. Next action remains user feedback.

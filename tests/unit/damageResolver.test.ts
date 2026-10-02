@@ -6,6 +6,14 @@ import { actor } from "../fixtures/actors";
 const command: DamageCommand = { sourceId: "worm", targetId: "target", abilityId: "ability.bite", tick: 2, amount: 15, tags: ["bite"], priority: 1 };
 
 describe("damage and health", () => {
+  it("protects configured Hunter recovery until expiry without changing ordinary targets", () => {
+    const resolver = new DamageResolver();
+    const first = resolver.resolve({ ...actor("hunter"), health: 100, maxHealth: 100, hitInvulnerabilityTicks: 60 }, command);
+    expect(first.actor.health).toBe(85);
+    expect(resolver.resolve(first.actor, { ...command, tick: 61 }).applied).toBe(0);
+    expect(resolver.resolve(first.actor, { ...command, tick: 62 }).applied).toBe(15);
+    expect(resolver.resolve(actor("ordinary"), command).actor.invulnerableUntilTick).toBe(0);
+  });
   it("uses bounded speed-scaled impact damage", () => {
     expect(impactDamage(219)).toBe(0);
     expect(impactDamage(220)).toBe(10);

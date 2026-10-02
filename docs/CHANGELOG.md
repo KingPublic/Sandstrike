@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Alternating industrial catwalk climb with route cues, recovery supplies and a
+  stronger3600HP boss; normal seed33 runs finish around5:46-6:03 without a timer.
+- Hunter contact recovery/dodge protection prevent frame-by-frame damage; first
+  rooftop RPG pickup restores living health once. Engineer leaves its decoy behind.
+- Original menu artwork, articulated armored worm jaws, detailed Hunter limbs,
+  tower supports, ambient dust/snow, summit progress and accessible boss health bar.
+
 - Ten original playable characters with distinct silhouettes, active skills and five
   Hunter weapons; animated jaws, armor/fins, articulated walk/jump/aim/reload and
   visible skill effects. Character/environment selections persist through retry/reload.
@@ -17,7 +24,7 @@
 
 
 - Summit boss fight: reaching the summit freezes the rising hazard, cancels any
-  pending worm return and introduces one warned 600 HP armored boss (visual
+  pending worm return and introduces one warned 3600 HP armored boss (visual
   presence enlarged, logical hitboxes unchanged) with a windup/3s-immunity
   cycle. The rooftop crate hands the player a high-damage RPG (80 damage, two
   rockets, finite cadence) and restocks it so a missed shot never removes the win
@@ -108,3 +115,8 @@
 
 - Reduced player breaches to building height and prevented upward air steering
   from cancelling gravity; retained tower-reaching Hunt boss attacks.
+
+## Latest usability correction (2026-10-02)
+- Debug is opt-in in development for both roles. Ordinary play hides debug panels,
+ floating combat/tremor labels, technical counters and the recurring controls banner.
+ Essential health, ammo, skill, objective and boss meter remain visible.

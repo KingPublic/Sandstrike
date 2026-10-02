@@ -664,3 +664,21 @@ Written design review and implementation planning are the next checkpoints.
 Player-controlled worms should breach about one building height, then fall under
 gravity. Held upward steering cannot sustain altitude. This supersedes the earlier
 500-700px player target; the high-rise Hunt enemy retains a tower pursuit profile.
+
+## Latest survival pacing/presentation (2026-10-02)
+The climb now alternates stairs at either end of industrial catwalks instead of
+stacking overlapping ledges that allowed a9.9-second straight ascent. Direction
+arrows and a next-ledge HUD guide the route. One-use35HP medical supplies are
+spread along long walks; first rooftop RPG pickup fully restores a living Hunter.
+Hunter impacts grant1s recovery and dodge grants0.2s protection, with a steady
+outline. Engineer leaves the beacon behind the escape direction.
+Boss health is3600, shield3s unchanged. Seed33 full-run feasibility is measured at
+5:46-6:03, not a hard timer or guaranteed human difficulty. Scout grapple remains
+an optional shortcut. Menu original SVG artwork, armored tangent worm jaws, limb
+animation, industrial supports and bounded dust/snow improve the presentation.
+
+## Gameplay text clarity (2026-10-02)
+User explicitly requests a clean playfield. Normal HUD shows only gameplay health,
+ammo/skill, objective/direction and boss meter. Height, hazard distance, generation,
+AI tracking, support counters and floating event labels belong to explicit debug.
+Threat sectors/particles remain graphical; controls are available in How to Play.

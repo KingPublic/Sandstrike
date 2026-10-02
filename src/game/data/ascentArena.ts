@@ -15,23 +15,27 @@ export interface AscentArena {
 
 const LEDGE_STEP = 90;
 const LEDGE_COUNT = 17;
-const LEDGE_SPAN = 80;
-const LEDGE_WIDTH = 320;
+const CATWALK_HALF_WIDTH = 3350;
+const STAIR_CENTER = 3250;
 
 function ledge(index: number): Platform {
   const y = -LEDGE_STEP * (index + 1);
-  const center = (index % 2 === 0 ? 1 : -1) * (LEDGE_SPAN + (index % 3) * 40);
-  return Object.freeze({ id: `ledge.${String(index)}`, left: center - LEDGE_WIDTH / 2, right: center + LEDGE_WIDTH / 2, y });
+  // The first two ledges teach jump/drop. Higher floors are two jump-heights
+  // apart, joined at alternating ends so the climb includes real traversal.
+  if (index === 0) return Object.freeze({ id: "ledge.0", left: -80, right: 240, y });
+  if (index % 2 === 1 || index === LEDGE_COUNT - 1) return Object.freeze({ id: `ledge.${String(index)}`, left: -CATWALK_HALF_WIDTH, right: CATWALK_HALF_WIDTH, y });
+  const center = (Math.floor(index / 2) % 2 === 0 ? 1 : -1) * STAIR_CENTER;
+  return Object.freeze({ id: `ledge.${String(index)}`, left: center - 100, right: center + 100, y });
 }
 
 const platforms: readonly Platform[] = Object.freeze([
-  Object.freeze({ id: "base", left: -2400, right: 2400, y: 0 }),
+  Object.freeze({ id: "base", left: -3600, right: 3600, y: 0 }),
   ...Array.from({ length: LEDGE_COUNT }, (_, index) => ledge(index)),
   Object.freeze({ id: "summit", left: -700, right: 700, y: -1600 }),
 ]);
 
 export const ascentArena: AscentArena = Object.freeze({
-  bounds: Object.freeze({ left: -2400, right: 2400, top: -2800, bottom: 3200 }),
+  bounds: Object.freeze({ left: -3600, right: 3600, top: -2800, bottom: 3200 }),
   // The base outpost sits above the initial sand line so the climb has a short,
   // fair grace window before the hazard reaches the player.
   initialSurface: 200,

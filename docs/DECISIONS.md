@@ -348,3 +348,20 @@ Ascent fallback uses fixed arena coordinates, not hidden live Hunter coordinates
 Minor crate marker and clipped boss shield feedback were also implemented.
 Natural5-6min pacing, physical-device controls and production art remain playtest
 and polish work; procedural animated graphics are not claimed as GOTY realism.
+
+## D-024 - Execute directly and measure real route pacing (2026-10-02)
+Latest user explicitly waives Superpowers skills and further generic planning/review
+loops. Use focused verification and persist actual work in README/handoff.
+A normal automated run exposed9.88s climb/25.87s total; the approved5-6min direction
+therefore needs actual traversal and boss endurance. Alternating end stairs and
+3600HP boss replace overlapping vertical skips/600HP boss without a wait timer.
+Contact damage every frame caused near-instant Hunter death: configurable1s hit
+recovery and0.2s dodge protection correct it. One-use caches sustain long walks;
+RPG first pickup restores living health once. Engineer drops beacon behind travel.
+Five seed33 full-run successes measure5:46-6:03; user/device acceptance remains open.
+
+## D-025 - Debug must be explicit, gameplay text minimal (2026-10-02)
+User asks to hide unclear gameplay text except in debug and finish within20min.
+Fix dev auto-debug, put technical counters/tracking/floating labels behind an
+explicit menu checkbox, retain essential HUD and graphical warnings. No physics,
+combat or pacing change and no rerun of unchanged full-game simulations.

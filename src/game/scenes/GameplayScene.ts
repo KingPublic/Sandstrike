@@ -58,7 +58,7 @@ export class GameplayScene extends Phaser.Scene {
     this.controller = lifecycle.controller ?? new SessionController();
     if (!this.controller.active) this.controller.start();
     const initial = this.controller.snapshot();
-    const debug = initial.mode === "hunt" ? !initial.hunt?.eligibleForRecords : lifecycle.debug ?? (import.meta.env.DEV && !__SANDSTRIKE_E2E__);
+    const debug = lifecycle.debug ?? (initial.mode === "hunt" && initial.hunt?.eligibleForRecords === false);
     this.worldView = new WorldRenderer(this, initial.themeId);
     if (initial.world) this.worldView.createAscent(initial.world); else this.worldView.create();
 
@@ -66,7 +66,7 @@ export class GameplayScene extends Phaser.Scene {
     this.touch = new TouchInput();
     this.scripted = new ScriptedInput();
     if (initial.mode === "hunt") {
-      this.huntCues = new HuntCueView(this);
+      this.huntCues = new HuntCueView(this, debug);
       this.pointer = new PointerInput(this.game.canvas, (x, y) => { const bounds = this.game.canvas.getBoundingClientRect(); return this.cameras.main.getWorldPoint((x - bounds.left) * this.scale.width / bounds.width, (y - bounds.top) * this.scale.height / bounds.height); });
     }
     this.inputRouter = new InputRouter([
@@ -79,7 +79,7 @@ export class GameplayScene extends Phaser.Scene {
     this.wormView = new WormView(this, debug, initial.mode === "rampage" ? initial.characterId : undefined);
     this.skillView = new CharacterSkillView(this);
     this.actorViews = new ActorViews(this);
-    this.effects = new EffectsRenderer(this);
+    this.effects = new EffectsRenderer(this, debug);
     this.debugOverlay = new DebugOverlay(this, debug);
     this.cameraController = new CameraController(
       this.cameras.main,
@@ -141,6 +141,7 @@ export class GameplayScene extends Phaser.Scene {
     this.cameraController.update(frame.snapshot, deltaMs / 1000);
     const lifecycle = this.lifecycle();
     const settings = lifecycle.settings?.() ?? defaultPresentationSettings;
+    this.worldView?.updateAtmosphere(frame.snapshot.tick, this.cameraController.debugBounds(), settings.reducedMotion);
     const visibleEvents = frame.snapshot.mode === "hunt" && !frame.snapshot.hunt?.tracking.exactTrace ? frame.events.filter(e => !("position" in e) || e.position.y <= (frame.snapshot.world?.surfaceY ?? 0) || e.type === "snare-triggered") : frame.events;
     const commands = this.feedback.consume(visibleEvents, settings, lifecycle.audio?.ready ?? false);
     this.actorViews?.sync(frame.snapshot, frame.report.alpha, settings.highContrast);

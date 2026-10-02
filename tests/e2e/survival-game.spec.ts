@@ -41,7 +41,7 @@ for (const viewport of [{ width: 844, height: 390 }, { width: 1024, height: 768 
     await page.setViewportSize(viewport);
     await page.addInitScript(() => Object.defineProperty(navigator, "maxTouchPoints", { get: () => 3 }));
     await choose(page, "Hunt", "siegebreaker");
-    await expect(page.locator('[data-hunt-field="rpg"]')).toHaveText("RPG at rooftop");
+    await expect(page.locator('[data-hunt-field="boss"]')).toHaveText("Reach the rooftop");
     await page.locator('[data-touch-control="ability"]').dispatchEvent("pointerdown", { pointerId: 11, pointerType: "touch" });
     await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().skill?.ability.active)).toBe(true);
     const before = await page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().hunt?.hunter.position.y ?? 0);
@@ -71,7 +71,7 @@ test("records bounded host performance for the summit with allied support", asyn
   await page.getByRole("button", { name: "Play", exact: true }).click();
   await page.getByRole("button", { name: "Choose Hunt" }).click();
   await page.getByRole("button", { name: "Start Hunt" }).click();
-  await expect(page.locator('[data-hunt-field="boss"]')).toContainText("Boss 600 / 600");
+  await expect(page.locator('[data-hunt-field="boss"]')).toContainText("Boss 3600 / 3600");
   const result = await page.evaluate(async () => {
     const samples: { frame: number; simulation: number; actors: number; particles: number; projectiles: number }[] = [];
     const started = performance.now();

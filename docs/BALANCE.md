@@ -367,3 +367,16 @@ both weapons. Enemy per-hit recovery is0; explicit boss shield remains180ticks.
 This supersedes the earlier known limitation of hit recovery swallowing rockets.
 Safe support replacements use the lowest ledge at least60px above the hazard;
 allies over120px buried are retired. No natural run-duration acceptance is claimed.
+
+## Latest pacing and Hunter survivability pass (2026-10-02)
+Supersedes earlier600HP boss and unmeasured natural-run statements. Alternating
+end stairs at+/-3250 connect90px intermediary steps and180px main floor gaps;
+catwalk width6700, world+/-3600. Run/jump physics and hazard5px/s are unchanged.
+Summit boss3600HP, RPG80/two rockets, existing3s shield; first pickup heals living
+Hunter to full once. Three35HP caches per wide floor,24total, player-only/one-use.
+Hunter post-hit protection60ticks, Dodge12ticks, explicit shields preserved.
+Engineer beacon120px behind travel direction to leave an escape route.
+Seed33 no traversal skill: full Victory346.30-363.00s, climb247.53-248.87s,
+boss98.50-115.47s. Exact cases in SURVIVAL_PLAYTHROUGH.json; four baseline successes
+before distributed caches, failed Engineer rerun after them. Automated precise-aim
+runs establish feasibility only; physical/human play remains unmeasured.

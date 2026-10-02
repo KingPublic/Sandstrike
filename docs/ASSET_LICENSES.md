@@ -22,3 +22,8 @@ weapon poses, skill projectiles/trails/shields/heal crosses, summit crate and UI
 are original project TypeScript/Phaser geometry in src/game/rendering/. No external
 image/audio, generated bitmap, reference-game sprite or additional asset pack.
 Browser captures document this original prototype, not production art.
+
+## Latest presentation (2026-10-02)
+CharacterPreview.ts SVG illustration, WorldDetails.ts architecture/weather,
+reworked worm head/carapace and Hunter limb/armor geometry are original project
+code. No external bitmap, reference-game art, audio pack or generated image added.

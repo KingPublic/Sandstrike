@@ -832,3 +832,21 @@ so a simultaneous lethal shot cannot cancel lethal contact; Rampage death blocks
 subsequent feeding/healing as before. Ascent AI uses sensed targets rather than the
 legacy relay utility. Ground support spawns on safe ledges, retires deep burial and
 prunes dead controller entries.
+
+## Latest route, recovery and visual pass (2026-10-02)
+ascentArena authors alternating end stairs and wider world bounds; HuntSystems
+uses those bounds rather than fixed legacy relay limits. RecoveryStations is pure
+domain state with one-use caches exposed through HuntSnapshot.medical; HuntCueView
+renders them, and healing emits domain events. Configured hitInvulnerabilityTicks
+now applies to Hunters as well as worms; legacy targets keep previous defaults.
+Hunt dodge extends existing protection with max(), preserving active shields.
+CharacterPreview creates original inline menu SVG. WorldDetails draws static
+braces/terrain and24 bounded render-only weather elements, disabled by reduced
+motion. HuntHud uses native meter/progress; one gameplay/action path is retained.
+
+## Explicit visual diagnostics (2026-10-02)
+AppShell passes configuration.debugAI explicitly to the HUD and game lifecycle.
+GameplayScene never auto-enables debug from import.meta.env.DEV. HuntCueView hides
+tracking labels outside debug; EffectsRenderer allocates floating label objects
+only in debug. Domain feedback/particles/audio are unchanged. HuntHudModel has an
+explicit debug parameter; essential objectives remain ordinary gameplay fields.

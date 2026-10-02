@@ -91,7 +91,7 @@ export class WormView {
         const points = clippedCircle(pose.position, r, surfaceY);
         if (points.length >= 3) this.body.fillStyle(color).fillPoints(points.map(p => new Phaser.Math.Vector2(p.x, p.y)), true);
       }
-      if (index === 0 && pose.position.y < surfaceY - 42) this.drawHead(pose, snapshot.phase);
+      if (index === 0 && pose.position.y < surfaceY - 70) this.drawHead(pose, snapshot.phase);
       else if (index > 0 && pose.position.y < surfaceY - radius * 1.2) this.drawDorsalPlate(pose, radius, index);
     }
   }
@@ -149,6 +149,12 @@ export class WormView {
         radius * 0.85,
         radius * 0.42,
       );
+      this.body.fillStyle(this.visual.plate, .3).fillEllipse(pose.position.x + 4, pose.position.y + radius * .32, radius * 1.5, radius * .7);
+      const normal = { x: -pose.tangent.y, y: pose.tangent.x };
+      for (const side of [-1, 1]) {
+        const x = pose.position.x + normal.x * side * radius * .6, y = pose.position.y + normal.y * side * radius * .6;
+        this.body.lineStyle(1.5, this.visual.light, .24).lineBetween(x - pose.tangent.x * radius * .3, y - pose.tangent.y * radius * .3, x + pose.tangent.x * radius * .1, y + pose.tangent.y * radius * .1);
+      }
       this.drawDorsalPlate(pose, radius, index);
     }
 
@@ -224,47 +230,34 @@ export class WormView {
 
   private drawHead(pose: RenderPose, phase: string): void {
     const normal = { x: -pose.tangent.y, y: pose.tangent.x };
-    const tipX = pose.position.x + pose.tangent.x * 10;
-    const tipY = pose.position.y + pose.tangent.y * 10;
-    this.body.fillStyle(0x431a24, 1);
-    this.body.fillEllipse(tipX, tipY, 62, 52);
-    this.body.fillStyle(this.visual.body, 1);
-    this.body.fillEllipse(tipX, tipY, 56, 46);
-    this.body.fillStyle(0xffc36e, 0.42);
-    this.body.fillEllipse(
-      tipX - normal.x * 7,
-      tipY - normal.y * 7,
-      27,
-      13,
-    );
-
-    for (const side of [-1, 1]) {
-      const eyeX = tipX + pose.tangent.x * 10 + normal.x * side * 13;
-      const eyeY = tipY + pose.tangent.y * 10 + normal.y * side * 13;
-      this.body.fillStyle(0xffdf83, 1);
-      this.body.fillCircle(eyeX, eyeY, 4.7);
-      this.body.fillStyle(0x170d16, 1);
-      this.body.fillCircle(
-        eyeX + pose.tangent.x * 1.5,
-        eyeY + pose.tangent.y * 1.5,
-        2.2,
-      );
+    const point = (forward: number, side: number) => new Phaser.Math.Vector2(pose.position.x + pose.tangent.x * forward + normal.x * side, pose.position.y + pose.tangent.y * forward + normal.y * side);
+    const polygon = (coordinates: readonly (readonly [number, number])[], color: number, alpha = 1): void => { this.body.fillStyle(color, alpha).fillPoints(coordinates.map(([f, n]) => point(f, n)), true); };
+    const open = (phase === "airborne" || phase === "breaching" ? 9 : 4) + Math.sin(this.renderTick * .15) * 2;
+    polygon([[-26,-15],[-14,-27],[15,-26],[37,-16],[45,0],[37,16],[15,26],[-14,27],[-26,15]], 0x231722);
+    polygon([[-23,-14],[-12,-23],[14,-22],[32,-13],[40,0],[32,13],[14,22],[-12,23],[-23,14]], this.visual.body);
+    polygon([[-18,-16],[-8,-22],[19,-19],[31,-10],[4,-7]], this.visual.light, .35);
+    polygon([[-22,12],[-6,23],[19,21],[34,10],[4,12]], this.visual.plate, .65);
+    polygon([[-23,-12],[-17,-20],[-2,-22],[4,-9],[-7,0]], this.visual.plate, .85);
+    polygon([[-23,12],[-17,20],[-2,22],[4,9],[-7,0]], this.visual.plate, .75);
+    polygon([[18,-open],[42,-open*.6],[50,0],[42,open*.6],[18,open],[25,0]], 0x100d17);
+    polygon([[26,0],[46,0],[34,4]], 0x953e4a, .7);
+    for (const side of [-1,1]) {
+      polygon([[8,side*15],[23,side*13],[14,side*18]], 0x100c16);
+      polygon([[12,side*15],[23,side*13],[17,side*16]], this.visual.light);
+      for (let tooth=0;tooth<3;tooth++) {
+        const forward=23+tooth*7;
+        polygon([[forward,side*open],[forward+6,side*(open-1)],[forward+4,side*Math.max(0,open-7)]], 0xf5dfb3);
+      }
+      const browA=point(4,side*20), browB=point(26,side*18);
+      this.body.lineStyle(3,this.visual.plate).lineBetween(browA.x,browA.y,browB.x,browB.y);
+      if (this.visual.silhouette === "horns") polygon([[-12,side*20],[-38,side*36],[8,side*24]], this.visual.plate);
+      if (this.visual.silhouette === "fangs") polygon([[26,side*18],[55,side*25],[32,side*9]], this.visual.light);
     }
-
-    if (this.visual.silhouette === "horns" || this.visual.silhouette === "fangs") for (const side of [-1, 1]) {
-      this.body.fillStyle(this.visual.light).fillTriangle(tipX + normal.x * side * 20, tipY + normal.y * side * 20, tipX + pose.tangent.x * (this.visual.silhouette === "horns" ? -28 : 36) + normal.x * side * 25, tipY + pose.tangent.y * (this.visual.silhouette === "horns" ? -28 : 36) + normal.y * side * 25, tipX + normal.x * side * 10, tipY + normal.y * side * 10);
+    if (this.visual.silhouette === "armor") {
+      polygon([[-18,-21],[-5,-27],[15,-25],[18,-15],[-3,-12]], this.visual.plate);
+      const a=point(-8,-20),b=point(13,-21);this.body.lineStyle(3,this.visual.light,.5).lineBetween(a.x,a.y,b.x,b.y);
     }
-    if (this.visual.silhouette === "armor") this.body.lineStyle(5, this.visual.plate).strokeEllipse(tipX, tipY, 66, 58);
-    const jawOpening = (phase === "airborne" || phase === "breaching" ? 4 : 1) + Math.sin(this.renderTick * .15) * 2;
-    const jawStartX = tipX + pose.tangent.x * 21;
-    const jawStartY = tipY + pose.tangent.y * 21;
-    this.body.lineStyle(4, 0x32151e, 0.95);
-    this.body.lineBetween(
-      jawStartX + normal.x * (12 + jawOpening),
-      jawStartY + normal.y * (12 + Math.sin(this.renderTick * .15) * 3),
-      jawStartX - normal.x * 12,
-      jawStartY - normal.y * 12,
-    );
+    if (this.visual.silhouette === "fins") polygon([[-18,0],[-42,-10],[-30,7]], this.visual.light,.7);
   }
 
   private drawDebug(poses: readonly RenderPose[]): void {

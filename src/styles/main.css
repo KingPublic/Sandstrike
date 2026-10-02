@@ -612,3 +612,28 @@ h1 {
 .character-description { padding: .6rem .8rem; border-left: 3px solid var(--ember); background: #ffffff06; font-size: .8rem; }
 .hunt-hud .hud-threat { display: flex; flex-direction: column; align-items: center; gap: .35rem; max-width: calc(100% - 24px); text-align: center; }
 .hunt-hud .hud-stat[hidden] { display: none; }
+
+.menu-art { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.menu-art__scene, .menu-art__scene svg { width:100%; height:100%; display:block; }
+.menu-art__scene::after { content:""; position:absolute; inset:0; background:linear-gradient(0deg,rgba(10,12,21,.95),transparent 58%); }
+.menu-art__caption { position:absolute; left:7%; bottom:8%; right:7%; }
+.menu-art__caption span { font-size:.66rem; letter-spacing:.22em; color:var(--ember-bright); font-weight:800; }
+.menu-art__caption strong { display:block; font-size:clamp(2rem,4vw,3.5rem); line-height:1.1; letter-spacing:-.05em; text-transform:uppercase; }
+.menu-art__caption p { margin:.4rem 0 0; font-size:.8rem; color:var(--muted); }
+.menu-art__worm { animation:preview-breathe 5s ease-in-out infinite; transform-origin:390px 290px; }
+@keyframes preview-breathe { 50% { transform:translateY(-5px) rotate(-1deg); } }
+.sandstrike-playing .menu-art { display:none; }
+.reduced-motion .menu-art__worm { animation:none; }
+@media(prefers-reduced-motion:reduce) { .menu-art__worm { animation:none; } }
+
+.boss-health-meter, .ascent-progress { width:100%; min-width:170px; height:10px; border:0; border-radius:5px; overflow:hidden; display:block; accent-color:#ed805c; }
+.boss-health-meter[hidden], .ascent-progress[hidden] { display:none; }
+.rampage-hud [hidden] { display:none; }
+.boss-health-meter::-webkit-meter-bar { background:#372634; border:1px solid #765343; height:10px; border-radius:5px; }
+.boss-health-meter::-webkit-meter-optimum-value { background:linear-gradient(90deg,#b44348,#ffd488); border-radius:5px; transition:width .16s; }
+.boss-health-meter--shield::-webkit-meter-optimum-value { background:linear-gradient(90deg,#387b9d,#aaf7fc); }
+.ascent-progress::-webkit-progress-bar { background:#342636; border-radius:5px; }
+.ascent-progress::-webkit-progress-value { background:linear-gradient(90deg,#6db9ad,#d6f3c5); border-radius:5px; }
+.hunt-hud .hud-threat { width:max-content; min-width:200px; max-width:min(440px,62vw); }
+[data-hunt-field="support"] { color:#b1d9cd; font-size:.7rem; }
+@media(max-height:500px) { .hunt-hud .hud-threat { gap:4px; padding:8px 14px; font-size:.7rem; } .boss-health-meter,.ascent-progress { height:7px; } }

@@ -7,9 +7,9 @@ export class EffectsRenderer {
   private readonly labels: Phaser.GameObjects.Text[];
   private readonly effects: Effect[] = [];
   private renderedParticles = 0;
-  constructor(private readonly scene: Phaser.Scene) {
+  constructor(private readonly scene: Phaser.Scene, debug = false) {
     this.graphics = scene.add.graphics().setDepth(40);
-    this.labels = Array.from({ length: 16 }, () => scene.add.text(0, 0, "", { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff1cb", stroke: "#170e1a", strokeThickness: 4 }).setOrigin(0.5).setDepth(45).setVisible(false));
+    this.labels = debug ? Array.from({ length: 16 }, () => scene.add.text(0, 0, "", { fontFamily: "system-ui", fontSize: "18px", fontStyle: "bold", color: "#fff1cb", stroke: "#170e1a", strokeThickness: 4 }).setOrigin(0.5).setDepth(45).setVisible(false)) : [];
   }
   consume(commands: readonly FeedbackCommand[]): void {
     for (const command of commands) {

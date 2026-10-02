@@ -62,7 +62,7 @@ it("mark and decoy expire; sky surge cuts thrust above building height", () => {
   expect(ranger.step(context()).markUntilTick).toBe(241);
   expect(ranger.step(context(241, false)).markUntilTick).toBe(0);
   const engineer = new CharacterSkills(required("engineer"));
-  expect(engineer.step(context()).decoy).toEqual({ x: 90, y: -16 });
+  expect(engineer.step(context()).decoy).toEqual({ x: -120, y: -16 });
   expect(engineer.step(context(301, false)).decoy).toBeUndefined();
   const storm = new CharacterSkills(required("storm-serpent"));
   expect(storm.step(context(1, true, worm)).motion?.liftAcceleration).toBeGreaterThan(0);

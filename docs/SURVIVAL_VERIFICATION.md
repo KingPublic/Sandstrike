@@ -5,6 +5,63 @@ Approved scope: foundation, ascent and ten-kit roster, with the latest user over
 requiring building-height ballistic player breaches. Historical Phase B/C fixtures
 retain their explicit physics and relay objectives.
 
+## Latest pacing and presentation checkpoint
+
+This section supersedes older222-test/600HP/unmeasured-run statements below.
+Latest user explicitly waived further Superpowers skill, planning and review cycles.
+
+- Lint and typecheck exit0.225 tests in75files pass with survivalCompletion.test.ts
+  excluded. Five full-run cases pass across focused runs (four first successes,
+  Engineer corrected and rerun alone):231 tests/76files in the combined evidence.
+  No single new npm run verify invocation is claimed. No repeat of all full runs.
+- Initial full-run controller measured9.88s climb/25.87s total on the previous
+  overlapping route. The new alternating stairs/catwalks and3600HP boss produce:
+
+| Hunter | Climb | Full Victory | Boss duration |
+|---|---:|---:|---:|
+| Ranger |248.87s|358.93s|110.07s|
+| Siegebreaker |247.80s|353.32s|105.52s|
+| Scout |247.80s|346.30s|98.50s|
+| Field Medic |247.53s|358.02s|110.48s|
+| Engineer |247.53s|363.00s|115.47s|
+
+Seed33, normal simulation, precise exposed-target aim, no teleport/health override
+or traversal skill. Four cases precede extra medical-cache placement; failed
+Engineer rerun after that focused change. SURVIVAL_PLAYTHROUGH.json stores exact
+results. This demonstrates route feasibility, not average human difficulty.
+
+A long-run case initially timed out under default5s despite Victory; explicit60s
+per kit resolves the test budget. Contact damage every frame was a real defect:
+configured60tick Hunter recovery and12tick Dodge protection fix it, with unit and
+integration coverage. Engineer died on long walks before further cache placement;
+three one-use35HP caches per wide floor sustain the route. No forced waiting timer.
+
+Browser checks this checkpoint:
+- Root8 distinct cases: ascent-boss1, survival-game4, survival-selection2,
+  small/phone menu1. Initial menu3cases also passed; affected menu case recaptured
+  after fixing artwork continuity. No full historical Phase B/C rerun.
+- Pages ascent-boss1/1 passes; ordinary root/Pages production smoke1each passes.
+- Tested1440x900 boss,844x390 touch,1024x768 tablet,390x844 portrait interruption,
+ 720x450/844x390/390x844 menus. HUD meter max3600 checked, player/camera visibility,
+ RPG pickup/restock and frozen hazard retained.44px touch targets and pause/resume.
+- Refreshed captures visually inspected: menu artwork, Cinder jaws/head, mobile HUD,
+  boss meter/RPG/player and catwalk supports. No fatal page/console errors in checks.
+- Final ordinary root production build exits0 (617ms),128modules,
+ JS1581.66kB/gzip419.97kB; nonfatal Phaser bundle warning only. Test bridge absent in
+ normal-production smoke; final dist is root production, not E2E mode.
+
+Latest short boss host sample:100frames, median16.67ms/p9538.31ms,
+ simulationmax1.30ms,3actors/8particles/1ally. CPU was also running domain simulations;
+ this is not physical-device60fps acceptance. See SURVIVAL_PERFORMANCE.json.
+
+Remaining user checks: human difficulty/long catwalk feel, physical touch devices,
+ gamepad/audio/haptics and sustained performance. Art is original stylized code
+ geometry; no photorealistic/GOTY production claim. The approved functional design
+ and this presentation/pacing checkpoint are delivered; next work starts from user
+ feedback, without reopening old plans.
+
+## Historical roster checkpoint evidence
+
 ## Final gate
 
 `npm run verify` exits0: lint, TypeScript, **222 tests in73 files** and ordinary
@@ -81,3 +138,21 @@ Animated art is original procedural prototype geometry, not photorealistic/GOTY
 production assets. No music track/campaign/backend/runtimeLLM. Next work is actual
 player/device feedback, focused pacing/control tuning, then presentation polish.
 Do not replay completed plans or claim these release gates are already proven.
+
+## Latest user correction: remove gameplay text clutter (2026-10-02)
+Completed after the pacing pass, within the user20-minute cutoff. Debug was
+incorrectly enabled automatically for Rampage under npm run dev. It is now explicit
+via the dev-menu Debug mode checkbox for either role. Normal play has no debug
+panel/hitbox paths, floating Bite/Breach/Protected labels, tremor labels, technical
+height/hazard/generation/bot counters, or7-second controls banner. Essential
+health/ammo/skill, objective direction and boss meter remain; graphical threat cues
+and particle/audio feedback are retained. Debug still exposes diagnostics.
+
+Focused evidence: lint/typecheck pass;6 HUD unit cases pass, including the new
+ordinary-vs-debug case. Four affected browser cases pass (normal/debug Hunter2,
+mobile/tablet2). Actual Vite dev Rampage was visually checked both ordinary and
+explicit-debug, no page errors; captures dev-rampage-clean/debug.png and
+survival-hunt-clean.png. Production root/Pages smoke pass again after this change.
+Total evidence231 domain tests and10 distinct root browser cases across scoped
+runs; no repeat of the five full-game simulations for a text-only correction.
+Final dist remains normal root production. Next action remains user feedback.

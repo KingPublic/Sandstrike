@@ -1,4 +1,5 @@
 import type Phaser from "phaser";
+import { characterPreview } from "../game/ui/CharacterPreview";
 import { isThemeId, type ThemeId } from "../game/data/themes";
 import { RampageHud } from "../game/ui/hud/RampageHud";
 import { HuntHud } from "../game/ui/hud/HuntHud";
@@ -115,6 +116,7 @@ export class AppShell {
         <section class="preview" aria-labelledby="preview-title">
           <div class="preview__copy" data-menu-view></div>
           <div class="game-frame">
+            <div class="menu-art" data-character-art></div>
             <div class="game-surface" data-game-host></div>
             <div class="game-frame__edge" aria-hidden="true"></div>
             <div class="safe-area-probe" aria-hidden="true"></div>
@@ -254,12 +256,13 @@ export class AppShell {
     history.pushState({ sandstrike: true }, "", location.href);
     if (this.gameFrame) {
       const Hud = this.selectedMode === "hunt" ? HuntHud : RampageHud;
-      this.hud = new Hud(this.gameFrame, () => { this.pause.add("user"); }, () => { this.pause.add("user"); this.settingsPanel?.open(); });
+      this.hud = new Hud(this.gameFrame, () => { this.pause.add("user"); }, () => { this.pause.add("user"); this.settingsPanel?.open(); }, configuration.debugAI ?? false);
     }
 
     try {
       this.game = createGame(this.host, {
         controller: this.controller,
+        debug: configuration.debugAI ?? false,
         onResult: (result) => { this.showResults(result); },
         onSnapshot: (snapshot) => this.hud?.update(snapshot, this.settings.reducedMotion),
         settings: () => this.settings,
@@ -293,7 +296,7 @@ export class AppShell {
     this.game.scale.refresh();
     this.refreshLayout();
     this.focusCanvas();
-    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt";     prompt.textContent = this.selectedMode === "hunt" ? (this.controller.snapshot().world ? "Climb above the sand · Space Jump · Click Fire · Q Skill · Shift Dodge" : "Read tremors · Q Snare · Click Fire · Shift Dodge") : this.controller.snapshot().arcade ? `Feed by contact · Space ${characterForRole("rampage", this.controller.snapshot().characterId)?.skill.name ?? "Skill"} · Shift Burst` : "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
+    if (this.lastConfiguration.debugAI && !this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt";     prompt.textContent = this.selectedMode === "hunt" ? (this.controller.snapshot().world ? "Climb above the sand · Space Jump · Click Fire · Q Skill · Shift Dodge" : "Read tremors · Q Snare · Click Fire · Shift Dodge") : this.controller.snapshot().arcade ? `Feed by contact · Space ${characterForRole("rampage", this.controller.snapshot().characterId)?.skill.name ?? "Skill"} · Shift Burst` : "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
   }
 
   private handleFatalError(): void {
@@ -467,7 +470,7 @@ export class AppShell {
     this.refreshLayout();
   }
 
-  private renderMenu(): void { this.menu?.render(this.navigation.state, this.selectedMode, this.selectedTheme, this.selectedMode === "hunt" ? this.selectedHunter : this.selectedWorm); }
+  private renderMenu(): void { const id = this.selectedMode === "hunt" ? this.selectedHunter : this.selectedWorm; this.menu?.render(this.navigation.state, this.selectedMode, this.selectedTheme, id); const art = this.root?.querySelector<HTMLElement>("[data-character-art]"); if (art) art.innerHTML = characterPreview(this.selectedMode, this.selectedTheme, id); }
   private handleMenuAction(action: string): void {
     if (action.startsWith("character:")) {
       const character = characterForRole(this.selectedMode, action.slice(10));

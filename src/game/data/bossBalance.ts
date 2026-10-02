@@ -1,6 +1,6 @@
 /** Summit boss fight and objective RPG tuning (provisional, see docs/BALANCE.md). */
 export const bossBalance = Object.freeze({
-  bossHealth: 600,
+  bossHealth: 3600,
   entranceWarningTicks: 90,
   approachDepth: 260,
   depthRequirement: 260,

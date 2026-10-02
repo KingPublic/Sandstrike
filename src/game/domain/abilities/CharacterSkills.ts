@@ -51,7 +51,7 @@ export class CharacterSkills {
             .sort((a, b) => Math.hypot(a.position.x - c.owner.position.x, a.position.y - c.owner.position.y) - Math.hypot(b.position.x - c.owner.position.x, b.position.y - c.owner.position.y));
           grapple = candidates[0]?.position; break;
         }
-        case "engineer": this.decoy = { x: c.owner.position.x + c.direction.x * 90, y: c.owner.position.y }; break;
+        case "engineer": this.decoy = { x: c.owner.position.x - c.direction.x * 120, y: c.owner.position.y }; break;
         case "field-medic":
           for (const target of c.actors) if (target.faction === c.owner.faction && target.health > 0 && target.lifecycle === "active" && Math.hypot(target.position.x - c.owner.position.x, target.position.y - c.owner.position.y) <= 300) heals.push({ actorId: target.id, amount: 30 });
           break;

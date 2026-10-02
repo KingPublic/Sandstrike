@@ -18,7 +18,9 @@ test("summit boss stage blocks rockets, restocks the crate and stays finite", as
   await page.setViewportSize({ width: 1440, height: 900 });
   await startBoss(page);
 
-  await expect(page.locator('[data-hunt-field="boss"]')).toContainText("Boss 600 / 600");
+  await expect(page.locator('[data-hunt-field="boss"]')).toContainText("Boss 3600 / 3600");
+  await expect(page.getByRole("meter", { name: "Boss health" })).toBeVisible();
+  await expect(page.getByRole("meter", { name: "Boss health" })).toHaveAttribute("max", "3600");
   await expect.poll(() => page.evaluate(() => { const s = window.__SANDSTRIKE_TEST__?.snapshot(), camera = window.__SANDSTRIKE_TEST__?.presentation().metrics?.camera; return s?.hunt && camera ? s.hunt.hunter.position.y > camera.top && s.hunt.hunter.position.y < camera.bottom : false; })).toBe(true);
   await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().hunt?.rpg.owned ?? false), { timeout: 15_000 }).toBe(true);
   await expect(page.locator('[data-hunt-field="rpg"]')).toContainText("RPG 2 / 2");
