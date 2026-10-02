@@ -10,8 +10,10 @@ or merge. User handles remote integration. Communicate in Bahasa Indonesia.
    ASSET_LICENSES and REFERENCE_RESEARCH; then relevant source/tests.
 3. Check git status/log against this record. The approved survival specification
    under docs/superpowers/specs is design history; do not replay completed plans.
-4. Latest user explicitly waived Superpowers skills, repeated planning/review and
-   unnecessary retesting. Follow that override and directly execute observed fixes.
+4. User explicitly waived Superpowers skills, repeated planning/review and unnecessary
+   retesting for future maintenance/updates as well as this session. Default to direct
+   execution; use Superpowers only if explicitly requested again. Follow AGENTS.md's
+   persistent preferences, respect time limits, and execute observed fixes directly.
 
 A short 'lanjutkan' resumes from the next action below. Account quota cannot be
 observed; never invent its percentage. If user reports1%, checkpoint and stop.

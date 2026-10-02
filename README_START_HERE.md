@@ -11,8 +11,8 @@ Read in this order, then check `git status`, recent commits and the actual sourc
 2. `docs/SESSION_HANDOFF.md` for the latest verified state, approvals and next action.
 3. `docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md` for the
    **user-approved replacement direction**; it supersedes conflicting old gameplay.
-4. `docs/superpowers/plans/2026-10-02-survival-plan-set.md`, then the current child
-   plan. Do not execute all old Phase A/B/C plans again.
+4. Old files under `docs/superpowers/plans/` are optional historical references.
+   Do not load skills or execute completed Phase A/B/C plans to resume work.
 5. Relevant sections of `docs/GAME_DESIGN.md`, `docs/ARCHITECTURE.md`,
    `docs/DECISIONS.md`, `docs/BALANCE.md`, `docs/ASSET_LICENSES.md`, and
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
@@ -22,9 +22,12 @@ pacing pass and presentation pass are implemented** in the root on phase-b-ready
 Local checkpoint subject: feat: polish survival presentation and tune full-run pacing.
 Use git log/status for the actual commit/dirty state; no push or merge was performed.
 
-The latest user explicitly asked to SKIP Superpowers skills and further plan/review
-cycles. This overrides older workflow requests. Execute focused fixes, use necessary
-checks only, and let the user assess the game. Do not reopen completed plans.
+The user explicitly asked to SKIP Superpowers skills and further plan/review cycles.
+This is a persistent preference for future fixes and game updates, not just this
+checkpoint. Default to direct execution; use Superpowers again only when explicitly
+requested by the user. Keep necessary planning brief, reuse working systems, run
+only relevant checks, respect time limits, and let the user assess the game.
+Do not reopen completed plans. AGENTS.md now records the same preference.
 
 New in this checkpoint:
 - Authored alternating end stairs and long industrial catwalks, directional route
