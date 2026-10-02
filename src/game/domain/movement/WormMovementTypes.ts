@@ -29,6 +29,11 @@ export interface WormMovementConfig {
   readonly gravity: number;
   readonly burstSpeedGain: number;
   readonly burstSpeedCap: number;
+  /**
+   * Upward speed a Burst converts into while the player steers up. Zero keeps
+   * Burst a pure sprint, which is what the Hunt pursuit worm uses.
+   */
+  readonly burstLiftSpeed: number;
   readonly burstCooldownSeconds: number;
   readonly surfaceHysteresis: number;
   readonly maxForcedReentrySeconds: number;
@@ -48,6 +53,8 @@ export interface WormMotionSnapshot {
   readonly speed: number;
   readonly phase: WormMotionPhase;
   readonly burstCooldownSeconds: number;
+  /** Full Burst cooldown, so UI can show how much of the wait is left. */
+  readonly burstCooldownTotalSeconds: number;
 }
 
 export type WormMotionEvent =

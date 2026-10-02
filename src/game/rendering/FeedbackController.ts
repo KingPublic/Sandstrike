@@ -12,7 +12,7 @@ export const defaultPresentationSettings: PresentationSettings = Object.freeze({
 export type SoundVoice =
   | "rifle" | "carbine" | "smg" | "burst" | "sidearm" | "rpg" | "ally"
   | "shield" | "heal" | "mark" | "grapple" | "decoy"
-  | "fire" | "venom" | "shock" | "surge" | "boss" | "impact" | "hit" | "warning" | "neutral";
+  | "fire" | "venom" | "shock" | "surge" | "boss" | "impact" | "hit" | "warning" | "leap" | "neutral";
 export interface FeedbackCommand {
   readonly label: string; readonly shape: "ring" | "cross" | "shield" | "diamond";
   readonly position: Vec2 | undefined; readonly color: number;
@@ -67,6 +67,7 @@ function cueFor(event: DomainEvent): Cue | undefined {
     case "actor-healed": return event.amount > 0 ? { label: "Heal", shape: "cross", color: 0x98f5c1, tone: 620, voice: "heal" } : undefined;
     case "infantry-telegraph": return { label: "Aim locked", shape: "diamond", color: 0xffbb77, tone: 440, voice: "warning" };
     case "worm-breached": return { label: "Breach", shape: "ring", color: 0xffd59b, tone: 180, voice: "impact" };
+    case "worm-burst": return { label: "Leap", shape: "ring", color: 0xffe9b0, tone: 300, voice: "leap" };
     case "worm-reentered": return { label: "Burrow", shape: "ring", color: 0xc98961, tone: 130, voice: "impact" };
     case "response-warning": return { label: `Response ${String(event.band)} incoming`, shape: "diamond", color: 0xffbd78, tone: 330, voice: "warning" };
     case "response-band-changed": return { label: `Response ${String(event.band)} active`, shape: "shield", color: 0xffbd78, tone: 390, voice: "warning" };

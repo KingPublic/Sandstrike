@@ -65,6 +65,7 @@ function playVoice(context: AudioContext, noiseBuffer: AudioBuffer, voice: Sound
     case "venom": tone_(target, "sawtooth", 240, 110, now, .3, volume * .5); crack(target, noiseBuffer, now, .16, volume * .35, 420); break;
     case "shock": boom(target, noiseBuffer, now, volume * 1.1); break;
     case "surge": tone_(target, "sawtooth", 220, 720, now, .4, volume * .5); break;
+    case "leap": crack(target, noiseBuffer, now, .3, volume * .8, 460); tone_(target, "sawtooth", 170, 680, now, .32, volume * .45); break;
     case "boss": tone_(target, "sawtooth", 110, 42, now, .8, volume * .8); crack(target, noiseBuffer, now, .5, volume * .5, 300); break;
     case "impact": crack(target, noiseBuffer, now, .1, volume * .7, 700); tone_(target, "triangle", 150, 80, now, .12, volume * .35); break;
     case "hit": tone_(target, "triangle", 130, 90, now, .1, volume * .45); break;

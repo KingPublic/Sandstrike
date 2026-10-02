@@ -189,6 +189,11 @@ Rampage has no finite victory state in the MVP.
   bounded by the worm's current state and speed.
 - Underground travel provides the most reliable acceleration and turning.
 - The short Burst increases commitment and speed; it cannot cancel a poor angle.
+- A Burst held *with an upward steer* is a leap instead of a sprint: it converts the
+  climb into a strong vertical launch so the worm can leave the ground, reach above
+  the surface and strike air targets. The leap is intent-based, so a player who
+  steers up and bursts gets height whether they pressed it underground or in the
+  air; the campaign (Hunt) pursuit worm keeps Burst as a pure sprint.
 - Crossing the ground line emerges from movement. There is no contextual
   "breach" button.
 - Air control is weaker than underground control but is not zero.
@@ -204,7 +209,8 @@ Rampage has no finite victory state in the MVP.
 - **Impact:** speed and approach angle influence collisions with vehicles,
   structures, and airborne targets.
 - **Burst:** a short mobility action governed by a visible cooldown or resource;
-  it improves speed, not invulnerability.
+  it improves speed, not invulnerability. Steered upward it becomes the leap that
+  lets the worm leave the surface far enough to reach and bite air targets.
 - Consuming designated biological prey restores a small amount of health.
 - Armored threats provide more score and escalation pressure but no routine
   healing.

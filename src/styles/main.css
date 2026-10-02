@@ -400,6 +400,26 @@ h1 {
   background: rgb(71 33 44 / 82%);
 }
 
+/* Burst readiness ring: empty means the leap is on cooldown. */
+.touch-action--boost::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgb(255 232 181 / 70%) calc(var(--burst-ready, 1) * 1turn),
+    rgb(255 255 255 / 8%) 0
+  );
+  mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  pointer-events: none;
+}
+
+.touch-action--boost[data-burst-ready="false"] {
+  color: rgb(255 230 193 / 45%);
+  border-color: rgb(255 232 181 / 20%);
+}
+
 .touch-action--held {
   scale: 0.93;
   filter: brightness(1.28);

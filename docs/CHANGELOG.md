@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Rampage worm leap: holding up while pressing Burst (Shift, or the Burst button)
+  now launches the worm high above the surface instead of only nudging a sprint.
+  The leap peaks about 275px up, which finally reaches the patrol height of enemy
+  helicopters, so the worm can surface and bite them out of the sky. Burst now has
+  its own rising leap sound and dust on both desktop and touch. Campaign (Hunt)
+  worm behaviour is unchanged.
+
 - Playtest fixes: allied soldiers now escort the Hunter (spawning beside them,
   regrouping when left behind, climbing with them) instead of drifting off camera,
   and their tracers start at the drawn muzzle. Weapon and allied fire plus all ten

@@ -403,3 +403,26 @@ Status: **provisional; deterministic and browser evidence, no human feel claim**
   Field Medic 409.4s, all Victory with the Hunter at 82-100 HP. These are scripted
   inputs, not a human difficulty guarantee, and sit at the top of the 240-420s
   acceptance band; a human with better aim should be faster.
+
+## Rampage worm leap (2026-10-02)
+
+Status: **measured in deterministic tests; human feel not yet re-verified**.
+- Player Burst in Rampage is now intent-based: while the movement input holds up
+  (`moveY <= -0.5`) or the worm is already rising faster than 180px/s, a Burst
+  converts the climb into a vertical leap instead of a tangent sprint.
+- `arcadeMovementBalance.burstLiftSpeed = 1050` with `gravity = 2000`, so apex is
+  1050^2 / (2 * 2000) = 275px above the surface, reached in ~0.53s and returned in
+  ~1.05s. RunFactory scales lift, burst and gravity together with character speed,
+  so apex is identical for every worm (verified per character speed in
+  `tests/integration/arcadeWorm.test.ts`).
+- Helicopter (`actor.aerial`) patrols at 220px; the mouth reaches contact from
+  about 164px of head clearance, so a leap clears it by roughly 110px. Measured
+  before: best-timed breach apex was 159px, i.e. exactly out of reach - the
+  reported "jump is too weak" complaint.
+- Plain breaches and the Hunt pursuit worm are unchanged: `movementBalance` and
+  `huntMovementBalance` keep `burstLiftSpeed = 0`, so the pursuit worm's breach
+  apex stays at its previous 500px cruise / 705px bursted values (gravity 640).
+- Feedback: the new `worm-burst` cue adds a rising leap voice plus dust, so Burst
+  is audible and visible on both desktop and touch.
+- Touch: the worm's Burst control is now a full-size thumb target (same rect size
+  as the skill button) instead of a 0.5x chip.

@@ -814,6 +814,13 @@ tower pursuit. WormLocomotion ballisticAirControl preserves vertical velocity
 through steering before applying gravity. Historical fixtures keep their explicit
 legacy profile.
 
+`burstLiftSpeed` lives in the same movement configuration: when the player steers up
+and Bursts, WormLocomotion replaces the tangent sprint with a fixed vertical launch
+(`WormLocomotion.isAscending`). arcadeMovementBalance sets 1050 (275px apex);
+movementBalance and huntMovementBalance keep 0, so fixtures and the Hunt pursuit worm
+are untouched. `WormMotionSnapshot.burstCooldownTotalSeconds` lets the DOM touch layer
+(`TouchControls.setBurstReadiness`) draw the Burst readiness ring without new events.
+
 ## Survival roster and persistence v3 (2026-10-02)
 characters.ts owns ten immutable definitions, visual identity and five weapons.
 RunFactory validates role-compatible characterId; the session freezes the selected

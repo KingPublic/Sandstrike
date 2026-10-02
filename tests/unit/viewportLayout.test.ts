@@ -78,6 +78,18 @@ describe("computeViewportLayout", () => {
     },
   );
 
+  it("gives the worm a full-size Burst control and keeps the Hunter one compact", () => {
+    const view = { coarsePointer: true, touchCapable: true, safeArea: { top: 0, right: 18, bottom: 10, left: 18 } } as const;
+    const worm = computeViewportLayout(input(915, 412, { ...view, role: "worm" }));
+    const hunter = computeViewportLayout(input(915, 412, { ...view, role: "hunter" }));
+
+    expect(worm.boostButton.width).toBe(worm.primaryButton.width);
+    expect(worm.boostButton.y).toBe(worm.primaryButton.y);
+    expect(overlaps(worm.primaryButton, worm.boostButton)).toBe(false);
+    expect(overlaps(worm.boostButton, worm.criticalRegion)).toBe(false);
+    expect(hunter.boostButton.width).toBeLessThan(hunter.primaryButton.width);
+  });
+
   it("blocks portrait play while retaining a finite safe game rectangle", () => {
     const layout = computeViewportLayout(
       input(390, 844, {

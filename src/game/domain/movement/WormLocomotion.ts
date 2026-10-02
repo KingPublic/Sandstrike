@@ -72,7 +72,7 @@ export class WormLocomotion {
     }
 
     if (action.boost.pressed && this.burstCooldownRemaining === 0) {
-      this.applyBurst(events);
+      this.applyBurst(action, events);
     }
 
     if (effects && effects.liftAcceleration > 0) {
@@ -150,6 +150,7 @@ export class WormLocomotion {
       speed: this.speed,
       phase: this.phase,
       burstCooldownSeconds: this.burstCooldownRemaining,
+      burstCooldownTotalSeconds: this.config.burstCooldownSeconds,
     });
   }
 
@@ -220,14 +221,20 @@ export class WormLocomotion {
     this.headingRadians = Math.atan2(velocity.y, velocity.x);
   }
 
-  private applyBurst(events: WormMotionEvent[]): void {
+  private applyBurst(action: ActionFrame, events: WormMotionEvent[]): void {
     this.speed = Math.min(
       this.config.burstSpeedCap,
       this.speed + this.config.burstSpeedGain,
     );
     const tangent = this.motionTangent();
     this.velocity = scale(tangent, this.speed);
-    this.headingRadians = Math.atan2(tangent.y, tangent.x);
+    // A Burst aimed upward is a leap, not a sprint. It is what carries the worm
+    // up to air targets instead of skimming just under the surface.
+    if (this.isAscending(action)) {
+      this.velocity = freezeVec2(this.velocity.x, -this.config.burstLiftSpeed);
+    }
+    this.speed = Math.hypot(this.velocity.x, this.velocity.y);
+    this.headingRadians = Math.atan2(this.velocity.y, this.velocity.x);
     this.burstCooldownRemaining = this.config.burstCooldownSeconds;
     events.push(
       Object.freeze({
@@ -237,6 +244,13 @@ export class WormLocomotion {
         position: freezeVec2(this.position.x, this.position.y),
       }),
     );
+  }
+
+  private isAscending(action: ActionFrame): boolean {
+    if (this.config.burstLiftSpeed <= 0) {
+      return false;
+    }
+    return action.moveY <= -0.5 || this.velocity.y < -180;
   }
 
   private resolvePhaseTransition(
@@ -368,6 +382,8 @@ export class WormLocomotion {
       config.maxForcedReentrySeconds,
     ];
     if (
+      !Number.isFinite(config.burstLiftSpeed) ||
+      config.burstLiftSpeed < 0 ||
       !Number.isInteger(config.segmentCount) ||
       config.segmentCount < 2 ||
       !Number.isInteger(config.pathCapacity) ||

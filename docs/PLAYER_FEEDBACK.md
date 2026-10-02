@@ -2,12 +2,45 @@
 
 Recorded 2026-10-02 after the user's playtest. Applies after checkpoint 1ffe038
 and workflow preference commit 34a5971.
-Status: **items 1-5 reproduced and fixed in commit a9f0615; item 6 remains open
-and is a subjective quality judgement for the next playtest.** Passing automated
-tests still does not establish satisfactory feel.
+Status: **items 1-5 fixed in commit a9f0615; item 7 (weak Rampage worm jump) fixed
+in the leap commit recorded above; item 6 (art/UI quality) remains open and is a
+subjective quality judgement for the next playtest.** Passing automated tests still
+does not establish satisfactory feel.
+
+## Fix log (2026-10-02, Rampage leap)
+
+User report: in Rampage the worm's jump feels far too weak - even boosting upward
+the worm cannot climb high enough to eat a helicopter - and they asked for a more
+comfortable experience on mobile and desktop.
+
+Reproduced deterministically: with the real arcade movement profile the best-timed
+upward Burst peaked 159px above the surface, and a plain breach 104px. The mouth
+reaches contact with a 220px helicopter from about 164px of head clearance, so the
+target was literally just out of reach. Fixed:
+- Upward Burst is now an intent-based leap: holding up (`moveY <= -0.5`) or already
+  rising faster than 180px/s converts the Burst into a 1050px/s vertical launch
+  (apex 275px at the arcade gravity of 2000) instead of a tangent sprint. Works
+  from underground or mid-air, so timing is forgiving on both input schemes, and
+  RunFactory scales the lift with character speed so every worm gets the same apex.
+- Verified reach: `tests/integration/arcadeWorm.test.ts` runs real arcade sessions:
+  a 200-tick leap destroys the `actor.aerial` at y=-220 (score aerialDestroyed 1), and
+  Dune Maw, Storm Serpent and Iron Burrower all keep a 275px apex because RunFactory
+  scales `burstLiftSpeed` with character speed exactly like gravity.
+  `tests/unit/ballisticBreach.test.ts` pins the leap apex band and proves the leap
+  clears the patrol altitude while a plain breach still falls short.
+- Feel: `worm-burst` had no cue at all before; it now has a rising `leap` audio voice
+  and dust via FeedbackController/PhaserAudioAdapter.
+- Mobile comfort: the worm's Burst button is a full-size thumb target (same size as
+  the skill button, previously half) and shows a readiness ring so a tap during the
+  1.8s cooldown is visibly explained. Desktop keeps reading the HUD text, which now
+  says `Burst - hold up to leap` while an air target is alive.
+- Browser proof: `tests/e2e/worm-leap.spec.ts` (2 cases) - desktop keyboard leap and
+  phone-viewport touch leap both measure a peak above helicopter altitude + 20px, no
+  page errors; capture `docs/verification/worm-leap-mobile.png`.
+- Campaign (Hunt) worm movement is deliberately unchanged: `huntMovementBalance`
+  keeps `burstLiftSpeed = 0`. Only real player Rampage (arcade) gets the leap.
 
 ## Fix log (2026-10-02, commit a9f0615)
-
 Reproduction used a 7200-tick scripted ascent run and a browser case:
 - Missing soldiers was real: ground allies existed but ended up ~3000px from the
   Hunter (x~-3130 while the player was near x=0), i.e. permanently off camera.
@@ -64,13 +97,22 @@ speculative art change was made without feedback.
 5. **Allied firing:** NPC shots look strange and lack impact/audio. Correct allied
    weapon pose, muzzle/tracer alignment, target choice and firing feedback for
    both soldiers and helicopters. They must fire convincingly at exposed targets.
+6. **(open) UI and art quality:** subjective; needs the user's judgement before any
+   speculative art change.
+7. **Weak Rampage worm jump (fixed):** boosting upward barely lifted the worm, so it
+   could never reach and eat a helicopter. Fixed with the intent-based upward Burst
+   leap described in the leap fix log above. User also asked for a more comfortable
+   mobile and desktop experience; the leap now has audio/dust feedback, a full-size
+   touch Burst button and a readiness ring, and the HUD advertises the leap whenever
+   an air target is alive.
 
 ## Resume from these issues
 
-On the next request to continue, start with a short real-game reproduction of
-aiming and missing soldiers, then execute focused corrections and weapon/skill
-audio-feel improvements. Follow with worm AI and UI/art polish. This is an issue
-record, not a requirement to write another lengthy plan or start a new phase.
+On the next request to continue, start with a short real-game reproduction of the
+reported problem, then execute focused corrections. This is an issue record, not a
+requirement to write another lengthy plan or start a new phase. Remaining open:
+item 6 (UI/art quality, user judgement) and the earlier items' human feel
+(sound identity, aim alignment, soldier presence, worm pressure, leap feel).
 
 Relevant entry points (inspect only the current issue's files):
 - Aiming/rendering: HunterCharacterView.ts, ActorViews.ts, HuntSystems.ts,

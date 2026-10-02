@@ -111,6 +111,9 @@ describe("WormLocomotion underground motion", () => {
       movementBalance.burstCooldownSeconds,
       8,
     );
+    expect(boosted.snapshot().burstCooldownTotalSeconds).toBe(
+      movementBalance.burstCooldownSeconds,
+    );
     expect("invulnerable" in boosted.snapshot()).toBe(false);
 
     const speedAfterFirst = boosted.snapshot().speed;

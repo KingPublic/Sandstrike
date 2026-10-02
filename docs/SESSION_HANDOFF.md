@@ -4,7 +4,32 @@ Updated 2026-10-02, latest execution. Root C:/Users/Adrian/Games/Sandstrike.
 Branch phase-b-ready. Work directly in root; no new worktree, branch switch, push
 or merge. User handles remote integration. Communicate in Bahasa Indonesia.
 
-## Latest checkpoint: playtest corrections (commit a9f0615, 2026-10-02)
+## Latest checkpoint: Rampage worm leap (2026-10-02)
+
+User report: in Rampage the worm's jump was far too weak - even boosting upward it
+could not reach the helicopters - and they asked for a more comfortable game on
+mobile and desktop. Root cause, measured: the arcade profile capped the best-timed
+upward Burst apex at 159px above the surface (104px without Burst) while a 220px
+helicopter needs about 164px of head clearance, so the target was exactly out of
+reach. Fixed by turning an upward Burst into an intent-based leap
+(`burstLiftSpeed = 1050`, apex 275px at gravity 2000), reachable from underground or
+mid-air so timing is forgiving on keyboard and touch. Burst also gained a rising
+`leap` audio voice and dust, the touch Burst button became a full-size thumb target
+with a cooldown readiness ring, and the HUD shows `Burst - hold up to leap` while an
+air target is alive. `movementBalance` and `huntMovementBalance` keep
+`burstLiftSpeed = 0`, so plain breaches and the Hunt pursuit worm are unchanged.
+
+Verified: lint and typecheck clean; 233 domain tests across 75 files pass with the
+heavy 5-run survival gate excluded, including the new leap unit bands
+(`tests/unit/ballisticBreach.test.ts`), the real-session helicopter bite
+(`tests/integration/arcadeWorm.test.ts`), the HUD leap label and the worm touch
+layout. Browser: `tests/e2e/worm-leap.spec.ts` (desktop keyboard + phone-viewport
+touch) measures the peak above helicopter altitude + 20px with no page errors, and
+the 10 existing worm control/HUD browser cases still pass. Capture:
+`docs/verification/worm-leap-mobile.png`. Not re-run: the 5 heavy full-run Hunt
+simulations (their movement profile is untouched) and physical devices.
+
+## Previous checkpoint: playtest corrections (commit a9f0615, 2026-10-02)
 
 The user's five reproducible complaints from `docs/PLAYER_FEEDBACK.md` are fixed and
 committed; item 6 (UI/art quality) is intentionally left open pending their next
@@ -76,15 +101,14 @@ Resolve its SHA using git log; no remote publication.
   No full old Phase B/C E2E rerun; no new review-agent or Superpowers workflow.
 
 ## Exact next action
-The user has now playtested and reported major defects: weak gun/RPG sound and
-feel, little distinction between weapons, missing distinct skill sounds, wrong
-Hunter hand/shot direction, weak UI/art, stupid worm AI, missing allied soldiers
-with repeated helicopters, and strange/weak allied shooting and audio.
-All remain OPEN, user-reported, not reproduced/fixed. Read PLAYER_FEEDBACK.md.
-This turn records the request only. Next "lanjutkan": briefly reproduce aiming
-and soldier presence, then execute focused fixes and audio/weapon feel improvements,
-followed by worm AI/UI polish. Reuse existing systems; no new Superpowers or generic
-phase/plan. Passing automated tests does not overrule this human feedback.
+The user's newest request (weak Rampage worm jump + mobile/desktop comfort) is
+implemented and committed; it has NOT been playtested by the user yet. On
+"lanjutkan", take the user's verdict on the leap feel, the new Burst sound/dust,
+the full-size touch Burst button and its cooldown ring, and then act on any
+remaining item from PLAYER_FEEDBACK.md (item 6 UI/art quality is still open and
+subjective). Do not restart a generic phase/plan or Superpowers cycle, and do not
+rebalance Hunt because of this change. Passing automated tests does not overrule
+human feedback. Item 6 (UI/art) still needs the user's own judgement.
 
 ## Practical limits
 Procedural stylized visuals, not photorealistic/GOTY production assets. Seed33 is

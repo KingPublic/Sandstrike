@@ -18,6 +18,7 @@ export const movementBalance: WormMovementConfig = Object.freeze({
   gravity: 720,
   burstSpeedGain: 100,
   burstSpeedCap: 460,
+  burstLiftSpeed: 0,
   burstCooldownSeconds: 1.8,
   surfaceHysteresis: 6,
   maxForcedReentrySeconds: 0.25,

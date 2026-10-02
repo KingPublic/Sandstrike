@@ -397,3 +397,31 @@ or duplicating systems.
 Status: implemented and locally verified (231 tests, lint/typecheck green, browser
 cases for squad visibility, shot alignment, controls and the boss). Human feel and
 art quality remain open in docs/PLAYER_FEEDBACK.md.
+
+## D-022 - Rampage worm leap: an upward Burst is a leap, not a sprint (2026-10-02)
+
+Decision:
+- Steered upward (`moveY <= -0.5`) or while already rising beyond 180px/s, the
+  player's Burst converts velocity to a fixed vertical launch speed
+  (`burstLiftSpeed`, 1050 in the arcade profile, apex 275px at gravity 2000)
+  instead of adding speed along the current tangent.
+- The leap lives in the movement configuration as `burstLiftSpeed`, so it stays
+  data-driven and tunable. `movementBalance` (fixtures) and `huntMovementBalance`
+  (the Hunt pursuit worm) keep it at 0; only real player Rampage uses it.
+- Intent, not phase, decides the leap. Steering up and bursting must work from
+  underground or mid-air so the timing is forgiving on both keyboard and touch.
+- Presentation follows: `worm-burst` gains a distinct `leap` audio voice and dust,
+  the worm's touch Burst button is a full-size thumb target with a cooldown ring,
+  and the HUD advertises `Burst - hold up to leap` while an air target is alive.
+
+Why:
+The user reported that boosting upward barely lifted the worm, so the 220px
+helicopter was unreachable. Measurement confirmed the design literally stopped
+short: the best-timed Breach apex was 159px against ~164px of required head
+clearance. Air targets need a deliberate, satisfying vertical move, and honesty
+requires the Burst to do what its upward steer implies.
+
+Status: implemented and locally verified (233 domain tests across 75 files with the
+heavy Hunt full-run gate excluded, plus browser leap cases on desktop keyboard and a
+phone viewport measuring a peak above helicopter altitude + 20px). Human feel of the
+leap, the new sound and the touch control remains open in docs/PLAYER_FEEDBACK.md.

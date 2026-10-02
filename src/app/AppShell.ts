@@ -264,7 +264,7 @@ export class AppShell {
         controller: this.controller,
         debug: configuration.debugAI ?? false,
         onResult: (result) => { this.showResults(result); },
-        onSnapshot: (snapshot) => this.hud?.update(snapshot, this.settings.reducedMotion),
+        onSnapshot: (snapshot) => { this.hud?.update(snapshot, this.settings.reducedMotion); const worm = snapshot.worm; this.touchControls?.setBurstReadiness(worm.burstCooldownTotalSeconds > 0 ? 1 - worm.burstCooldownSeconds / worm.burstCooldownTotalSeconds : 1); },
         settings: () => this.settings,
         audio: this.audio,
         onReady: () => {

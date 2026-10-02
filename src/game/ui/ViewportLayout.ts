@@ -78,12 +78,17 @@ export function computeViewportLayout(
     primarySize,
     primarySize,
   );
-  const boostButton = rect(
-    primaryButton.x - targetSize * 1.15,
-    primaryButton.y - targetSize * 0.35,
-    targetSize,
-    targetSize,
-  );
+  // The worm's Burst is its leap, so it gets a full-size thumb target too.
+  const boostSize = input.role === "worm" ? primarySize : targetSize;
+  const boostButton =
+    input.role === "worm"
+      ? rect(primaryButton.x - boostSize - edgeGap, primaryButton.y, boostSize, boostSize)
+      : rect(
+          primaryButton.x - targetSize * 1.15,
+          primaryButton.y - targetSize * 0.35,
+          targetSize,
+          targetSize,
+        );
   const criticalRegion = rect(
     gameRect.x + gameRect.width * 0.28,
     gameRect.y + gameRect.height * 0.12,

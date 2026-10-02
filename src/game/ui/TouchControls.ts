@@ -16,6 +16,7 @@ export class TouchControls {
   private joystickPointerId: number | undefined;
   private primaryPointerId: number | undefined;
   private boostPointerId: number | undefined;
+  private burstReadiness = 1;
 
   private readonly handleJoystickDown = (event: PointerEvent): void => {
     if (this.joystickPointerId !== undefined) {
@@ -97,6 +98,17 @@ export class TouchControls {
     if (!layout.touchControlsVisible) {
       this.clearPointers();
     }
+  }
+
+  /** Draws how much of the Burst wait is left, so a tap never feels ignored. */
+  setBurstReadiness(readiness: number): void {
+    const value = Number.isFinite(readiness) ? Math.min(1, Math.max(0, readiness)) : 1;
+    if (this.burstReadiness === value) {
+      return;
+    }
+    this.burstReadiness = value;
+    this.boostButton.style.setProperty("--burst-ready", value.toFixed(3));
+    this.boostButton.dataset.burstReady = value >= 1 ? "true" : "false";
   }
 
   clearPointers(): void {

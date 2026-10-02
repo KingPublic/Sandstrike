@@ -12,6 +12,11 @@ export const arcadeMovementBalance: WormMovementConfig = Object.freeze({
   gravity: 2000,
   burstSpeedGain: 150,
   burstSpeedCap: 800,
+  /**
+   * Apex is burstLiftSpeed^2 / (2 * gravity) = 275px above the surface, so a
+   * well-timed upward Burst reaches a helicopter patrolling at 220px.
+   */
+  burstLiftSpeed: 1050,
   cameraLookAheadX: 200,
   cameraLookAheadY: 100,
 });

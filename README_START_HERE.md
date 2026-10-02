@@ -19,10 +19,18 @@ Read in this order, then check `git status`, recent commits and the actual sourc
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
 
 Current checkpoint (2026-10-02, latest execution): **the approved survival revision,
-pacing pass, presentation pass and the first round of playtest corrections are
-implemented** in the root on phase-b-ready. Latest checkpoint commit:
-`fix: make allies visible, align aim and shots, and add weapon audio` (a9f0615).
-Use git log/status for the exact state; no push or merge was performed.
+pacing pass, presentation pass, the first round of playtest corrections and the
+Rampage worm leap fix are implemented** in the root on phase-b-ready. Latest
+checkpoint commit subject: `fix: strengthen the rampaging worm leap`. Use git
+log/status for the exact SHAs; no push or merge was performed.
+
+Rampage leap (latest): holding an upward steer while pressing Burst (Shift, or the
+touch Burst button) now launches the player worm ~275px above the surface instead
+of only sprinting, which finally reaches the 220px helicopter patrol altitude and
+lets the worm bite them out of the sky. Burst also has its own rising leap sound
+plus dust, the worm's touch Burst button is now a full-size thumb target with a
+cooldown ring, and the HUD says `Burst - hold up to leap` while an air target is
+alive. Campaign (Hunt) worm movement is unchanged.
 
 Playtest corrections (a9f0615, from docs/PLAYER_FEEDBACK.md items 1-5): allied
 soldiers spawn beside the Hunter and escort them instead of drifting off camera;
@@ -56,17 +64,19 @@ Measured seed33 full runs: Ranger5:59, Siege5:53, Scout5:46, Medic5:58,
 Engineer6:03. These are deterministic input runs, not a human difficulty guarantee;
 Scout grapple was not used. Four baseline runs precede the extra cache placement;
 only failed Engineer was rerun after the focused change. See SURVIVAL_PLAYTHROUGH.json.
-Verification: lint/typecheck pass;225 earlier domain tests, one new HUD regression and5 full-run cases pass
-across focused runs. Root browser10 distinct cases, Pages boss1, production root/Pages
-smoke1each pass. dist is a normal root production build. See SURVIVAL_VERIFICATION.md.
+Verification: lint/typecheck pass; 233 domain tests across 75 files pass with the
+heavy 5-run survival gate excluded, plus 2 new browser leap cases
+(`tests/e2e/worm-leap.spec.ts`) and 10 worm-control/HUD browser cases. `dist` is a
+normal root production build. See SURVIVAL_VERIFICATION.md.
 
-Exact next action: commit a9f0615 fixed items 1-5 of `docs/PLAYER_FEEDBACK.md` and
-the user has NOT yet playtested it. On "lanjutkan", act on their judgement of those
-fixes (sound identity, aim/shot alignment, soldier presence, worm pressure) before
-changing more, and treat item 6 (UI/art quality) as still open and subjective.
-Because the scripted full runs now sit at the top of the 240-420s band, the boss
-fight length is the first thing to tune if a run feels long. Do not restart a
-generic plan/review/testing cycle.
+Exact next action: playtest the Rampage worm leap and the earlier playtest fixes
+(items 1-5 of `docs/PLAYER_FEEDBACK.md`) in the real game. New this turn: hold
+up + Burst to leap, eat a helicopter, and check the new Burst sound, dust, touch
+button size and cooldown ring on both desktop and a phone viewport. Item 6
+(UI/art quality) is still open and subjective - do not make speculative art
+changes without the user's judgement. Because the scripted full Hunt runs sit at
+the top of the 240-420s band, the boss fight length is the first thing to tune if
+a run feels long. Do not restart a generic plan/review/testing cycle.
 Physical devices, gamepad/audio/haptics, sustained performance and human difficulty
 still need real feedback. Visuals are stylized original procedural art, not photorealism.
 
