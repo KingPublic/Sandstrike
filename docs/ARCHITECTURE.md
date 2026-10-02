@@ -806,3 +806,10 @@ immunity / cooldown) and `RpgSystem` (objective weapon with crate restock).
 Snapshots expose `world`, `wormLife`, `hunt.boss`, `hunt.rpg` and `hunt.allies`,
 and rendering owns no timers. Relay-defense compositions remain available through
 the legacy fixtures.
+
+## Ballistic movement profiles (2026-10-02)
+
+arcadeMovementBalance owns compact player breach tuning; huntMovementBalance owns
+tower pursuit. WormLocomotion ballisticAirControl preserves vertical velocity
+through steering before applying gravity. Historical fixtures keep their explicit
+legacy profile.

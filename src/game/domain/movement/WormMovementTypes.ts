@@ -25,6 +25,7 @@ export interface WormMovementConfig {
   readonly lowSpeedTurnRate: number;
   readonly highSpeedTurnFactor: number;
   readonly airTurnFactor: number;
+  readonly ballisticAirControl?: boolean;
   readonly gravity: number;
   readonly burstSpeedGain: number;
   readonly burstSpeedCap: number;

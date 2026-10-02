@@ -658,3 +658,9 @@ RPG, visible 3-second boss immunity. Target whole successful run: 5-6 minutes.
 This is requested scope, not already shipped behavior. Concrete proposed design
 and assumptions: `docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md`.
 Written design review and implementation planning are the next checkpoints.
+
+## Playtest override 2026-10-02: breach height
+
+Player-controlled worms should breach about one building height, then fall under
+gravity. Held upward steering cannot sustain altitude. This supersedes the earlier
+500-700px player target; the high-rise Hunt enemy retains a tower pursuit profile.

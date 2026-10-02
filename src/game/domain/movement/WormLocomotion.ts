@@ -208,7 +208,7 @@ export class WormLocomotion {
       const magnitude = Math.hypot(velocity.x, velocity.y);
       velocity = freezeVec2(
         Math.cos(angle) * magnitude,
-        Math.sin(angle) * magnitude,
+        this.config.ballisticAirControl ? velocity.y : Math.sin(angle) * magnitude,
       );
     }
     velocity = freezeVec2(

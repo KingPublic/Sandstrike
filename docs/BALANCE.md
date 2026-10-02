@@ -337,3 +337,13 @@ to 120px cells. Edge approaches choose the inward side. Every natural crossing i
 checked on four 5400-tick replay cases, including both arena edges, plus the normal
 GameSession start seed. Final suite: 160 tests pass. Snare lift can interrupt the
 forecast intentionally. Human timing, target pressure and match duration need tuning.
+
+## Player breach correction (2026-10-02)
+
+User rejected the very high floaty jump. Normal Rampage now uses650 cruise,
+800 burst cap,1600 underground acceleration,2000 gravity and a ballistic vertical
+component unaffected by steering. Building-scale100-160px arcs are targeted; tests
+verify peaks between70-210px, falling/re-entry with held up and no steering lift.
+Hunt tower AI keeps800/950/640 in huntMovementBalance with the same ballistic rule.
+Old laboratory fixtures keep their profile.19 focused tests and3 browser cases pass;
+physical feel remains a user playtest, not an asserted acceptance.

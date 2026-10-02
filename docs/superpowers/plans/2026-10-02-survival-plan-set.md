@@ -48,9 +48,9 @@ No empty character buttons: expose only functioning selections at each checkpoin
 ## Execution and resume
 
 User approved the design and continuation, with native/root execution preferences.
-This new plan set is self-reviewed and awaiting written-plan review required by
-writing-plans. No implementation has started. Do not request the design approval
-again. Next action after plan review: Batch 1 Task 1, then execute continuously.
+Foundation and Ascent are committed; user resumed after playtest. Latest player
+breach correction supersedes the500-700px hypothesis. Continue roster inline,
+without another written-plan review pause, per explicit user instruction.
 Keep per-plan ledgers in `.superpowers/sdd/`; persist verified facts, limitations,
 approval state and the exact next task in README_START_HERE and SESSION_HANDOFF.
 Account quota percentages are not visible to the agent: checkpoint after each task

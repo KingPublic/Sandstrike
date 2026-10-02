@@ -24,14 +24,14 @@ Survival Ascent batch are implemented and committed** in the root. Commits:
 rooftop RPG boss fight. Evidence: 197 unit/integration tests pass, lint/typecheck
 green, browser cases pass for menus, controls at four viewports, kill/return,
 warning and the summit boss (`docs/verification/survival-boss.png`).
-Working tree at this checkpoint: the boss-task changes are uncommitted (see
-`git status`); commit them before starting new work if that was not done yet.
-The user asked to pause here after Ascent Task 4 so they can playtest.
-Exact next action: playtest the ascent, then execute **Survival Roster** (ten kits,
+Latest playtest correction: building-height Rampage breaches with ballistic gravity,
+including upward held input; keyboard/touch and the rooftop boss were rechecked.
+The pause for playtest was revoked by the user asking to continue.
+Exact next action: execute **Survival Roster** (ten kits,
 selection + save v3 records, final verification). Do not replay old Phase A/B/C plans.
 
 Required target: 5 worms + 5 Hunters, unique active skills, automatic mouth feeding,
-agile/high breaches, compact desktop menu, allied Hunt NPCs/helicopters, climbable
+responsive building-height breaches, compact desktop menu, allied Hunt NPCs/helicopters, climbable
 platforms/buildings, rising hazard and normal worm return after10s with escalating
 pressure. At summit: hazard stops, RPG pickup, stronger/high-HP boss with3s immunity;
 boss defeat wins. Target whole successful run5-6min, not a forced timer. Themes:

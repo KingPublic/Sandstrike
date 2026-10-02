@@ -89,3 +89,8 @@
 
 - Corrected AI approach depth and predicted crossing sectors so natural Hunt
   breaches receive a complete warning and stay inside the marked sector.
+
+## Playtest correction 2026-10-02
+
+- Reduced player breaches to building height and prevented upward air steering
+  from cancelling gravity; retained tower-reaching Hunt boss attacks.

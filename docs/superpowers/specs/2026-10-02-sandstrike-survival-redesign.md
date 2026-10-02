@@ -55,6 +55,13 @@ These are delivery batches within Phase D, not new obligatory project phases.
 Campaign, achievement economy, extra biomes and online multiplayer are outside
 this revision; they do not delay these explicitly requested systems.
 
+## Latest playtest override (2026-10-02)
+
+User resumed after the Ascent checkpoint and rejected excessive/floaty player jumps.
+Player breach target is now about one building height (roughly100-160px), with
+ballistic falling even while up is held. This overrides player500-700px targets
+below; Hunt tower pursuit remains separately tuned for the tall encounter arena.
+
 ## Desktop/mobile menu
 
 Desktop title/main/mode/character screens occupy the available viewport. Replace

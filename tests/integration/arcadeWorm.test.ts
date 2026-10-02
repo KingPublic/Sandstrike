@@ -6,7 +6,7 @@ import { GameSession } from "../../src/game/domain/session/GameSession";
 import { movementBalance } from "../../src/game/data/movementBalance";
 import { FlatTerrainProfile } from "../../src/game/domain/terrain/FlatTerrainProfile";
 
-it("normal Rampage turns up and naturally breaches much higher", () => {
+it("normal Rampage breaches around building height and returns under gravity", () => {
   const run = new RunFactory("arc").create({ seed: 818, mode: "rampage" });
   let highest = 0;
   for (let tick = 1; tick <= 240; tick++) {
@@ -15,7 +15,8 @@ it("normal Rampage turns up and naturally breaches much higher", () => {
     expect(frame.snapshot.worm.followers.every(p => Number.isFinite(p.position.x + p.position.y))).toBe(true);
     if (frame.result) break;
   }
-  expect(highest).toBeLessThan(-450);
+  expect(highest).toBeLessThan(-65);
+  expect(highest).toBeGreaterThan(-200);
 });
 it("a mouth contact feeds at low speed without pressing Bite", () => {
   const run = new GameSession({ mode: "rampage", arcade: true, seed: 1, movement: { ...movementBalance, initialPosition: { x: 0, y: -10 }, initialSpeed: 90 }, terrain: new FlatTerrainProfile(0), playerHealth: 50, actors: [spawnActor("food", "actor.prey", { x: 38, y: -10 })] });

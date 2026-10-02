@@ -3,7 +3,20 @@
 Updated: 2026-10-02 (later session). Active root: C:/Users/Adrian/Games/Sandstrike.
 Branch: phase-b-ready. No extra worktrees. User handles remote push/merge.
 
-## Checkpoint 2026-10-02: Survival Foundation + Full Ascent (pause for playtest)
+## Latest active work: roster + playtest correction (2026-10-02)
+
+User resumed the project and requested realistic building-height player breaches.
+Corrected the excessive 500px Rampage arc and upward steering counteracting gravity.
+Normal player profile: cruise650, burst800, gravity2000, ballistic vertical motion.
+Hunt has its own tower pursuit profile800/950/640 with ballistic vertical motion,
+so the rooftop420px clearance stays reachable. Historical fixtures unchanged.
+Evidence this session:19 focused movement/pursuit/boss tests,3 browser cases
+(arcade desktop, touch, summit boss), lint/typecheck passed; inspected
+docs/verification/survival-building-breach.png.
+Continue Survival Roster Task1 directly in root, then selection/savev3/final gate.
+No new approval gate. Account quota cannot be read; checkpoint continuously.
+
+## Previous checkpoint: Survival Foundation + Full Ascent
 
 The user asked to stop after Survival Ascent Task 4 so they can playtest before the
 roster work. Commits in order: `287afc2` (compact themes, arcade breaches,
@@ -115,7 +128,7 @@ Nonfatal Phaser bundle warning remains about 1514kB minified / 400kB gzip.
 
 ## Exact next action on resume
 
-### Latest user playtest revision - 2026-10-02
+### Historical design discussion (superseded execution state) - 2026-10-02
 
 The user tried Phase C and requested a substantial direction correction. Priority
 is now compact desktop menus, agile/high-breaching worms, automatic mouth feeding

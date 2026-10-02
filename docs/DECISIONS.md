@@ -324,3 +324,10 @@ the user-requested experience; historical scenarios stay comparable for regressi
 Status: implemented and locally verified (197 unit/integration tests, lint/typecheck
 green, root browser cases for menu, controls, kill/return, warning and boss). Human
 feel, the 5-6 minute run target and physical devices remain open.
+
+## D-020 - Building-height player arcs (2026-10-02)
+
+Latest user playtest supersedes the original500-700px player jump proposal.
+Rampage uses a compact ballistic arc; Hunt tower AI uses its own profile so the
+existing rooftop fight stays reachable. No new approval pause: user requested
+immediate continuation of the existing plan.
