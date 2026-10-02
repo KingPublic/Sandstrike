@@ -106,3 +106,52 @@ priority on the same tick. No normal worm kill produces victory.
   input/console and original detailed characters. Commit `feat: add rooftop RPG boss fight`.
 
 Continue with the roster and records gate; do not claim natural duration is proven.
+
+## Exact task verification commands
+
+Run commands individually in PowerShell, not as a separator-chained shell string.
+All named new tests must first demonstrate the intended RED, then GREEN after
+implementation; browser cases must also have inspected captures and no fatal errors.
+
+Task 1:
+
+`npm run test -- tests/unit/platformContacts.test.ts tests/integration/hunterAscent.test.ts`
+
+`npm run typecheck`
+
+`npm run build`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.
+
+Task 2:
+
+`npm run test -- tests/unit/wormLifeDirector.test.ts tests/integration/ascentPursuit.test.ts`
+
+`npm run typecheck`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.
+
+Task 3:
+
+`npm run test -- tests/integration/huntAllies.test.ts`
+
+`npm run typecheck`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.
+
+Task 4:
+
+`npm run test -- tests/integration/huntBoss.test.ts`
+
+`npm run test:e2e -- tests/e2e/ascent-boss.spec.ts`
+
+`npm run test:e2e:pages -- tests/e2e/ascent-boss.spec.ts`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.
+
+Add the new ascent-boss file to playwright.pages.config.ts testMatch before its
+Pages command, preserving existing cases and the /Sandstrike/ base path.

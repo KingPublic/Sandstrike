@@ -86,3 +86,44 @@ Skill on semantic `ability` for worm; keep legacy fixtures explicit.
   playable checkpoint and README exact next action. Commit `feat: add Sandguard and skill controls`.
 
 Checkpoint: Batch 1 is not completion of the full revision. Continue with Ascent.
+
+## Exact task verification commands
+
+Run commands individually in PowerShell, not as a separator-chained shell string.
+All named new tests must first demonstrate the intended RED, then GREEN after
+implementation; browser cases must also have inspected captures and no fatal errors.
+
+Task 1:
+
+`npm run test -- tests/unit/themes.test.ts`
+
+`npm run test:e2e -- tests/e2e/survival-menu.spec.ts`
+
+`npm run typecheck`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.
+
+Task 2:
+
+`npm run test -- tests/unit/automaticFeeding.test.ts tests/integration/arcadeWorm.test.ts`
+
+`npm run typecheck`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.
+
+Task 3:
+
+`npm run test -- tests/unit/timedSkill.test.ts tests/unit/roleInput.test.ts`
+
+`npm run test:e2e -- tests/e2e/arcade-controls.spec.ts`
+
+`npm run lint`
+
+`npm run typecheck`
+
+`npm run build`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.

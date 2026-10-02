@@ -80,3 +80,47 @@ GAME_DESIGN/ARCHITECTURE/DECISIONS/BALANCE/CHANGELOG/ASSET_LICENSES.
 
 Self-review: all requested systems have a task; contracts pass theme->world->stage
 and character->strategy->save. No backend/engine replacement; no hidden objective gate.
+
+## Exact task verification commands
+
+Run commands individually in PowerShell, not as a separator-chained shell string.
+All named new tests must first demonstrate the intended RED, then GREEN after
+implementation; browser cases must also have inspected captures and no fatal errors.
+
+Task 1:
+
+`npm run test -- tests/unit/characterSkills.test.ts tests/integration/characterRuns.test.ts`
+
+`npm run typecheck`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.
+
+Task 2:
+
+`npm run test -- tests/unit/saveV3.test.ts`
+
+`npm run test:e2e -- tests/e2e/survival-selection.spec.ts`
+
+`npm run typecheck`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.
+
+Task 3:
+
+`npm run verify`
+
+`npm run test:e2e -- tests/e2e/survival-game.spec.ts tests/e2e/survival-selection.spec.ts`
+
+`npm run test:e2e:pages -- tests/e2e/survival-game.spec.ts`
+
+`npm run test:smoke:root`
+
+`npm run test:smoke:pages`
+
+Expected: every command exits0, tests pass, typecheck/lint have no errors; build
+produces usable dist. Record failures and rerun only the affected checks.
+
+Add survival-game and survival-selection to the Pages testMatch as appropriate
+before final commands. Rebuild normal production output after E2E artifacts.
