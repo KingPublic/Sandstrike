@@ -64,10 +64,15 @@ Resolve its SHA using git log; no remote publication.
   No full old Phase B/C E2E rerun; no new review-agent or Superpowers workflow.
 
 ## Exact next action
-Current approved functional redesign and this pacing/presentation pass are delivered.
-Let the user play: npm run dev from root. Fix the next concrete observation using
-existing action/domain/rendering interfaces; do not rebuild working systems or
-start a generic new phase/plan. User judges visual feel and difficulty.
+The user has now playtested and reported major defects: weak gun/RPG sound and
+feel, little distinction between weapons, missing distinct skill sounds, wrong
+Hunter hand/shot direction, weak UI/art, stupid worm AI, missing allied soldiers
+with repeated helicopters, and strange/weak allied shooting and audio.
+All remain OPEN, user-reported, not reproduced/fixed. Read PLAYER_FEEDBACK.md.
+This turn records the request only. Next "lanjutkan": briefly reproduce aiming
+and soldier presence, then execute focused fixes and audio/weapon feel improvements,
+followed by worm AI/UI polish. Reuse existing systems; no new Superpowers or generic
+phase/plan. Passing automated tests does not overrule this human feedback.
 
 ## Practical limits
 Procedural stylized visuals, not photorealistic/GOTY production assets. Seed33 is
@@ -94,4 +99,5 @@ explicit-debug, no page errors; captures dev-rampage-clean/debug.png and
 survival-hunt-clean.png. Production root/Pages smoke pass again after this change.
 Total evidence231 domain tests and10 distinct root browser cases across scoped
 runs; no repeat of the five full-game simulations for a text-only correction.
-Final dist remains normal root production. Next action remains user feedback.
+Final dist remains normal root production. Subsequent major user feedback is now
+recorded in docs/PLAYER_FEEDBACK.md and supersedes the earlier next action.

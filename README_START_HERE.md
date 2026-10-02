@@ -9,6 +9,7 @@ in Bahasa Indonesia. A short "lanjutkan" means resume the exact next task below.
 Read in this order, then check `git status`, recent commits and the actual source:
 1. `AGENTS.md` for project rules.
 2. `docs/SESSION_HANDOFF.md` for the latest verified state, approvals and next action.
+   Read `docs/PLAYER_FEEDBACK.md` for the latest open major playtest issues.
 3. `docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md` for the
    **user-approved replacement direction**; it supersedes conflicting old gameplay.
 4. Old files under `docs/superpowers/plans/` are optional historical references.
@@ -49,8 +50,11 @@ Verification: lint/typecheck pass;225 earlier domain tests, one new HUD regressi
 across focused runs. Root browser10 distinct cases, Pages boss1, production root/Pages
 smoke1each pass. dist is a normal root production build. See SURVIVAL_VERIFICATION.md.
 
-Exact next action: user plays via npm run dev and reports an observed issue. Resume
-from that feedback; no mandatory plan/review/testing cycle remains for this checkpoint.
+Exact next action: address the OPEN major issues in `docs/PLAYER_FEEDBACK.md`:
+weapon/skill sound and feel, wrong arm/shot aiming, missing allied soldiers, strange
+allied fire, weak worm AI and UI/art quality. These are user-reported and not fixed
+yet. On "lanjutkan", reproduce aiming/soldier presence briefly and execute focused
+fixes; do not restart a generic plan/review/testing cycle.
 Physical devices, gamepad/audio/haptics, sustained performance and human difficulty
 still need real feedback. Visuals are stylized original procedural art, not photorealism.
 
@@ -209,4 +213,5 @@ explicit-debug, no page errors; captures dev-rampage-clean/debug.png and
 survival-hunt-clean.png. Production root/Pages smoke pass again after this change.
 Total evidence231 domain tests and10 distinct root browser cases across scoped
 runs; no repeat of the five full-game simulations for a text-only correction.
-Final dist remains normal root production. Next action remains user feedback.
+Final dist remains normal root production. Subsequent major user feedback is now
+recorded in docs/PLAYER_FEEDBACK.md and supersedes the earlier next action.

@@ -365,3 +365,11 @@ User asks to hide unclear gameplay text except in debug and finish within20min.
 Fix dev auto-debug, put technical counters/tracking/floating labels behind an
 explicit menu checkbox, retain essential HUD and graphical warnings. No physics,
 combat or pacing change and no rerun of unchanged full-game simulations.
+
+## D-026 - Major playtest corrections remain open (2026-10-02)
+User reports unsatisfying gun/RPG audio and feel, indistinct weapon/skill sounds,
+wrong hand/shot alignment, weak UI/art and worm AI, missing allied soldiers with
+repeated helicopters, and strange allied fire/audio. PLAYER_FEEDBACK.md records
+all requested corrections. These are not fixed or reproduced yet; automated
+feasibility is not user acceptance. On continue, reproduce aiming/soldier presence
+briefly and execute focused fixes without Superpowers or new planning loops.
