@@ -6,17 +6,26 @@ import { movementBalance } from "../../src/game/data/movementBalance";
 import { RandomSource } from "../../src/game/domain/random/RandomSource";
 import { FlatTerrainProfile } from "../../src/game/domain/terrain/FlatTerrainProfile";
 import { neutralActionFrame } from "../../src/game/input/ActionFrame";
-function replay() {
-  const controller = new WormController(), perception = new WormPerception();
-  const motion = new WormLocomotion({ ...movementBalance, worldBounds: { left: -2382, right: 2382, top: -1182, bottom: 3182 } });
-  const random = new RandomSource(881).stream("ai.worm"), terrain = new FlatTerrainProfile(0);
-  const trace: unknown[] = []; let warned = false, crossings = 0;
+function replay(seed = 881, hunterX = 1600) {
+  const edge = Math.abs(hunterX) > 1800;
+  const movement = { ...movementBalance, ...(edge ? { initialPosition: { x: hunterX - Math.sign(hunterX) * 300, y: 30 }, initialDirection: { x: 0, y: 1 } } : {}), worldBounds: { left: -2382, right: 2382, top: -1182, bottom: 3182 } };
+  const terrain = new FlatTerrainProfile(0), controller = new WormController(movement, terrain), perception = new WormPerception();
+  const motion = new WormLocomotion(movement);
+  const random = new RandomSource(seed).stream("ai.worm");
+  const trace: unknown[] = []; let lastWarningTick = -1, crossings = 0;
   for (let tick = 1; tick <= 5400; tick++) {
-    const p = perception.observe(motion.snapshot(), { x: 1600, y: -16 }, { x: 0, y: -30 }, undefined, tick);
+    const p = perception.observe(motion.snapshot(), { x: hunterX, y: -16 }, { x: 0, y: -30 }, undefined, tick);
     const decision = controller.step(p, tick, random);
-    if (decision.breachPrediction) warned = true;
     const events = motion.step(decision.action, 1 / 60, terrain);
-    if (events.some(e => e.type === "phase-changed" && e.to === "breaching")) { expect(warned).toBe(true); crossings++; }
+    if (events.some(e => e.type === "phase-changed" && e.to === "breaching")) {
+      const warning = decision.breachPrediction;
+      expect(warning, `unwarned crossing at tick ${String(tick)}`).toBeDefined();
+      expect(tick - (warning?.warningTick ?? tick)).toBeGreaterThanOrEqual(60);
+      expect(warning?.warningTick).not.toBe(lastWarningTick);
+      expect(Math.abs(motion.snapshot().head.position.x - (warning?.x ?? Infinity))).toBeLessThanOrEqual(120);
+      lastWarningTick = warning?.warningTick ?? -1;
+      crossings++;
+    }
     const head = motion.snapshot().head.position;
     expect(Number.isFinite(head.x + head.y)).toBe(true);
     expect(Math.abs(head.x)).toBeLessThanOrEqual(2382);
@@ -26,6 +35,7 @@ function replay() {
   return trace;
 }
 it("replays finite relay-pressure attacks with warning before crossing", () => { expect(replay()).toEqual(replay()); });
+it.each([-180, -2300, 2300])("warns every natural crossing for the start seed with Hunter at %s", hunterX => { replay(376940, hunterX); });
 it("expires sightings and never observes a deep hidden Hunter", () => {
   const sensing = new WormPerception(); const worm = new WormLocomotion(movementBalance).snapshot();
   const shallow = { ...worm, head: { ...worm.head, position: { x: 0, y: 30 } } };

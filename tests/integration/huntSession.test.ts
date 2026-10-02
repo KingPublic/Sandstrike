@@ -27,3 +27,20 @@ it("keeps Hunt debug runs ineligible and decisions opt-in", () => {
   expect(debug.snapshot().hunt?.decision).toBeDefined();
   expect(debug.snapshot().hunt?.eligibleForRecords).toBe(false);
 });
+it("normal start seed marks every natural breach with a full warning and reachable sector", () => {
+  const run = new RunFactory("warning").create({ seed: 376940, mode: "hunt" });
+  let crossings = 0;
+  for (let tick = 1; tick <= 5400; tick++) {
+    const frame = run.step(neutralActionFrame(tick));
+    if (frame.events.some(e => e.type === "worm-breached")) {
+      const bracket = frame.snapshot.hunt?.tracking.breachBracket;
+      expect(bracket).toBeDefined();
+      expect(tick - (bracket?.warningTick ?? tick)).toBeGreaterThanOrEqual(60);
+      expect(frame.snapshot.worm.head.position.x).toBeGreaterThanOrEqual(bracket?.left ?? Infinity);
+      expect(frame.snapshot.worm.head.position.x).toBeLessThanOrEqual(bracket?.right ?? -Infinity);
+      crossings++;
+    }
+    if (frame.result) break;
+  }
+  expect(crossings).toBeGreaterThan(1);
+});

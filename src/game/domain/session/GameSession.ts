@@ -92,14 +92,15 @@ export class GameSession {
     this.threat = new ThreatDirector(options.initialBand ?? 0);
     if (options.mode === "rampage") validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.rampage });
     const bounds = rampageBalance.arena;
-    this.locomotion = new WormLocomotion(options.mode ? { ...options.movement, worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } } : options.movement);
+    const movement = options.mode ? { ...options.movement, worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } } : options.movement;
+    this.locomotion = new WormLocomotion(movement);
     const worm = this.locomotion.snapshot();
     this.actors = new ActorRegistry([
       createActor({ ...spawnActor("worm", "actor.worm", worm.head.position), direction: worm.head.tangent, velocity: worm.head.velocity, health: options.playerHealth ?? spawnActor("worm", "actor.worm", worm.head.position).health }),
       ...(options.actors ?? []),
     ]);
     this.random = new RandomSource(options.seed);
-    this.hunt = options.mode === "hunt" ? new HuntSystems(options.terrain, options.debugAI ?? false, this.actors.get("hunter")?.position, options.aimAssist ?? .35) : undefined;
+    this.hunt = options.mode === "hunt" ? new HuntSystems(options.terrain, options.debugAI ?? false, movement, this.actors.get("hunter")?.position, options.aimAssist ?? .35) : undefined;
     this.projectiles = new ProjectileSystem(this.actors);
     for (const shot of options.initialProjectiles ?? []) this.projectiles.spawn("fixture", shot.position, shot.direction, 0);
     this.actors.commit();

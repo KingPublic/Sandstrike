@@ -1,14 +1,14 @@
 # ARCHITECTURE — Project Sandstrike
 
-Status: **Phase A specification approved by the user on 2026-10-01; no
-implementation exists yet.**
+Status: **Phase A specification approved on 2026-10-01; Phase B and Phase C
+functional prototypes implemented. Physical-device release gate remains pending.**
 
-Last updated: 2026-10-01
+Last updated: 2026-10-02
 
 This document defines the implementation boundaries for the approved staged,
 two-role MVP. It turns the accepted product direction in `docs/GAME_DESIGN.md`
-into contracts that later phases can implement and test. It does not claim that
-any package, module, scene, deployment, or runtime behavior already exists.
+into implementation contracts. Sections below retain the approved specification;
+implementation notes are appended. Actual evidence is in PHASE_C_VERIFICATION.md.
 
 ## 1. Decision status
 
@@ -779,3 +779,13 @@ WormController, allowed perception and quantized tracking. GameSession supplies
 motion and registry boundaries; HuntRules owns terminal priority. Normal Hunt
 snapshots omit AI decisions; presentation must filter exact underground state.
 SaveV1 validates legacy fields before SaveValidation constructs schema v2.
+
+## Phase C breach prediction correction (2026-10-02)
+
+WormController receives the same bounded movement configuration and TerrainProfile
+as the live session. WormBreachPlanner forecasts at most 600 fixed ticks with
+WormLocomotion once per attack preparation, then exposes only a quantized crossing
+sector through TrackingSystem. It does not drive or replace live movement.
+Preparation/recovery routes leave room for the cruise-speed turn radius; a locked
+upward approach and 60-tick boost deadline keep each natural crossing announced.
+Exogenous snare lift may invalidate the original route, as an intentional interrupt.

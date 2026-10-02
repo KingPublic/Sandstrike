@@ -5,7 +5,7 @@ import { freezeRecord } from "../actors/Actor";
 import { WormController, type WormDecision } from "../ai/WormController";
 import { WormPerception } from "../ai/WormPerception";
 import type { DomainEvent } from "../events/DomainEvent";
-import type { WormMotionSnapshot } from "../movement/WormMovementTypes";
+import type { WormMotionSnapshot, WormMovementConfig } from "../movement/WormMovementTypes";
 import type { RandomStream } from "../random/RandomSource";
 import type { TerrainProfile } from "../terrain/TerrainProfile";
 import { HunterLocomotion } from "./HunterLocomotion";
@@ -29,7 +29,7 @@ export class HuntSystems {
   private readonly hunter: HunterLocomotion;
   private readonly rifle = new RifleSystem();
   private readonly snare = new SeismicSnare();
-  private readonly ai = new WormController();
+  private readonly ai: WormController;
   private readonly perception = new WormPerception();
   private readonly tracking = new TrackingSystem();
   private readonly scoring = new HuntScoreSystem();
@@ -37,8 +37,9 @@ export class HuntSystems {
   private exposedLast = false; private usedWindow = false;
   private shot: HuntSnapshot["shot"];
   private interruptedAttack = -1;
-  constructor(private readonly terrain: TerrainProfile, private readonly debugAI: boolean, initial = { x: -180, y: -16 }, private readonly aimAssist = .35) {
+  constructor(private readonly terrain: TerrainProfile, private readonly debugAI: boolean, movement: WormMovementConfig, initial = { x: -180, y: -16 }, private readonly aimAssist = .35) {
     this.hunter = new HunterLocomotion(terrain, { left: -2382, right: 2382 }, initial);
+    this.ai = new WormController(movement, terrain);
   }
   prepare(action: ActionFrame, worm: WormMotionSnapshot, registry: ActorRegistry, random: RandomStream, tick: number) {
     const hunter = this.hunter.step(action, tick), actor = registry.get("hunter");

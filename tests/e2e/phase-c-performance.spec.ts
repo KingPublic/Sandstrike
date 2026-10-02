@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { expect, test, type Page } from "@playwright/test";
 import { writeFileSync } from "node:fs";
 import { startRampage } from "./helpers";

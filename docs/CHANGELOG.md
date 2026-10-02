@@ -42,10 +42,13 @@
   915x412, 844x390, and 1024x768 touch layouts; recorded a GO decision for the
   Rampage vertical slice in `docs/BALANCE.md`.
 
-## 2026-10-02  Playable Ranger Hunt
+## 2026-10-02 - Playable Ranger Hunt
 - Added original Ranger movement/dodge, six-round rifle, Seismic Snare and relay defense.
 - Added seeded worm AI with broad tremors, committed breach-sector warnings and temporary snare reveal.
 - Activated Hunt selection, role HUD/Results, mouse aiming and independent touch Fire/Aim, Snare and Dodge.
 - Save v2 retains legacy Rampage records/preferences and adds Hunt records/victories.
 - Fixed WebGL surface rendering through clipped polygons; ordinary Hunt hides buried poses.
-Phase C also completes vehicle/aerial pressure and response bands 2-3 with individual warnings, caps and compatible records.
+- Phase C also completes vehicle/aerial pressure and response bands 2-3 with individual warnings, caps and compatible records.
+
+- Corrected AI approach depth and predicted crossing sectors so natural Hunt
+  breaches receive a complete warning and stay inside the marked sector.

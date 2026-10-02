@@ -3,6 +3,9 @@ import { freezeRecord } from "../actors/Actor";
 import type { Vec2 } from "../math/Vector2";
 import type { RandomStream } from "../random/RandomSource";
 import type { WormPerceptionSnapshot } from "./WormPerception";
+import type { WormMovementConfig } from "../movement/WormMovementTypes";
+import type { TerrainProfile } from "../terrain/TerrainProfile";
+import { predictBreachX } from "./WormBreachPlanner";
 export type WormAIState = "roam" | "acquire" | "stalk" | "accelerate" | "breach" | "evade" | "recover" | "reposition";
 export interface WormDecision { readonly action: ActionFrame; readonly state: WormAIState; readonly target: Vec2; readonly steeringTarget: Vec2; readonly utility: Readonly<{ hunter: number; relay: number }>; readonly reason: string; readonly route: readonly Vec2[]; readonly breachPrediction?: Readonly<{ x: number; warningTick: number; committedTick: number }> | undefined }
 export class WormController {
@@ -12,6 +15,7 @@ export class WormController {
   private side = 1;
   private warning: WormDecision["breachPrediction"];
   private decision: WormDecision | undefined;
+  constructor(private readonly movement: WormMovementConfig, private readonly terrain: TerrainProfile) {}
   step(p: WormPerceptionSnapshot, tick: number, random: RandomStream): WormDecision {
     const head = p.self.head.position;
     const airborne = p.self.phase === "airborne" || p.self.phase === "breaching";
@@ -22,19 +26,28 @@ export class WormController {
       else if (this.state === "acquire") {
         const hunterUtility = p.hunter ? .9 : 0;
         this.target = hunterUtility > (tick >= 3600 ? 1 : .65) ? (p.hunter?.position ?? p.relay) : p.relay;
-        this.side = random.float() < .5 ? -1 : 1; this.transition("reposition", tick);
-      } else if (this.state === "reposition" && Math.abs(head.x - (this.target.x - this.side * 260)) < 100 && head.y > 100) this.transition("stalk", tick);
+        this.side = random.float() < .5 ? -1 : 1;
+        const bounds = this.movement.worldBounds;
+        if (bounds && this.target.x > bounds.right - 600) this.side = 1;
+        else if (bounds && this.target.x < bounds.left + 600) this.side = -1;
+        this.transition("reposition", tick);
+      } else if (this.state === "reposition" && Math.abs(head.x - (this.target.x - this.side * 260)) < 120 && head.y > 760) this.transition("stalk", tick);
       else if (this.state === "stalk") {
-        this.warning = { x: Math.floor(this.target.x / 120) * 120 + 60, warningTick: tick, committedTick: tick + 60 };
-        this.transition("accelerate", tick);
+        const crossingX = predictBreachX(p.self, { x: this.target.x, y: -260 }, this.movement, this.terrain);
+        if (crossingX !== undefined) {
+          this.warning = { x: Math.floor(crossingX / 120) * 120 + 60, warningTick: tick, committedTick: tick + 60 };
+          this.transition("accelerate", tick);
+        } else this.transition("recover", tick);
       } else if (this.state === "accelerate" && tick >= (this.warning?.committedTick ?? Infinity)) this.transition("breach", tick);
-      else if (this.state === "breach" && tick - this.enteredTick > 240) { this.transition("recover", tick); this.warning = undefined; }
+      else if (this.state === "breach" && tick - this.enteredTick > 600) { this.transition("recover", tick); this.warning = undefined; }
     }
     let steeringTarget: Vec2;
-    if (this.state === "breach") steeringTarget = { x: this.target.x, y: -260 };
+    if (this.state === "breach" || this.state === "accelerate") steeringTarget = { x: this.target.x, y: -260 };
     else if (this.state === "evade") steeringTarget = { x: this.target.x + this.side * 320, y: 200 };
-    else if (this.state === "recover" || this.state === "roam") steeringTarget = { x: this.target.x - this.side * 360, y: 240 };
-    else steeringTarget = { x: this.target.x - this.side * 260, y: 160 };
+    else if (this.state === "recover" || this.state === "roam") steeringTarget = { x: this.target.x - this.side * 360, y: 1200 };
+    else steeringTarget = { x: this.target.x - this.side * 260, y: 960 };
+    const bounds = this.movement.worldBounds;
+    if (bounds && this.state !== "accelerate" && this.state !== "breach") steeringTarget = { ...steeringTarget, x: Math.max(bounds.left + 200, Math.min(bounds.right - 200, steeringTarget.x)) };
     const dx = steeringTarget.x - head.x, dy = steeringTarget.y - head.y, length = Math.hypot(dx, dy) || 1;
     const boost = this.state === "breach" && tick === this.enteredTick;
     const action = { ...neutralActionFrame(tick), moveX: dx / length, moveY: dy / length, boost: { held: boost, pressed: boost, released: false } };

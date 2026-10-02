@@ -258,9 +258,22 @@ Keep the Phase B branch/history intact; do not overwrite unrelated edits.
 
 Status: explicitly authorized by the user on 2026-10-01.
 
-### D-011  Hunt integration and save v2 (2026-10-02)
+## D-017 - Hunt integration and save v2 (2026-10-02)
 Approved Phase C implementation now uses the existing GameSession boundary and
 CombatSystem for both roles. Hunt disables Rampage spawn/rewards and keeps one
 result owner; defeat precedes victory. AI diagnostics are opt-in before the run
 and invalidate records. Save v2 migrates genuine v1 settings and Rampage records;
 historical storage keys remain stable and original valid bytes become backup.
+
+## D-018 - Physically reachable Hunt breach warning (2026-10-02)
+
+Decision: Prepare/recover deep enough for the shared worm turn radius, and forecast
+one locked approach with WormLocomotion to publish its quantized crossing sector.
+Every natural breach must have a distinct warning at least 60 ticks earlier and
+remain inside that sector. Snare lift is an intentional route interruption.
+
+Why: Final review reproduced unannounced and out-of-sector attacks in the normal
+start seed. Predictable attacks are necessary for the Ranger trap/dodge loop.
+
+Status: accepted review correction; focused crossing regressions and the final
+160-test suite passed. Human warning-duration/pressure tuning remains pending.

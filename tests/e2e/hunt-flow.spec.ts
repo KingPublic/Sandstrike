@@ -24,7 +24,9 @@ for (const [fixture, label] of [["hunter-defeat", "Ranger defeated"], ["relay-de
   await startHunt(page, fixture); await expect(page.getByText(label, { exact: true })).toBeVisible(); await expect(page.locator("[data-run-result]")).toHaveCount(1);
 });
 test("snare arms, reveals and permits an exposed hit", async ({ page }, info) => {
-  await startHunt(page, "hunt-trap"); await page.keyboard.press("KeyQ");
+  await startHunt(page, "hunt-trap"); await page.keyboard.down("KeyQ");
+  await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().hunt?.snare.phase)).not.toBe("none");
+  await page.keyboard.up("KeyQ");
   await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().hunt?.trapTriggers)).toBe(1);
   await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().hunt?.tracking.exactTrace !== undefined)).toBe(true);
   await page.screenshot({ path: info.outputPath("hunt-trap.png") });

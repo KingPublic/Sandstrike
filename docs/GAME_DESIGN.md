@@ -2,6 +2,10 @@
 
 Status: **Phase A specification approved by the user on 2026-10-01.**
 
+Implementation checkpoint (2026-10-02): Phase B and the Phase C two-role prototype
+are implemented. Actual evidence and remaining release gates are recorded in
+`docs/PHASE_C_VERIFICATION.md`; provisional feel/performance targets remain pending.
+
 Project Sandstrike is a working title.
 
 Evidence boundary: verified reference observations, confidence, and access limits

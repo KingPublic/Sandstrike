@@ -245,3 +245,16 @@ or 3000/6000 base score, each after a separate 120-tick warning. New rewards
 Evidence: advanced kit/contact checks passed; two 18000-tick replays identical
 with all bands, finite bounded motion, caps and zero event overflow. Replay
 runtime on this host ~13 seconds, so this test uses a specific 30-second limit.
+
+### Phase C review correction
+
+The former 160px AI approach depth could not accommodate the cruise-speed turn
+radius (about 333px). Reposition now targets depth 960px and recovery 1200px;
+preparation requires depth above 760px. The attack approaches the locked target
+immediately during warning and boosts after 60 ticks. Warning lead is at least
+60 ticks and can be longer; the earlier 0.6-1.2 second feel target is not established.
+A bounded forecast of shared locomotion sets the actual crossing sector, quantized
+to 120px cells. Edge approaches choose the inward side. Every natural crossing is
+checked on four 5400-tick replay cases, including both arena edges, plus the normal
+GameSession start seed. Final suite: 160 tests pass. Snare lift can interrupt the
+forecast intentionally. Human timing, target pressure and match duration need tuning.
