@@ -1,6 +1,6 @@
 # SESSION HANDOFF — Project Sandstrike
 
-Updated: 2026-10-01. Phase A approved; all three Phase B implementation plans complete.
+Updated: 2026-10-02. Phase A approved; all three Phase B implementation plans complete.
 
 ## Latest status
 
@@ -70,12 +70,28 @@ incorporated local branch phase-b-vertical-slice were removed. Only the root
 checkout on phase-b-ready is active. All implementation commits remain reachable
 on this branch; main was not changed by the cleanup.
 
-After relocation, the next development action is use Superpowers writing-plans
-for Phase C from the approved GAME_DESIGN/ARCHITECTURE and measured Phase B limits:
+Phase C planning is now written and self-reviewed in these files:
+
+- docs/superpowers/plans/2026-10-02-phase-c-plan-set.md
+- docs/superpowers/plans/2026-10-02-phase-c-hunt-prototype.md
+- docs/superpowers/plans/2026-10-02-phase-c-rampage-completion.md
+
+The next action is the user's written-plan review required by the explicitly
+invoked Superpowers workflow. After approval, use native executing-plans in root,
+begin Hunt Task 1 with a failing Hunter-kit/exposed-contact test. Do not regenerate
+these plans or request the same execution-method choice again. No Phase C product
+code has been implemented at this checkpoint.
+
+The plans extend the approved GAME_DESIGN/ARCHITECTURE and measured Phase B limits:
 Ranger hunter, AI worm, Hunt prediction/traps/combat, AI observability, then response
 bands 2–3 and integrated two-role gate. Read the approved design first; do not
 re-research Phase A, rebuild Phase B or add economy/roster before planned gates.
-Do not implement substantial new Phase C systems before recording their plan.
+Hunt must pass its viability gate before vehicle/aerial content expands.
+
+Local dependencies were absent when resuming on 2026-10-02. Restored the exact
+lockfile offline with `npm ci --offline --no-audit --no-fund` (142 packages, exit 0).
+No dependency version was changed. Phase B test counts above are prior evidence,
+not a newly repeated full suite.
 
 User requests minimal repetitive testing: rerun failed/affected checks only;
 full static gate after meaningful fixes. Use one Playwright worker for interactive
