@@ -1,6 +1,7 @@
 import type { ActionFrame } from "../../input/ActionFrame";
 import { spawnActor, actorDefinitions } from "../../data/actors";
 import { rampageBalance } from "../../data/rampageBalance";
+import { isThemeId, type ThemeId } from "../../data/themes";
 import { modes } from "../../data/modes";
 import { validateDefinitions } from "../../data/validateDefinitions";
 import { ScoreSystem } from "../scoring/ScoreSystem";
@@ -8,6 +9,8 @@ import { ComboSystem } from "../scoring/ComboSystem";
 import { SpawnDirector } from "../spawning/SpawnDirector";
 import { ThreatDirector } from "../spawning/ThreatDirector";
 import { abilities } from "../../data/abilities";
+import { TimedSkill } from "../abilities/TimedSkill";
+import { automaticMouthCommands } from "../combat/AutomaticFeeding";
 import { AbilitySystem } from "../abilities/AbilitySystem";
 import { CombatSystem } from "../combat/CombatSystem";
 import { impactDamage, type DamageCommand } from "../combat/DamageResolver";
@@ -43,6 +46,8 @@ import type { ModeRules } from "../modes/ModeRules";
 import type { ResponseBand } from "../spawning/ThreatDirector";
 
 export interface GameSessionOptions {
+  readonly themeId?: ThemeId;
+  readonly arcade?: boolean;
   readonly sessionId?: string;
   readonly mode?: "rampage" | "hunt";
   readonly debugAI?: boolean;
@@ -65,6 +70,7 @@ export class GameSession {
   private readonly collisions = new CollisionWorld();
   private readonly events = new EventQueue();
   private readonly bite = new AbilitySystem(abilities.bite, ["worm"]);
+  private readonly sandguard = new TimedSkill("skill.sandguard", 180, 1200);
   private readonly combat = new CombatSystem();
   private readonly random: RandomSource;
   private readonly infantry = new Map<string, InfantryController | VehicleController | AerialController>();
@@ -80,6 +86,7 @@ export class GameSession {
   private ended: RunResult | undefined;
 
   constructor(private readonly options: GameSessionOptions) {
+    if (options.themeId !== undefined && !isThemeId(options.themeId)) throw new RangeError("Unknown environment theme.");
     if (!Number.isSafeInteger(options.seed)) {
       throw new RangeError("Session seed must be a safe integer.");
     }
@@ -137,13 +144,23 @@ export class GameSession {
     const wormActor = this.actors.get("worm");
     if (!wormActor) throw new Error("Session has no player worm.");
     this.actors.update({ ...wormActor, position: worm.head.position, direction: worm.head.tangent, velocity: worm.head.velocity });
+    if (this.options.arcade && !this.hunt) {
+      const previousSkill = this.sandguard.snapshot(this.currentTick);
+      const skill = this.sandguard.step(this.currentTick, action.ability.pressed);
+      if (skill.activeUntilTick > previousSkill.activeUntilTick) {
+        const player = this.actors.get("worm");
+        if (player) this.actors.update({ ...player, invulnerableUntilTick: Math.max(player.invulnerableUntilTick ?? 0, skill.activeUntilTick) });
+        this.events.publish({ type: "ability-activated", tick: this.currentTick, actorId: "worm", abilityId: skill.id, position: worm.head.position });
+      }
+    }
     this.stepInfantry();
     const projectileFrame = this.projectiles.step(this.stepSeconds, this.collisions, this.currentTick, previousActors);
     for (const event of projectileFrame.events) this.events.publish(event);
-    const ability = this.bite.step(this.currentTick, this.hunt ? false : action.primary.pressed);
+    const ability = this.bite.step(this.currentTick, this.hunt || this.options.arcade ? false : action.primary.pressed);
     if (ability.activated) this.events.publish({ type: "ability-activated", tick: this.currentTick, actorId: "worm", abilityId: abilities.bite.id, position: worm.head.position });
     const currentActors = this.actors.snapshot();
     const commands: DamageCommand[] = [...projectileFrame.commands];
+    if (this.options.arcade && !this.hunt) commands.push(...automaticMouthCommands(previousActors, currentActors, this.currentTick));
     const rifle = this.hunt?.fire(action, worm, this.currentTick);
     commands.push(...(rifle?.commands ?? []));
     for (const event of rifle?.events ?? []) this.events.publish(event);
@@ -202,6 +219,8 @@ export class GameSession {
 
   snapshot(): SessionSnapshot {
     return Object.freeze({
+      themeId: this.options.themeId ?? "desert",
+      arcade: this.options.arcade ?? false,
       sessionId: this.options.sessionId ?? `seed.${String(this.options.seed)}`,
       mode: this.options.mode ?? "rampage",
       playerActorId: this.hunt ? "hunter" : "worm",
@@ -213,7 +232,7 @@ export class GameSession {
       threat: this.threat.snapshot(),
       worm: this.locomotion.snapshot(),
       actors: this.actors.snapshot(),
-      abilities: Object.freeze([this.bite.snapshot(this.currentTick)]),
+      abilities: Object.freeze([this.options.arcade && !this.hunt ? this.sandguard.snapshot(this.currentTick) : this.bite.snapshot(this.currentTick)]),
       ai: Object.freeze([...this.infantry].sort(([a], [b]) => a.localeCompare(b)).map(([actorId, controller]) => Object.freeze({ actorId, decision: controller.snapshot() }))),
       diagnostics: Object.freeze({ eventOverflowCount: this.events.overflowCount, projectileCount: this.projectiles.activeCount }),
     });

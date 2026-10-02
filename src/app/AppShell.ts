@@ -1,4 +1,5 @@
 import type Phaser from "phaser";
+import { isThemeId, type ThemeId } from "../game/data/themes";
 import { RampageHud } from "../game/ui/hud/RampageHud";
 import { HuntHud } from "../game/ui/hud/HuntHud";
 import type { HudPort } from "../game/ui/hud/HudPort";
@@ -43,6 +44,7 @@ export class AppShell {
   private game: Phaser.Game | undefined;
   private hud: HudPort | undefined;
   private selectedMode: "rampage" | "hunt" = "rampage";
+  private selectedTheme: ThemeId = "desert";
   private settingsPanel: SettingsPanel | undefined;
   private settings: PresentationSettings = defaultPresentationSettings;
   private readonly audio = new PhaserAudioAdapter();
@@ -236,8 +238,8 @@ export class AppShell {
     this.status.textContent = "Preparing the arena...";
     if (this.startButton) this.startButton.disabled = true;
     this.audio.unlock();
-    const configuration = this.nextConfiguration ?? { ...this.lastConfiguration, mode: this.selectedMode, aimAssist: this.settings.aimAssist, debugAI: this.root?.querySelector<HTMLInputElement>("[data-ai-debug]")?.checked ?? this.lastConfiguration.debugAI ?? false, seed: this.lastConfiguration.seed + 7919 };
-    this.selectedMode = configuration.mode ?? "rampage";
+    const configuration = this.nextConfiguration ?? { ...this.lastConfiguration, themeId: this.selectedTheme, mode: this.selectedMode, aimAssist: this.settings.aimAssist, debugAI: this.root?.querySelector<HTMLInputElement>("[data-ai-debug]")?.checked ?? this.lastConfiguration.debugAI ?? false, seed: this.lastConfiguration.seed + 7919 };
+    this.selectedMode = configuration.mode ?? "rampage"; this.selectedTheme = configuration.themeId ?? "desert";
     this.nextConfiguration = undefined; this.lastConfiguration = configuration;
     this.controller.start(configuration);
     if (this.navigation.state !== "run") this.navigation.go("run");
@@ -284,7 +286,7 @@ export class AppShell {
     this.game.scale.refresh();
     this.refreshLayout();
     this.focusCanvas();
-    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt"; prompt.textContent = this.selectedMode === "hunt" ? "Read tremors · Q Snare · Click Fire · Shift Dodge" : "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
+    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt"; prompt.textContent = this.selectedMode === "hunt" ? "Read tremors · Q Snare · Click Fire · Shift Dodge" : this.controller.snapshot().arcade ? "Feed by contact · Space Sandguard · Shift Burst" : "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
   }
 
   private handleFatalError(): void {
@@ -331,6 +333,7 @@ export class AppShell {
       this.gameFrame,
       controls.touchInput,
       this.selectedMode === "hunt" ? "hunter" : "worm",
+      this.controller.snapshot().arcade,
     );
     this.refreshLayout();
   }
@@ -451,8 +454,13 @@ export class AppShell {
     this.refreshLayout();
   }
 
-  private renderMenu(): void { this.menu?.render(this.navigation.state, this.selectedMode); }
+  private renderMenu(): void { this.menu?.render(this.navigation.state, this.selectedMode, this.selectedTheme); }
   private handleMenuAction(action: string): void {
+    if (action.startsWith("theme:")) {
+      const themeId = action.slice(6);
+      if (isThemeId(themeId)) { this.selectedTheme = themeId; this.root?.setAttribute("data-theme", themeId); }
+      return;
+    }
     switch (action) {
       case "enter": this.navigation.go("menu"); break;
       case "play": this.navigation.go("selection"); break;
@@ -479,8 +487,9 @@ export class AppShell {
     if (this.navigation.state !== "results") this.navigation.go("results");
     this.controller.pause(); this.controls?.clear(); this.touchControls?.clearPointers(); this.game?.scene.pause("Gameplay");
     if (this.pauseOverlay) this.pauseOverlay.hidden = true;
-    const acceptance = this.saves.acceptRunResult(result); this.refreshSaveNotice();
-    const record = result.mode === "hunt" && !result.eligibleForRecords ? "Practice run · AI inspection · no record" : acceptance.newRecord ? "New local record" : `Local best · ${this.saves.snapshot()[result.mode].bestScore.toLocaleString("en-US")}`;
+    const practice = this.controller.snapshot().arcade === true;
+    const acceptance = practice ? { newRecord: false } : this.saves.acceptRunResult(result); this.refreshSaveNotice();
+    const record = practice ? "Practice run · records unchanged" : result.mode === "hunt" && !result.eligibleForRecords ? "Practice run · AI inspection · no record" : acceptance.newRecord ? "New local record" : `Local best · ${this.saves.snapshot()[result.mode].bestScore.toLocaleString("en-US")}`;
     this.results = new ResultsView(this.gameFrame, result, { retry: () => { this.retryRun(); }, changeMode: () => { this.returnToMenu(true); }, menu: () => { this.returnToMenu(false); } }, record);
   }
   private refreshSaveNotice(): void { const notice = this.root?.querySelector<HTMLElement>("[data-save-notice]"); if (!notice) return; const status = this.saves.status(); notice.hidden = status.diagnostics.length === 0; notice.textContent = status.memoryOnly ? "Saving unavailable. Progress and settings are kept for this session." : status.diagnostics.at(-1) ?? ""; }

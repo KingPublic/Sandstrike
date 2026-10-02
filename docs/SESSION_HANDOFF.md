@@ -3,6 +3,13 @@
 Updated: 2026-10-02. Active root: C:/Users/Adrian/Games/Sandstrike.
 Branch: phase-b-ready. No extra worktrees. User handles remote push/merge.
 
+## Active redesign work (2026-10-02)
+
+User explicitly requested immediate plan execution without another review pause.
+Survival Foundation tasks1-3 are in progress, changes uncommitted. Menu/theme
+checks passed; arcade feeding/movement/skill integration is awaiting final checks.
+Resume from README_START_HERE.md, not the historical Phase C completion below.
+
 ## Current checkpoint
 
 Phase A and Phase B are complete. Phase C two-role prototype is implemented:

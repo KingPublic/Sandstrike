@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Survival revision foundation: viewport-bound compact menus with a real
+  environment choice (desert outpost, urban ruins, frozen facility) that is frozen
+  per run and retained on retry. Original per-theme palettes/structures render
+  through the world renderer without changing shared physics.
+- Revised Rampage uses an arcade worm profile (higher turn authority, cruise and
+  breach height) and automatic mouth feeding: prey/actors contacted by the swept
+  forward mouth are consumed once, while body brushing does not feed. Manual Bite
+  is replaced by the Space/RT/touch **Sandguard** skill (3s immunity, 20s cooldown)
+  with visible shield feedback; all earlier laboratory fixtures keep legacy physics.
+
 - Added seeded infantry, telegraphs, swept pooled projectiles, typed scoring and
   combo, legal spawn caps, arena bounds, and response bands 0–1.
 - Added original animated procedural actors, capped combat effects, generated

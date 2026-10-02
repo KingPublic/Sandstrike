@@ -17,15 +17,13 @@ Read in this order, then check `git status`, recent commits and the actual sourc
    `docs/DECISIONS.md`, `docs/BALANCE.md`, `docs/ASSET_LICENSES.md`, and
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
 
-Current shipped checkpoint: Phase C two-role prototype, product `073b9d9`;
-final evidence `docs/PHASE_C_VERIFICATION.md`. **The revised game is not implemented
-yet.** The user approved the redesign and requested extra themes on 2026-10-02.
-New written implementation plans are ready; written-plan review was asked
-asynchronously and is pending until an explicit answer is recorded.
-Exact next action: after that review, execute **Survival Foundation Task 1**
-(`2026-10-02-survival-foundation.md`) inline, then continue the ordered child plans.
-Do not ask for the already-approved design again. If plan review arrives later,
-update this approval state and the handoff before coding.
+Current checkpoint: Phase C prototype remains the baseline. Survival Foundation is
+in progress in the root: compact menu and three themes passed browser checks;
+arcade movement, passive feeding and Sandguard are being integrated. On 2026-10-02
+the user explicitly authorized immediate execution of the existing approved plan,
+without another plan-review pause. Continue inline with focused verification.
+Exact next action: finish and verify Survival Foundation Tasks 2-3, then execute
+Survival Ascent, followed by Survival Roster. Do not replay old Phase A/B/C plans.
 
 Required target: 5 worms + 5 Hunters, unique active skills, automatic mouth feeding,
 agile/high breaches, compact desktop menu, allied Hunt NPCs/helicopters, climbable
@@ -55,10 +53,10 @@ Ranger Hunt and completes Rampage response bands 0-3.
 From the project root, run `npm ci` once, then `npm run dev` and open the local
 URL printed by Vite. Choose Enter desert → Play → Rampage or Hunt → Start.
 
-- Keyboard: WASD or arrow keys steer, Space bites, Shift bursts, Escape pauses.
-- Touch: drag the joystick; use Bite and Burst with another finger. Landscape
+- Keyboard: WASD or arrow keys steer, Space activates Sandguard, Shift bursts, Escape pauses.
+- Touch: drag the joystick; use Sandguard and Burst with another finger. Landscape
   is required during play; portrait safely pauses the run.
-- Gamepad: left stick steers, right trigger bites, right bumper bursts, Start
+- Gamepad: left stick steers, right trigger activates Sandguard, right bumper bursts, Start
   pauses. The shared action adapter is tested; physical hardware remains unverified.
 - Pause offers Resume, Restart and End run. Results offers Retry, mode selection
   and the main menu. Restart/end/reset require explicit confirmation.

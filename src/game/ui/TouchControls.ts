@@ -45,6 +45,7 @@ export class TouchControls {
     container: HTMLElement,
     private readonly input: TouchInput,
     private readonly role: "worm" | "hunter" = "worm",
+    arcade = false,
   ) {
     this.root = document.createElement("div");
     this.root.className = "touch-controls";
@@ -61,7 +62,7 @@ export class TouchControls {
     this.joystick.append(this.joystickKnob);
 
     this.boostButton = this.createButton("boost", role === "hunter" ? "Dodge" : "Burst");
-    this.primaryButton = this.createButton("primary", role === "hunter" ? "Fire / Aim" : "Bite");
+    this.primaryButton = this.createButton("primary", role === "hunter" ? "Fire / Aim" : arcade ? "Sandguard" : "Bite");
     this.abilityButton = this.createButton("ability", "Snare"); this.abilityButton.hidden = role !== "hunter";
     this.root.append(this.joystick, this.boostButton, this.primaryButton, this.abilityButton);
     container.append(this.root);
@@ -71,7 +72,7 @@ export class TouchControls {
     this.joystick.addEventListener("pointerup", this.handleJoystickEnd);
     this.joystick.addEventListener("pointercancel", this.handleJoystickEnd);
     this.joystick.addEventListener("lostpointercapture", this.handleJoystickEnd);
-    this.bindButton(this.primaryButton, "primary");
+    this.bindButton(this.primaryButton, arcade && role === "worm" ? "ability" : "primary");
     this.bindButton(this.boostButton, "boost");
     this.bindButton(this.abilityButton, "ability");
     this.primaryButton.addEventListener("pointermove", event => { if (this.role === "hunter" && event.pointerId === this.primaryPointerId) this.updateAim(event); });
@@ -102,6 +103,7 @@ export class TouchControls {
     this.primaryButton.classList.remove("touch-action--held");
     this.boostButton.classList.remove("touch-action--held");
     this.abilityButton.classList.remove("touch-action--held");
+    this.input.clear();
   }
 
   destroy(): void {

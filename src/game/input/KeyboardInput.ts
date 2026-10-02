@@ -22,6 +22,7 @@ const BUTTON_CODES: Readonly<Partial<Record<string, ActionButton>>> = Object.fre
 export class KeyboardInput implements InputSource {
   readonly id = "keyboard";
   private readonly heldCodes = new Set<string>();
+  private readonly pendingCodes = new Set<string>();
   private analogSequence = 0;
 
   private readonly onKeyDown = (event: Event): void => {
@@ -29,6 +30,7 @@ export class KeyboardInput implements InputSource {
       return;
     }
     this.heldCodes.add(event.code);
+    this.pendingCodes.add(event.code);
     this.analogSequence = nextInputActivitySequence();
   };
 
@@ -40,7 +42,7 @@ export class KeyboardInput implements InputSource {
     this.analogSequence = nextInputActivitySequence();
   };
 
-  constructor(private readonly target: EventTarget = window) {
+  constructor(private readonly target: EventTarget = window, private readonly skillOnSpace = false) {
     target.addEventListener("keydown", this.onKeyDown);
     target.addEventListener("keyup", this.onKeyUp);
   }
@@ -55,10 +57,12 @@ export class KeyboardInput implements InputSource {
     const buttons: Partial<Record<ActionButton, boolean>> = {};
     for (const [code, button] of Object.entries(BUTTON_CODES)) {
       if (button) {
-        buttons[button] ||= this.heldCodes.has(code);
+        const action = code === "Space" && this.skillOnSpace ? "ability" : button;
+        buttons[action] ||= this.heldCodes.has(code) || this.pendingCodes.has(code);
       }
     }
 
+    this.pendingCodes.clear();
     return Object.freeze({
       moveX,
       moveY,
@@ -69,6 +73,7 @@ export class KeyboardInput implements InputSource {
 
   clear(): void {
     this.heldCodes.clear();
+    this.pendingCodes.clear();
     this.analogSequence = nextInputActivitySequence();
   }
 

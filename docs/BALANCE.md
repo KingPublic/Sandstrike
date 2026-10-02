@@ -246,6 +246,26 @@ Evidence: advanced kit/contact checks passed; two 18000-tick replays identical
 with all bands, finite bounded motion, caps and zero event overflow. Replay
 runtime on this host ~13 seconds, so this test uses a specific 30-second limit.
 
+## Phase D survival foundation hypotheses (2026-10-02)
+
+Status: **provisional, automated-domain and headless-browser evidence only**.
+Revised normal Rampage uses `arcadeMovementBalance`; historical fixtures and Hunt
+keep the legacy `movementBalance` profile.
+Arcade worm: initial speed 360, underground acceleration 1600 px/s², cruise 800,
+low-speed turn 6 rad/s with .8 high-speed factor, gravity 640, burst gain 150 with
+950 cap, camera look-ahead 250/200. A full-speed turn now reacts within about .5s
+and a natural vertical cruise breach rises near 500px (boosted near 705px).
+Automatic feeding: swept forward mouth circle radius 16 offset 24px from the head
+along travel direction, 15 damage, independent of speed; body-only contacts do not
+feed and no manual Bite input is required. Sandguard: 180 active ticks (3s) on a
+1200-tick (20s) cooldown; activation extends `invulnerableUntilTick` with
+max(existing, activeUntil) and never restores health. Menu fits 1366x768, 1440x900
+and 720x450/844x390/390x844 inside a bounded panel with no document overflow.
+Evidence: themes 4 tests, automatic feeding/movement integration 3 tests, timed
+skill and role input tests passed; menu and arcade-controls browser cases (5)
+passed with console-error checks; `npm run verify` lint/typecheck/build passed with
+171 tests in 58 files. Human feel, physical devices and match duration unverified.
+
 ### Phase C review correction
 
 The former 160px AI approach depth could not accommodate the cruise-speed turn

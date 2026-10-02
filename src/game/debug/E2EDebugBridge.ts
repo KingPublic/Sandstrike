@@ -1,8 +1,10 @@
+import type { ThemeId } from "../data/themes";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
 import type { ActionFrame } from "../input/ActionFrame";
 import type { PresentationMetrics } from "./PresentationMetrics";
 
 export interface NextRunConfiguration {
+  readonly themeId?: ThemeId;
   readonly mode?: "rampage" | "hunt";
   readonly debugAI?: boolean;
   readonly aimAssist?: number;

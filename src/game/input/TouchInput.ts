@@ -14,15 +14,19 @@ export class TouchInput implements InputSource {
   private aimY = 0;
   private aimWorld: Vec2 | undefined;
   private buttons: Partial<Record<ActionButton, boolean>> = {};
+  private readonly pendingButtons = new Set<ActionButton>();
   private analogSequence = 0;
 
   sample(): PartialActionFrame {
+    const buttons = { ...this.buttons };
+    for (const button of this.pendingButtons) buttons[button] = true;
+    this.pendingButtons.clear();
     const base = {
       moveX: this.moveX,
       moveY: this.moveY,
       aimX: this.aimX,
       aimY: this.aimY,
-      buttons: Object.freeze({ ...this.buttons }),
+      buttons: Object.freeze(buttons),
       analogSequence: this.analogSequence,
     };
     return this.aimWorld
@@ -47,6 +51,7 @@ export class TouchInput implements InputSource {
   }
 
   setButton(button: ActionButton, held: boolean): void {
+    if (held && !this.buttons[button]) this.pendingButtons.add(button);
     this.buttons[button] = held;
     this.analogSequence = nextInputActivitySequence();
   }
@@ -58,6 +63,7 @@ export class TouchInput implements InputSource {
     this.aimY = 0;
     this.aimWorld = undefined;
     this.buttons = {};
+    this.pendingButtons.clear();
     this.analogSequence = nextInputActivitySequence();
   }
 }

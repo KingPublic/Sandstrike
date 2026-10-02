@@ -21,7 +21,7 @@ export class WormView {
     this.body = scene.add.graphics().setDepth(30);
   }
 
-  render(snapshot: WormMotionSnapshot, alpha: number, surfaceOnly = false): void {
+  render(snapshot: WormMotionSnapshot, alpha: number, surfaceOnly = false, shielded = false): void {
     if (this.current?.tick !== snapshot.tick) {
       this.previous = this.current ?? snapshot;
       this.current = snapshot;
@@ -39,6 +39,10 @@ export class WormView {
     if (surfaceOnly) { this.drawSurfaceBody(poses, current); return; }
     this.drawShadow(poses);
     this.drawBody(poses, current);
+    if (shielded) {
+      this.body.lineStyle(2.5, 0x9beaf0, .85);
+      for (const [index, pose] of poses.entries()) this.body.strokeCircle(pose.position.x, pose.position.y, segmentRadius(index, poses.length) + 7);
+    }
     if (this.debug) {
       this.drawDebug(poses);
     }

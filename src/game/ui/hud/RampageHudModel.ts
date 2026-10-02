@@ -9,7 +9,7 @@ export const RampageHudModel = {
       comboLabel: `${String(combo.multiplier)}x · ${String(combo.chain)} chain${combo.phase === "decay" ? " · Fading" : ""}`,
       comboProgress: combo.phase === "decay" ? combo.decayTicksRemaining / 45 : combo.graceTicksRemaining / 180,
       threatLabel: snapshot.threat.warningTicksRemaining > 0 ? `Incoming · ${(snapshot.threat.warningTicksRemaining / 60).toFixed(1)}s` : `Response ${String(snapshot.threat.band)}`,
-      biteLabel: bite > 0 ? `Bite · ${bite.toFixed(1)}s` : "Bite · ready",
+      biteLabel: snapshot.arcade ? snapshot.abilities[0]?.active ? `Sandguard · active ${((snapshot.abilities[0].activeUntilTick - snapshot.tick) / 60).toFixed(1)}s` : bite > 0 ? `Sandguard · ${bite.toFixed(1)}s` : "Sandguard · ready" : bite > 0 ? `Bite · ${bite.toFixed(1)}s` : "Bite · ready",
       burstLabel: snapshot.worm.burstCooldownSeconds > 0 ? `Burst · ${snapshot.worm.burstCooldownSeconds.toFixed(1)}s` : "Burst · ready",
       status: health <= 25 ? "Low health · consume prey" : "Burrow. Breach. Chain.",
       motionLabel: reducedMotion ? "Reduced motion" : "Full motion",

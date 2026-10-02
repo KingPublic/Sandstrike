@@ -14,6 +14,7 @@ export class GamepadInput implements InputSource {
 
   constructor(
     private readonly getGamepads: GamepadProvider = () => navigator.getGamepads(),
+    private readonly skillOnTrigger = false,
   ) {}
 
   sample(): PartialActionFrame {
@@ -35,9 +36,9 @@ export class GamepadInput implements InputSource {
     }
 
     const buttons: Partial<Record<ActionButton, boolean>> = {
-      primary: buttonPressed(gamepad, 7),
+      primary: !this.skillOnTrigger && buttonPressed(gamepad, 7),
       secondary: buttonPressed(gamepad, 6),
-      ability: buttonPressed(gamepad, 4),
+      ability: buttonPressed(gamepad, 4) || (this.skillOnTrigger && buttonPressed(gamepad, 7)),
       boost: buttonPressed(gamepad, 5),
       interact: buttonPressed(gamepad, 2),
       pause: buttonPressed(gamepad, 9),

@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 
+import { arcadeMovementBalance } from "../data/arcadeMovementBalance";
 import { movementBalance } from "../data/movementBalance";
 import { DebugOverlay } from "../debug/DebugOverlay";
 import type { DomainEvent } from "../domain/events/DomainEvent";
@@ -55,9 +56,9 @@ export class GameplayScene extends Phaser.Scene {
     if (!this.controller.active) this.controller.start();
     const initial = this.controller.snapshot();
     const debug = initial.mode === "hunt" ? !initial.hunt?.eligibleForRecords : lifecycle.debug ?? (import.meta.env.DEV && !__SANDSTRIKE_E2E__);
-    new WorldRenderer(this).create();
+    new WorldRenderer(this, initial.themeId).create();
 
-    this.keyboard = new KeyboardInput(window);
+    this.keyboard = new KeyboardInput(window, initial.arcade);
     this.touch = new TouchInput();
     this.scripted = new ScriptedInput();
     if (initial.mode === "hunt") {
@@ -67,7 +68,7 @@ export class GameplayScene extends Phaser.Scene {
     this.inputRouter = new InputRouter([
       this.keyboard,
       this.touch,
-      new GamepadInput(),
+      new GamepadInput(undefined, initial.arcade),
       this.scripted,
       ...(this.pointer ? [this.pointer] : []),
     ]);
@@ -77,7 +78,7 @@ export class GameplayScene extends Phaser.Scene {
     this.debugOverlay = new DebugOverlay(this, debug);
     this.cameraController = new CameraController(
       this.cameras.main,
-      movementBalance,
+      initial.arcade ? arcadeMovementBalance : movementBalance,
     );
     this.controller.attachInput(this.inputRouter);
     this.snapshot = this.controller.snapshot();
@@ -128,7 +129,7 @@ export class GameplayScene extends Phaser.Scene {
       this.recentEvents = this.recentEvents.slice(-12);
     }
 
-    this.wormView.render(frame.snapshot.worm, frame.report.alpha, frame.snapshot.mode === "hunt" && frame.snapshot.hunt?.tracking.exactTrace === undefined);
+    this.wormView.render(frame.snapshot.worm, frame.report.alpha, frame.snapshot.mode === "hunt" && frame.snapshot.hunt?.tracking.exactTrace === undefined, frame.snapshot.arcade && frame.snapshot.abilities.some(skill => skill.active));
     this.huntCues?.render(frame.snapshot);
     this.cameraController.update(frame.snapshot, deltaMs / 1000);
     const lifecycle = this.lifecycle();

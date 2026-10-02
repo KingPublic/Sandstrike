@@ -570,3 +570,40 @@ h1 {
 .hunt-hud .hud-threat { top: 110px; }
 .hunt-hud ~ .context-prompt { top: auto; bottom: 80px; font-size: 12px; }
 @media (max-height: 500px) { .hunt-status { top: 60px; } .hunt-hud .hud-threat { top: 92px; } }
+/* Menus fit the viewport; long help/settings panels scroll locally. */
+.sandstrike-shell {
+  height: 100dvh;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+  gap: .6rem;
+  padding: max(.8rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(.6rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+}
+.hero { display: flex; align-items: center; gap: 1.25rem; max-width: none; padding-top: 0; }
+.hero__eyebrow { display: none; }
+.hero h1 { margin: 0; font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1; }
+.hero__lede { margin: 0; max-width: 30rem; font-size: .9rem; }
+.preview { min-height: 0; grid-template-columns: minmax(18rem, .8fr) minmax(0, 1.4fr); }
+.preview__copy { display: block; max-height: 100%; overflow: auto; padding: clamp(1rem, 2vw, 1.65rem); }
+.preview__copy > p { margin-bottom: .7rem; }
+.preview__copy > p:not(.preview__kicker) { line-height: 1.45; }
+.preview__copy h2 { font-size: clamp(1.5rem, 2.5vw, 2.3rem); }
+.preview .game-frame { height: 100%; min-height: 0; max-height: 100%; aspect-ratio: auto; }
+.boot-status { min-height: 1.3rem; margin: 0; }
+.shell-footer { padding: 0; font-size: .65rem; }
+.theme-choice { display: grid; gap: .35rem; margin-bottom: .9rem; color: var(--muted); font-size: .8rem; font-weight: 700; }
+.theme-choice select { width: 100%; min-height: 44px; padding: .65rem; border: 1px solid var(--line); border-radius: .65rem; color: var(--ink); background: #211825; font: inherit; }
+#app[data-theme="ruins"] { --ember: #9db8d6; --ember-bright: #bfd9f1; }
+#app[data-theme="frozen"] { --ember: #80d7dd; --ember-bright: #b8f5ed; }
+@media (orientation: landscape) and (max-width: 900px) {
+  .hero__lede, .shell-footer { display: none; }
+  .hero h1 { font-size: 2rem; }
+  .preview { grid-template-columns: minmax(15rem, 1fr) minmax(0, 1fr); gap: .7rem; }
+  .preview__copy { padding: .8rem; }
+}
+@media (orientation: portrait) and (max-width: 900px) {
+  .hero__lede, .shell-footer { display: none; }
+  .preview { display: block; overflow: auto; }
+  .preview__copy { max-height: 100%; }
+  .sandstrike-shell:not(:has(.game-frame--paused)) .preview .game-frame { display: none; }
+  .sandstrike-playing .preview .game-frame { display: block; }
+}
