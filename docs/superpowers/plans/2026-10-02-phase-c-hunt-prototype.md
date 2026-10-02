@@ -76,17 +76,17 @@ Tests: `tests/unit/hunterKit.test.ts`, `tests/unit/exposedWormContacts.test.ts`.
   selects head/follower regions, maps all hits to worm, and emits the nearest hit
   once. Radius comes from typed logical data, not procedural sprite size.
 
-- [ ] Write tests: move 60 ticks => 180 px; diagonal input cannot move faster on the
+- [x] Write tests: move 60 ticks => 180 px; diagonal input cannot move faster on the
   surface; dodge never crosses arena bounds; cooldown ignores wall time. Rifle
   fires no more often than tick 1/31, six-round ammo/reload transitions, held fire
   through reload, missing/invalid aim, miss costs ammo but earns no damage.
-- [ ] Test above-ground body with buried head is hittable, wholly buried regions
+- [x] Test above-ground body with buried head is hittable, wholly buried regions
   are not; one ray crossing three regions produces one DamageCommand to worm.
   Test snare arm tick 42 boundary, one active, expiry/recovery and re-placement
   after tick cooldown. Trap does not directly remove health.
-- [ ] Run `npm run test -- tests/unit/hunterKit.test.ts tests/unit/exposedWormContacts.test.ts`.
+- [x] Run `npm run test -- tests/unit/hunterKit.test.ts tests/unit/exposedWormContacts.test.ts`.
   Expected RED: new modules absent; then implement the exact interfaces/data above.
-- [ ] Rerun the same command plus typecheck. Expected GREEN; record tuning in
+- [x] Rerun the same command plus typecheck. Expected GREEN; record tuning in
   BALANCE as hypotheses and commit `feat: add Ranger kit and exposed worm contacts`.
 
 ### Task 2: Fair worm AI, tracking cues and snare motion
@@ -112,16 +112,16 @@ Tests: `tests/unit/wormController.test.ts`, `tests/unit/huntTracking.test.ts`.
   lift acceleration); default leaves every Phase B trajectory unchanged. Clamp
   resulting speed to existing burst cap; no direct head-position assignment.
 
-- [ ] Test identical seed/actions reproduce every AI decision; idle Hunter leads
+- [x] Test identical seed/actions reproduce every AI decision; idle Hunter leads
   to relay pressure; stale Hunter sightings expire; trapped AI cannot snap-turn.
   Test hidden-input variation cannot affect a perception-identical decision.
-- [ ] Test all poses finite/legal across 5,400 ticks; warning precedes committed
+- [x] Test all poses finite/legal across 5,400 ticks; warning precedes committed
   crossing; default motion effects reproduce Phase B snapshots. Shallow snare
   creates exposure through integration; deep snare reveals/restricts but does not
   teleport. Cooldown recovery allows another trap after a failed attempt.
-- [ ] Test two positions within one unrevealed cell produce the same tracking x;
+- [x] Test two positions within one unrevealed cell produce the same tracking x;
   reveal expiration hides the exact trace; audio-disabled cues retain shape/text.
-- [ ] Run the two new files and existing wormLocomotion tests, observe RED, implement,
+- [x] Run the two new files and existing wormLocomotion tests, observe RED, implement,
   rerun GREEN + typecheck, update BALANCE and commit `feat: add observable worm AI`.
 
 ### Task 3: Hunt session, outcomes, score and save v2
@@ -162,13 +162,13 @@ Tests: `tests/integration/huntSession.test.ts`, `tests/unit/huntRules.test.ts`,
   bestVictory accepts victories only, ordered by score then shorter duration.
   Runs with exact AI debug enabled never update best records/onboarding.
 
-- [ ] Test seed replay, Hunter and relay swept impacts, valid/blocked rifle damage,
+- [x] Test seed replay, Hunter and relay swept impacts, valid/blocked rifle damage,
   no Rampage spawns/score in Hunt, simultaneous terminal priority, one run-ended,
   paused exit at zero time, fresh role/retry IDs and no retained snare/AI state.
-- [ ] Test v1 settings/best result remain equal after migration; backup migration,
+- [x] Test v1 settings/best result remain equal after migration; backup migration,
   v2 round-trip, future schema unchanged on disk, quota fallback, one accepted
   result/write and debug record exclusion. Existing v1 fixtures remain genuine.
-- [ ] Observe RED on the named tests, implement, then run new tests plus existing
+- [x] Observe RED on the named tests, implement, then run new tests plus existing
   runLifecycle/resultPersistence and all save tests. Expected GREEN + typecheck.
   Update DECISIONS/BALANCE/ARCHITECTURE and commit `feat: integrate Hunt and migrate records`.
 
@@ -207,15 +207,15 @@ Tests: `tests/unit/huntInput.test.ts`, `tests/unit/huntPresentation.test.ts`,
 - Developer AI overlay is opt-in before Hunt starts, marks records ineligible and is
   off for production score-valid runs. E2E bridge remains test-only and read-only.
 
-- [ ] Observe RED: held A/D plus mouse aim/fire retains movement; pointer world
+- [x] Observe RED: held A/D plus mouse aim/fire retains movement; pointer world
   mapping handles letterboxing/scroll/camera; cancel/lost capture/pause clears aim,
   fire and all three fingers; retry listener counts and view pools remain stable.
-- [ ] Test hidden pose changes do not affect normal camera or aim assist; reveal
+- [x] Test hidden pose changes do not affect normal camera or aim assist; reveal
   expiration removes exact graphics; snapshots retain diagnostics only behind debug.
-- [ ] Test UI at 1440x900, 915x412, 844x390, 1024x768, portrait and safe-area insets;
+- [x] Test UI at 1440x900, 915x412, 844x390, 1024x768, portrait and safe-area insets;
   critical HUD and controls cannot overlap; handedness/opacity and reduced feedback
   work. Start Hunt through real menus, fire, trap, dodge, pause and resume.
-- [ ] Implement; run new unit files plus affected input/layout tests and Hunt control
+- [x] Implement; run new unit files plus affected input/layout tests and Hunt control
   browser checks. Expected GREEN, lint/typecheck/build. Commit `feat: make Ranger Hunt playable`.
 
 ### Task 5: Hunt viability gate
@@ -226,15 +226,27 @@ CHANGELOG, SESSION_HANDOFF and README with actual evidence/controls.
 **Interfaces:** Staged E2E fixtures use mode hunt and fixture IDs hunt-victory,
 hunter-defeat, relay-defeat and hunt-trap. No active-session mutation is introduced.
 
-- [ ] Write built-output smoke for tracking→placement→arm→trigger→exposed hit,
+- [x] Write built-output smoke for tracking→placement→arm→trigger→exposed hit,
   victory/defeat/exit, pause/restart, one Results/write, reload/retry and role switch.
   Assert normal buried rendering absent, fresh input/views and no fatal console/assets.
-- [ ] Observe RED, add the minimum fixture setup, then run Hunt flow/control tests
+- [x] Observe RED, add the minimum fixture setup, then run Hunt flow/control tests
   in root and Hunt flow under /Sandstrike/. Expected GREEN.
-- [ ] Measure representative natural Hunt plus breach-heavy interval: frames/ticks,
+- [x] Measure representative natural Hunt plus breach-heavy interval: frames/ticks,
   actors/shapes/projectiles/particles, memory observations and catch-up/console.
   Inspect actual captures and desktop/synthetic-touch input. Record real-device
   limitations and unmet provisional duration/exposure/60-fps targets honestly.
-- [ ] Run verify once after final fixes; reuse current unaffected evidence. Record
+- [x] Run verify once after final fixes; reuse current unaffected evidence. Record
   GO/NO-GO for the Hunt loop. NO-GO stays here with a precise reproduction; GO
   permits the Rampage-completion plan. Commit `test: verify Hunt prototype gate`.
+
+## Execution checkpoint - 2026-10-02
+
+Approved and implemented in the root on phase-b-ready. All implementation tasks
+and the functional prototype gate are complete; the physical-device/human-feel
+release gate remains pending. See docs/PHASE_C_VERIFICATION.md for actual checks,
+review finding/fix, workflow rulings and limits. Use docs/SESSION_HANDOFF.md to
+resume; do not rebuild the completed systems or restart this plan.
+
+Checked steps denote completed implementation/verification workflows, subject
+to the explicit evidence limits and rulings in PHASE_C_VERIFICATION.md; they do
+not assert physical-device performance or human-feel acceptance.

@@ -54,10 +54,10 @@ Tests: `tests/unit/advancedThreats.test.ts`, `tests/unit/projectileSystem.test.t
   telegraph entry. Aerial patrol turns obey arena bounds; no buried tracking fire.
 - Distinct procedural silhouettes and text/shape aim cues precede all firing.
 
-- [ ] Test finite seeded patrol/reposition, sight memory/cadence/locked aim, no fire
+- [x] Test finite seeded patrol/reposition, sight memory/cadence/locked aim, no fire
   at an unseen deep worm, pooled projectiles reused across weapon definitions, and
   swept breach/air contacts without double resolution or reward after removal.
-- [ ] Run named tests, observe RED, implement the interfaces, rerun GREEN + typecheck,
+- [x] Run named tests, observe RED, implement the interfaces, rerun GREEN + typecheck,
   inspect threat captures. Update BALANCE and commit `feat: add ground and aerial response`.
 
 ### Task 2: Bands 2–3, composition and record compatibility
@@ -82,10 +82,10 @@ affected scoring/spawn/save tests.
 - Validate definitions, v2 mode-specific results and migrated v1 highestBand <=1.
   Existing save keys and schema v2 from the Hunt plan stay unchanged.
 
-- [ ] Test time and score transitions, once-only warning, a large score jump with
+- [x] Test time and score transitions, once-only warning, a large score jump with
   sequential delays, pause freeze, stable seeded spawn caps/spacing at every band,
   one credit per new category, old result normalization and invalid mode stats.
-- [ ] Observe RED, implement, then run two 18,000-tick seeded action replays. Expected
+- [x] Observe RED, implement, then run two 18,000-tick seeded action replays. Expected
   identical events/outcomes, legal finite poses, every band, zero overflow and caps.
   Run affected scoring/save suites, typecheck/lint; record hypotheses/evidence and
   commit `feat: complete Rampage response bands`.
@@ -99,20 +99,32 @@ README/ASSET_LICENSES/BALANCE/CHANGELOG/DECISIONS/SESSION_HANDOFF and add
 **Interfaces:** E2E staged fixtures include rampage-band-2/rampage-band-3; normal
 production has no fixture/cheat bridge. Existing root/Pages static build contract stays.
 
-- [ ] Add real-menu smoke: Rampage advanced pressure→pause→Results→Hunt→trap/exposure
+- [x] Add real-menu smoke: Rampage advanced pressure→pause→Results→Hunt→trap/exposure
   combat→Results→reload/retry. Assert one result/persist update, no old role actors,
   hidden-state leak, stuck pointers, listener growth or fatal console/asset error.
   Include slow/catch-up pause with new AI and result-boundary adversarial events.
-- [ ] Observe RED then implement only missing integration/fixture behavior. Run new
+- [x] Observe RED then implement only missing integration/fixture behavior. Run new
   flow at root and /Sandstrike/, both production smokes, applicable input/viewport
   checks and verify. Do not repeat unchanged checks without a changed dependency.
-- [ ] Inspect actual desktop/phone/tablet layouts and reduced feedback, measure
+- [x] Inspect actual desktop/phone/tablet layouts and reduced feedback, measure
   natural Hunt and full-band Rampage including burst-heavy intervals. Report all
   physical-device/input/audio/performance limits and human feel evidence precisely.
-- [ ] Request one fresh whole-branch review across Phase C, using every child plan's
+- [x] Request one fresh whole-branch review across Phase C, using every child plan's
   Review Focus. Resolve Important/Critical through one RED→GREEN fix pass, rerun
   affected tests and the deterministic suite; record deferred minors and rulings.
-- [ ] Record GO only for criteria actually verified in GAME_DESIGN 18.2. If human
+- [x] Record GO only for criteria actually verified in GAME_DESIGN 18.2. If human
   feel or hardware/mobile criteria remain unverified, label the prototype complete
   and release gate pending, name the exact next checks. Do not call the entire game
   production-ready or promise a GOTY outcome. Commit `test: verify two-role prototype`.
+
+## Execution checkpoint - 2026-10-02
+
+Approved and implemented in the root on phase-b-ready. All implementation tasks
+and the functional prototype gate are complete; the physical-device/human-feel
+release gate remains pending. See docs/PHASE_C_VERIFICATION.md for actual checks,
+review finding/fix, workflow rulings and limits. Use docs/SESSION_HANDOFF.md to
+resume; do not rebuild the completed systems or restart this plan.
+
+Checked steps denote completed implementation/verification workflows, subject
+to the explicit evidence limits and rulings in PHASE_C_VERIFICATION.md; they do
+not assert physical-device performance or human-feel acceptance.

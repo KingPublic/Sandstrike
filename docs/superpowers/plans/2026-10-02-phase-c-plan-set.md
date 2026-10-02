@@ -78,5 +78,8 @@ Hunt must be playable before vehicle/aerial content grows. Physical-device 60 fp
 human feel, real touch/gamepad and audible quality remain required evidence limits;
 automated host measurements cannot be relabeled as hardware results.
 
-Status: written and self-reviewed, awaiting the user's written-plan review required
-by Superpowers. No Phase C product code has been implemented yet.
+Status: implementation approved by the user on 2026-10-02. Both child plans are
+implemented as a functional two-role prototype. One fresh final review found one
+Important warning defect, resolved in one fix pass with RED-to-GREEN regressions.
+Final evidence and release limits: docs/PHASE_C_VERIFICATION.md. Physical-device
+quality and human-feel release gates remain pending, as Task 3 explicitly permits.
