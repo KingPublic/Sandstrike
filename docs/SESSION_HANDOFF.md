@@ -155,14 +155,19 @@ Resolve its SHA using git log; no remote publication.
   No full old Phase B/C E2E rerun; no new review-agent or Superpowers workflow.
 
 ## Exact next action
-The user's newest request (UI/art pass, right-click mouse control for Shift, and
-working mobile skill buttons) is implemented and committed; it has NOT been
-playtested by the user yet. On "lanjutkan", take the user's verdict on the right-click
-Boost/Dodge, the new HUD gauges and touch readiness rings, the visible worm return
-countdown and the mobile skill/grapple buttons, then act on what remains in
-PLAYER_FEEDBACK.md (item 6, art quality, is still subjective and open). Do not
-restart a generic phase/plan or Superpowers cycle, and do not rebalance Hunt because
-of these changes. Passing automated tests does not overrule human feedback.
+The new Rampage (ascent hunt, Stage 1) is implemented and committed; the user is
+playtesting it. On "lanjutkan", do Stage 2: per-kit rival skills (Scout grapple,
+Siegebreaker shield, Engineer decoy, Field Medic heal, Ranger mark) driven by the same
+`CharacterSkills` definitions the player uses, a visible rooftop crate pickup with
+feedback instead of an instant arm, and losing the heavy weapon when an armed rival
+dives or dies. Then Stage 3: HUD/art for the mode (armed warning, remaining-Hunter
+presentation, carrion cue), balance tuning from the user's verdict (rival cadence and
+damage, carrion cadence and heal, deploy timing), and deciding whether ascent and
+classic keep sharing the Rampage record slot. Take the user's verdict on the earlier
+batches too (right-click Boost/Dodge, HUD gauges, touch readiness rings, mobile
+skill/grapple buttons, worm leap). Item 6 (art quality) is still subjective and open.
+Do not restart a generic phase/plan or Superpowers cycle, and do not rebalance Hunt
+for ascent-rampage tuning. Passing automated tests does not overrule human feedback.
 
 ## Practical limits
 Procedural stylized visuals, not photorealistic/GOTY production assets. Seed33 is

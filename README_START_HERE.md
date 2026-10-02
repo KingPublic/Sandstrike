@@ -87,15 +87,18 @@ heavy 5-run survival gate excluded, plus browser cases for the leap, mouse contr
 the mobile skill/grapple buttons, HUD gauges at five viewports and worm controls.
 `dist` is a normal root production build. See SURVIVAL_VERIFICATION.md.
 
-Exact next action: playtest the newest batch in the real game - right-click
-Boost/Dodge on desktop, the new HUD health/ammo/cooldown gauges, the touch readiness
-rings and the mobile skill/grapple buttons - plus the earlier Rampage worm leap
-(hold up + Burst, or right click) and the a9f0615 fixes (items 1-5 of
-`docs/PLAYER_FEEDBACK.md`). Item 6 (art quality) is still open and subjective - do
-not make speculative art changes without the user's judgement. Because the scripted
-full Hunt runs sit at the top of the 240-420s band, the boss fight length is the
-first thing to tune if a run feels long. Do not restart a generic
-plan/review/testing cycle.
+Exact next action: the user is playtesting the new Rampage (Stage 1). If they say
+"lanjutkan", continue with Stage 2 of the ascent hunt: give each rival kit its own
+skill (Scout grapple, Siegebreaker shield, Engineer decoy, Field Medic heal, Ranger
+mark) so the climb reads differently per kit, make the rooftop crate a visible
+pickup with its own feedback instead of an instant arm, and let an armed rival lose
+the heavy weapon when it dives or dies. Then Stage 3: HUD/art polish for the new mode
+(armed warning, remaining-Hunter presentation, carrion cue), balance tuning from their
+verdict (rival cadence/damage, carrion cadence and heal size, deploy timing), and the
+score/record question (ascent and classic still share the Rampage record slot).
+Also still open: item 6 (art quality) in `docs/PLAYER_FEEDBACK.md`, which needs the
+user's own judgement, and the a9f0615 items' human feel. Do not restart a generic
+plan/review/testing cycle, and do not rebalance Hunt for ascent-rampage tuning.
 Physical devices, gamepad/audio/haptics, sustained performance and human difficulty
 still need real feedback. Visuals are stylized original procedural art, not photorealism.
 
@@ -124,12 +127,19 @@ landscape-first mobile play from one shared simulation. The approved survival re
 ## Play the current slice
 
 From the project root, run `npm ci` once, then `npm run dev` and open the local
-URL printed by Vite. Choose Enter desert → Play → Rampage or Hunt → Start. The character selector offers five role-compatible kits. The
-environment selector (desert outpost / urban ruins / frozen facility) is on the
-mode screen and is frozen for the run.
+URL printed by Vite (or `npm run preview` to play the built `dist/`). Choose Enter
+desert → Play → Rampage, Classic arena or Hunt → Start. The character selector offers
+five role-compatible kits. The environment selector (desert outpost / urban ruins /
+frozen facility) is on the mode screen and is frozen for the run.
 
-- Rampage: WASD or arrow keys steer, Space activates the selected worm skill (Dune Maw: Sandguard, 3s immunity), Shift
-  bursts, Escape pauses. Food is eaten automatically through the mouth.
+- Rampage (ascent hunt): you are the worm inside the rising sand. WASD or arrows
+  steer, Space activates the selected worm skill (Dune Maw: Sandguard, 3s immunity),
+  hold up with Shift or a right click to leap out of the sand, Escape pauses. Five
+  Hunter bots climb the tower and race for the rooftop RPG; kill all five to win.
+  Carrion drifting in the sand heals you when your mouth touches it - it is the only
+  healing here, and rivals only shoot at you while you are out of the sand.
+- Classic arena: the older endless arena run (prey for health, response bands and
+  score) is unchanged and selected with "Choose classic arena".
 - Hunt (survival ascent): A/D move, Space or W jump, S drops through a platform,
   mouse aims and fires, Q uses the character skill, Shift dodges, R reloads.
   Climb the outpost route above the rising sand, survive the worms (each ordinary
