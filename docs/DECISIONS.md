@@ -277,3 +277,18 @@ start seed. Predictable attacks are necessary for the Ranger trap/dodge loop.
 
 Status: accepted review correction; focused crossing regressions and the final
 160-test suite passed. Human warning-duration/pressure tuning remains pending.
+
+## D-019 - User-directed ascent and boss revision (2026-10-02)
+
+Request: prioritize the user's actual playtest over the old Phase C relay scenario.
+Five worms and five Hunters replace the previous five-total target. Automatic mouth
+feeding replaces manual Bite; active skills become meaningful combat choices.
+Hunt gains platforms, allied support, rising sand and 10-second escalating worm
+returns. Summit entry stops the sand and starts a high-HP boss fight; RPG damage
+is strong but subject to the boss's visible 3-second immunity. Boss defeat wins.
+The whole successful run is targeted at 5-6 minutes, not a hard boss timeout.
+
+Status: user-requested direction and boss clarification recorded. Concrete design
+is proposed for written review; no product implementation in this checkpoint.
+The plan must preserve shared simulation, original IP, root workflow and efficient
+verification. Existing systems and historical records are migrated, not discarded.

@@ -65,6 +65,32 @@ Nonfatal Phaser bundle warning remains about 1514kB minified / 400kB gzip.
 
 ## Exact next action on resume
 
+### Latest user playtest revision - 2026-10-02
+
+The user tried Phase C and requested a substantial direction correction. Priority
+is now compact desktop menus, agile/high-breaching worms, automatic mouth feeding
+instead of manual Bite, five playable worms AND five hunters with unique skills,
+allied Hunt NPCs/helicopters, vertical platform/building ascent, continuously rising
+sand, ordinary worm kills followed by fiercer respawn after 10s, and a summit RPG
+objective with a 5-6 minute run. Preserve original assets and the shared simulation.
+This latest request supersedes the old five-total roster and relay-defense target.
+
+Written proposed design: docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md.
+No product code has changed for this revision. The user clarified: summit arrival
+starts a boss fight, freezes sand, and provides a high-damage RPG (not a one-shot).
+The boss is more aggressive, has much thicker HP, and may use 3-second immunity.
+Successful boss defeat wins. Total climb plus boss is targeted at 5-6 minutes;
+no forced 300s RPG delivery or hard 360s boss timeout. The draft was updated with
+this clarification and a concrete visual/animation revision.
+Next action: obtain the written design review, incorporate corrections, then write
+the native plan and execute in root. Do not restart completed Phase C or treat its
+GO as approval of this new written spec. Current investigation read Menu CSS,
+movementBalance, HunterLocomotion and existing ability/combat composition: the menu
+uses a long document layout, Hunters are surface-locked, and full-speed turn authority
+is about 1.08 radians/second. No browser reproduction/new test was run this revision.
+
+### Previous production next steps (now subordinate to the revision)
+
 Continue from the playable prototype, not the Phase A/B/C plan start. Read the
 verification report and latest Git checkpoint first. Next work is focused human
 playtesting/tuning and production presentation: real phone/tablet and gamepad,

@@ -635,3 +635,16 @@ Only after both MVP modes meet their gates should the project consider:
 
 Each substantial addition needs a player-value statement, scope review, and an
 updated design/decision record before implementation.
+
+## 21. Latest playtest revision request (2026-10-02)
+
+The user's new direction supersedes the earlier roster and relay scenario as the
+next product target: five playable worms plus five Hunters, passive mouth feeding,
+active character skills, easier/high worm breaches, compact menus, and Hunt as
+vertical survival ascent with allied Hunters/helicopters and rising sand. Ordinary
+ascent worm kills are followed by a fiercer return after 10 seconds. Reaching the
+summit stops sand and starts a final boss fight: thicker/aggressive worm, high-damage
+RPG, visible 3-second boss immunity. Target whole successful run: 5-6 minutes.
+This is requested scope, not already shipped behavior. Concrete proposed design
+and assumptions: `docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md`.
+Written design review and implementation planning are the next checkpoints.
