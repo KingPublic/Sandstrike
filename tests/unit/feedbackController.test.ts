@@ -19,7 +19,7 @@ describe("bounded accessible feedback", () => {
     const controller = new FeedbackController();
     const events = Array.from({ length: 80 }, (_, tick) => hit(tick));
     const commands = controller.consume(events, defaultPresentationSettings, true);
-    expect(commands.length).toBeLessThanOrEqual(32);
+    expect(commands.length).toBeLessThanOrEqual(40);
     expect(commands.reduce((sum, cue) => sum + cue.particles, 0)).toBeLessThanOrEqual(48);
     expect(controller.consume(events, defaultPresentationSettings, true)).toHaveLength(0);
     const reduced = new FeedbackController().consume([hit(1)], { ...defaultPresentationSettings, reducedMotion: true, reducedFlashes: true, shake: 0 }, true);

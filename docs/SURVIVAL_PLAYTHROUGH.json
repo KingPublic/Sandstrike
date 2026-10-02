@@ -4,40 +4,40 @@
   "runs": [
     {
       "characterId": "ranger",
-      "ascentSeconds": 248.86666666666667,
-      "totalSeconds": 358.93333333333334,
+      "ascentSeconds": 248.06666666666666,
+      "totalSeconds": 412.48333333333335,
       "bossHealth": 0,
       "hunterHealth": 100,
       "outcome": "victory"
     },
     {
       "characterId": "siegebreaker",
-      "ascentSeconds": 247.8,
-      "totalSeconds": 353.31666666666666,
+      "ascentSeconds": 248.06666666666666,
+      "totalSeconds": 393.6,
       "bossHealth": 0,
-      "hunterHealth": 100,
+      "hunterHealth": 82,
       "outcome": "victory"
     },
     {
       "characterId": "scout",
       "ascentSeconds": 247.8,
-      "totalSeconds": 346.3,
+      "totalSeconds": 405.43333333333334,
       "bossHealth": 0,
-      "hunterHealth": 60,
-      "outcome": "victory"
-    },
-    {
-      "characterId": "field-medic",
-      "ascentSeconds": 247.53333333333333,
-      "totalSeconds": 358.01666666666665,
-      "bossHealth": 0,
-      "hunterHealth": 60,
+      "hunterHealth": 100,
       "outcome": "victory"
     },
     {
       "characterId": "engineer",
-      "ascentSeconds": 247.53333333333333,
-      "totalSeconds": 363,
+      "ascentSeconds": 247.6,
+      "totalSeconds": 385.0833333333333,
+      "bossHealth": 0,
+      "hunterHealth": 100,
+      "outcome": "victory"
+    },
+    {
+      "characterId": "field-medic",
+      "ascentSeconds": 248.86666666666667,
+      "totalSeconds": 409.4166666666667,
       "bossHealth": 0,
       "hunterHealth": 100,
       "outcome": "victory"

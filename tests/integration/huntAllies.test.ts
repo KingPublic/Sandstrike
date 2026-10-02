@@ -10,25 +10,35 @@ import { neutralActionFrame } from "../../src/game/input/ActionFrame";
 const groundController = new AlliedHunterController();
 const airController = new SupportHelicopterController();
 
+const anchor = (x: number, y: number, platformId?: string) => ({ position: { x, y }, ...(platformId ? { platformId } : {}) });
+
 it("never fires while the ally or the worm is buried", () => {
   const platforms = ascentArena.platforms;
-  const buried = groundController.step({ self: { x: 120, y: 40 }, grounded: true, platformId: "base", surfaceY: 0, platforms, worm: { position: { x: 130, y: -20 }, exposed: true } });
+  const buried = groundController.step({ self: { x: 120, y: 40 }, grounded: true, platformId: "base", surfaceY: 0, platforms, hunter: anchor(140, -16, "base"), worm: { position: { x: 130, y: -20 }, exposed: true } });
   expect(buried.fire).toBe(false);
-  expect(buried.state).toBe("climb");
-  const deepWorm = groundController.step({ self: { x: 120, y: -106 }, grounded: true, platformId: "ledge.0", surfaceY: 200, platforms, worm: { position: { x: 130, y: 400 }, exposed: false } });
+  expect(["regroup", "climb"]).toContain(buried.state);
+  const deepWorm = groundController.step({ self: { x: 120, y: -106 }, grounded: true, platformId: "ledge.0", surfaceY: 200, platforms, hunter: anchor(140, -106, "ledge.0"), worm: { position: { x: 130, y: 400 }, exposed: false } });
   expect(deepWorm.fire).toBe(false);
-  const exposed = groundController.step({ self: { x: 120, y: -106 }, grounded: true, platformId: "ledge.0", surfaceY: 200, platforms, worm: { position: { x: 130, y: -20 }, exposed: true } });
+  const exposed = groundController.step({ self: { x: 120, y: -106 }, grounded: true, platformId: "ledge.0", surfaceY: 200, platforms, hunter: anchor(140, -106, "ledge.0"), worm: { position: { x: 130, y: -20 }, exposed: true } });
   expect(exposed).toMatchObject({ fire: true, state: "engage", moveX: 0 });
 });
 
-it("climbs toward platforms above the hazard and the helicopter holds altitude", () => {
-  const climb = groundController.step({ self: { x: -380, y: -16 }, grounded: true, platformId: "base", surfaceY: 200, platforms: ascentArena.platforms, worm: undefined });
-  expect(climb.state).toBe("climb");
-  expect(climb.moveX).toBeGreaterThan(0);
-  const air = airController.step({ self: { x: 0, y: -120 }, surfaceY: 200, bounds: ascentArena.bounds, worm: undefined });
+it("escorts the Hunter, regroups when lagging and the helicopter holds altitude", () => {
+  // Same platform, close by: the ally holds escort station instead of wandering off.
+  const escort = groundController.step({ self: { x: 60, y: -106 }, grounded: true, platformId: "ledge.0", surfaceY: 200, platforms: ascentArena.platforms, hunter: anchor(140, -106, "ledge.0"), worm: undefined });
+  expect(escort).toMatchObject({ state: "escort", moveX: 0, jump: false, fire: false });
+  // Far behind and below: the ally closes the gap toward the Hunter.
+  const regroup = groundController.step({ self: { x: -900, y: -16 }, grounded: true, platformId: "base", surfaceY: 200, platforms: ascentArena.platforms, hunter: anchor(140, -286, "ledge.2"), worm: undefined });
+  expect(regroup.state).toBe("regroup");
+  expect(regroup.moveX).toBe(1);
+  expect(regroup.aim.x).toBeGreaterThan(-900);
+  const air = airController.step({ self: { x: 0, y: -120 }, surfaceY: 200, bounds: ascentArena.bounds, hunter: { x: 0, y: -16 }, worm: undefined });
   expect(air.moveY).toBe(0);
-  const low = airController.step({ self: { x: 0, y: 100 }, surfaceY: 200, bounds: ascentArena.bounds, worm: undefined });
+  const low = airController.step({ self: { x: 0, y: 100 }, surfaceY: 200, bounds: ascentArena.bounds, hunter: { x: 0, y: -16 }, worm: undefined });
   expect(low.moveY).toBe(-1);
+  // The helicopter patrols around the Hunter rather than the world origin.
+  const patrol = airController.step({ self: { x: 1500, y: -120 }, surfaceY: 200, bounds: ascentArena.bounds, hunter: { x: 1400, y: -16 }, worm: undefined });
+  expect(Math.abs(patrol.moveX)).toBe(1);
 });
 
 it("keeps a capped support population that damages exposed worms but never the player", () => {

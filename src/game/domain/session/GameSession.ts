@@ -46,6 +46,7 @@ import { ascentArena, ascentHunterBalance, type AscentStage } from "../../data/a
 import { bossBalance } from "../../data/bossBalance";
 import { AscentWorld } from "../world/AscentWorld";
 import { clampHealth } from "../combat/Health";
+import { combatBalance } from "../../data/combatBalance";
 import { HuntSystems } from "../hunt/HuntSystems";
 import { WormLifeDirector } from "../hunt/WormLifeDirector";
 import { collisionProfiles } from "../../data/collisionProfiles";
@@ -203,7 +204,10 @@ export class GameSession {
     for (const contact of this.collisions.query(previousActors, currentActors)) {
       if (contact.kind === "projectile") continue;
       this.events.publish({ type: "contact", tick: this.currentTick, contact });
-      if (contact.sourceId === "worm") commands.push({ sourceId: "worm", targetId: contact.targetId, tick: this.currentTick, abilityId: "ability.impact", amount: impactDamage(worm.speed), tags: ["impact"], priority: 2 });
+      if (contact.sourceId === "worm") {
+        const target = contact.targetId === "hunter" ? combatBalance.hunterImpactScale : 1;
+        commands.push({ sourceId: "worm", targetId: contact.targetId, tick: this.currentTick, abilityId: "ability.impact", amount: impactDamage(worm.speed) * target, tags: ["impact"], priority: 2 });
+      }
     }
     if (ability.state.active) {
       const withBite = (actor: ActorState): ActorState => actor.id === "worm" ? createActor({ ...actor, collision: this.bite.contactProfile(actor.direction) }) : actor;

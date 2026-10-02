@@ -7,7 +7,7 @@ export const bossBalance = Object.freeze({
   shieldWindupTicks: 30,
   shieldActiveTicks: 180,
   shieldCooldownTicks: 900,
-  rpgDamage: 80,
+  rpgDamage: 200,
   rpgCadenceTicks: 72,
   rpgMagazine: 2,
   rpgReloadTicks: 120,

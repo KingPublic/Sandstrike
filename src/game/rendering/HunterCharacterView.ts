@@ -32,9 +32,18 @@ export function drawHunterCharacter(g: Phaser.GameObjects.Graphics, actor: Actor
   const reloading = (h?.rifle.reloadUntilTick ?? 0) > snapshot.tick;
   const angle = reloading ? Math.atan2(aim.y, aim.x) + Math.sin(tick * .1) * .3 : Math.atan2(aim.y, aim.x);
   const dx = Math.cos(angle), dy = Math.sin(angle), length = (h?.rpg.owned && !h.rpg.reloading) ? 30 : kit.id === "field-medic" ? 13 : kit.id === "siegebreaker" ? 26 : 20;
+  const heavy = h?.rpg.owned === true && !h.rpg.reloading;
+  const recoil = h?.shot ? 4 : 0;
   g.lineStyle(3, 0xf0c89e).lineBetween(0, -4 + bob, dx * 10, dy * 10 - 4 + bob);
-  g.lineStyle((h?.rpg.owned && !h.rpg.reloading) ? 7 : 4, v.plate).lineBetween(dx * 4, dy * 4 - 4 + bob, dx * length, dy * length - 4 + bob);
-  g.lineStyle(1.5, v.light, .45).lineBetween(dx * 6, dy * 6 - 5 + bob, dx * length, dy * length - 5 + bob);
-  if (h?.rpg.owned && !h.rpg.reloading) g.lineStyle(9, 0x324d43).lineBetween(dx * 15, dy * 15 - 4 + bob, dx * 25, dy * 25 - 4 + bob);
-  if (h?.shot) g.fillStyle(v.light).fillTriangle(dx * length, dy * length - 4, dx * (length + 11) - dy * 4, dy * (length + 11) + dx * 4 - 4, dx * (length + 11) + dy * 4, dy * (length + 11) - dx * 4 - 4);
+  g.lineStyle(heavy ? 7 : 4, v.plate).lineBetween(dx * (4 - recoil * .4), dy * (4 - recoil * .4) - 4 + bob, dx * (length - recoil), dy * (length - recoil) - 4 + bob);
+  g.lineStyle(1.5, v.light, .45).lineBetween(dx * 6, dy * 6 - 5 + bob, dx * (length - recoil), dy * (length - recoil) - 5 + bob);
+  if (heavy) g.lineStyle(9, 0x324d43).lineBetween(dx * 15, dy * 15 - 4 + bob, dx * (25 - recoil), dy * (25 - recoil) - 4 + bob);
+  if (h?.shot) {
+    // Tracer follows the real shot path from the drawn muzzle to the actual hit point.
+    const muzzle = { x: dx * (length - recoil), y: dy * (length - recoil) - 4 + bob };
+    const to = { x: h.shot.to.x - actor.position.x, y: h.shot.to.y - actor.position.y };
+    g.lineStyle(heavy ? 3 : 1.6, heavy ? 0xffc46b : 0xfff3cf, heavy ? .95 : .8).lineBetween(muzzle.x, muzzle.y, to.x, to.y);
+    g.fillStyle(0xffeec2, .95).fillCircle(muzzle.x, muzzle.y, heavy ? 5 : 3);
+    g.fillStyle(0xffd79a, .8).fillTriangle(muzzle.x, muzzle.y, muzzle.x - dy * (heavy ? 9 : 5), muzzle.y + dx * (heavy ? 9 : 5), muzzle.x + dy * (heavy ? 9 : 5), muzzle.y - dx * (heavy ? 9 : 5));
+  }
 }

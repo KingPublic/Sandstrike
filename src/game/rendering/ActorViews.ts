@@ -33,24 +33,40 @@ export class ActorViews {
   private draw(view: Phaser.GameObjects.Graphics, actor: ActorState, tick: number, contrast: boolean, telegraph: boolean, aimX?: number, ally?: AllyState): void {
     if (actor.tags.includes("ally")) {
       const toAim = { x: (ally?.aim.x ?? actor.position.x + actor.direction.x) - actor.position.x, y: (ally?.aim.y ?? actor.position.y) - actor.position.y };
+      const aimLength = Math.hypot(toAim.x, toAim.y);
+      const dir = aimLength > .001 ? { x: toAim.x / aimLength, y: toAim.y / aimLength } : { x: actor.direction.x || 1, y: 0 };
+      const firing = ally?.firing === true;
+      const recoil = firing ? 3 : 0;
+      const muzzle = { x: dir.x * (firing ? 16 : 19) - dir.x * recoil, y: dir.y * (firing ? 16 : 19) - dir.y * recoil };
       if (actor.tags.includes("ally-air")) {
         view.fillStyle(0x24313c).fillRoundedRect(-32, -14, 64, 26, 8);
         view.fillStyle(contrast ? 0xdffffa : 0x8af1db).fillRoundedRect(-24, -19, 40, 22, 6);
-        view.lineStyle(4, 0x2b4453).lineBetween(-46, -28, 46, -28);
+        view.lineStyle(2.5, 0xffd79a).lineBetween(-46, -28, 46, -28);
         view.lineStyle(3, 0x295f66).lineBetween(0, -19, 0, -30);
         view.lineStyle(3, 0x8af1db).lineBetween(-20, 14, 24, 14);
-        if (ally?.firing) view.lineStyle(2, 0xffd79a, .85).lineBetween(0, -4, toAim.x, toAim.y);
+        view.lineStyle(5, 0x2b4453).lineBetween(0, -4, dir.x * 18, dir.y * 18 - 4);
+        view.lineStyle(3, 0x152330).lineBetween(0, 8, dir.x * 14, dir.y * 14 + 8);
+        view.fillStyle(0x0f1a24).fillRoundedRect(-30, -8, 12, 7, 2).fillRoundedRect(18, -8, 12, 7, 2);
+        if (firing) {
+          view.lineStyle(2, 0xfff0bd, .9).lineBetween(muzzle.x, muzzle.y - 4, toAim.x, toAim.y);
+          view.fillStyle(0xffe6a8, .95).fillCircle(muzzle.x, muzzle.y - 4, 3.4);
+        }
         return;
       }
       const stride = Math.sin(tick * 0.19) * (Math.abs(actor.velocity.x) > 0 ? 4 : 0.6);
       view.fillStyle(0x100d18, 0.28).fillEllipse(1, 17, 29, 7);
       view.lineStyle(3, 0x35424c).lineBetween(-3, 3, -4 - stride, 16).lineBetween(4, 3, 5 + stride, 16);
       view.fillStyle(contrast ? 0xdffffa : 0x63b8ad).fillRoundedRect(-7, -7, 14, 15, 3);
-      view.fillStyle(0xf7d2a2).fillCircle(0, -12, 5);
       view.fillStyle(0x334b58).fillRoundedRect(-7, -18, 14, 6, 2);
-      const sign = toAim.x >= 0 ? 1 : -1;
-      view.lineStyle(4, 0x1b2734).lineBetween(sign * 2, -5, sign * 20, -5);
-      if (ally?.firing) view.lineStyle(2, 0xffd79a, .85).lineBetween(sign * 20, -5, toAim.x, toAim.y);
+      view.fillStyle(0xf7d2a2).fillCircle(0, -12, 5);
+      view.fillStyle(0x334b58).fillRect(-4, 15, 3, 3).fillRect(4, 15, 3, 3);
+      // Rifle follows the actual aim direction; firing draws a short tracer from the muzzle.
+      view.lineStyle(3, 0x35424c).lineBetween(0, -5, dir.x * 8, dir.y * 8 - 5);
+      view.lineStyle(4, 0x1b2734).lineBetween(dir.x * 6, dir.y * 6 - 5, dir.x * 19 - dir.x * recoil, dir.y * 19 - dir.y * recoil - 5);
+      if (firing) {
+        view.lineStyle(2, 0xfff0bd, .9).lineBetween(muzzle.x, muzzle.y - 5, toAim.x, toAim.y);
+        view.fillStyle(0xffe6a8, .95).fillCircle(muzzle.x, muzzle.y - 5, 3.2);
+      }
       return;
     }
     if (actor.tags.includes("relay")) {

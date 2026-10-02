@@ -2,8 +2,12 @@
 export const allies = Object.freeze({
   groundCap: 2,
   airCap: 1,
-  replacementTicks: 420,
-  groundHealth: 60,
+  replacementTicks: 240,
+  /** Allies regroup toward the Hunter past this distance so they stay on camera. */
+  regroupLeash: 200,
+  /** Stand-off kept from the Hunter so the squad reads clearly on screen. */
+  escortOffset: 130,
+  groundHealth: 90,
   groundSpeed: 150,
   groundRange: 640,
   groundDamage: 6,

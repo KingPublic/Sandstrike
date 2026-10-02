@@ -8,6 +8,16 @@ import { neutralActionFrame, type ActionFrame } from "../../input/ActionFrame";
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
 }
+
+/** Drawn muzzle offset: ground allies hold a rifle at chest height, the helicopter fires from its nose. */
+function muzzlePoint(unit: AllyUnit): Vec2 {
+  const toAim = { x: unit.aim.x - unit.position.x, y: unit.aim.y - unit.position.y };
+  const length = Math.hypot(toAim.x, toAim.y);
+  const direction = length > .001 ? { x: toAim.x / length, y: toAim.y / length } : { x: 1, y: 0 };
+  const reach = unit.kind === "ally.ground" ? 20 : 28;
+  const height = unit.kind === "ally.ground" ? -5 : -4;
+  return Object.freeze({ x: unit.position.x + direction.x * reach, y: unit.position.y + direction.y * reach + height });
+}
 import type { ActorRegistry } from "../actors/ActorRegistry";
 import { freezeRecord } from "../actors/Actor";
 import { WormController, type WormDecision } from "../ai/WormController";
@@ -121,7 +131,7 @@ export class HuntSystems {
     }
     const surfaceY = this.terrain.surfaceY(hunter.position.x);
     const relay = registry.get("relay")?.position ?? { x: 0, y: surfaceY + 200 };
-    const perception = this.perception.observe(worm, hunter.position, relay, snare.state.position, tick, surfaceY, skill?.decoy);
+    const perception = this.perception.observe(worm, { position: hunter.position, velocity: hunter.velocity ?? { x: 0, y: 0 } }, relay, snare.state.position, tick, surfaceY, skill?.decoy);
     const decision = this.wormAlive ? this.ai.step(perception, tick, random) : this.ai.snapshot();
     this.stepStage(registry, hunter.position, tick);
     this.stepAllies(registry, worm, tick, surfaceY);
@@ -164,31 +174,35 @@ export class HuntSystems {
     for (const unit of this.allyUnits) {
       const actor = registry.get(unit.id);
       if (!actor || actor.health <= 0) unit.dead = true;
-      else if (unit.kind === "ally.ground" && unit.position.y + 16 > surfaceY + 120) { unit.dead = true; registry.markForRemoval(unit.id, "expired"); this.nextAllySpawnTick = Math.min(this.nextAllySpawnTick, tick); }
+      else if (unit.kind === "ally.ground" && unit.position.y + 16 > surfaceY + 220) { unit.dead = true; registry.markForRemoval(unit.id, "expired"); }
       else unit.health = actor.health;
     }
     for (let index = this.allyUnits.length - 1; index >= 0; index--) if (this.allyUnits[index]?.dead) this.allyUnits.splice(index, 1);
     const alive = this.allyUnits.filter(unit => !unit.dead);
-    if (tick >= this.nextAllySpawnTick) {
-      const groundCount = alive.filter(unit => unit.kind === "ally.ground").length;
-      const airCount = alive.filter(unit => unit.kind === "ally.air").length;
+    const groundCount = alive.filter(unit => unit.kind === "ally.ground").length;
+    const airCount = alive.filter(unit => unit.kind === "ally.air").length;
+    const underStrength = groundCount < allyBalance.groundCap || airCount < allyBalance.airCap;
+    // Replace a missing slot quickly so the squad stays visibly present.
+    if (tick >= this.nextAllySpawnTick && underStrength) {
       if (groundCount < allyBalance.groundCap) this.spawnAlly("ally.ground", registry, surfaceY, tick);
-      else if (airCount < allyBalance.airCap) this.spawnAlly("ally.air", registry, surfaceY, tick);
+      else this.spawnAlly("ally.air", registry, surfaceY, tick);
       this.nextAllySpawnTick = tick + allyBalance.replacementTicks;
     }
     const exposed = this.wormAlive ? exposedWormRegions(worm, this.terrain.surfaceY(worm.head.position.x)) : [];
     const sighted = this.wormAlive && exposed.length > 0 ? { position: worm.head.position, exposed: true } : undefined;
     const platforms = this.world.snapshot().platforms;
     const bounds = this.world.snapshot().bounds;
+    const hunterState = this.hunter.snapshot();
+    const anchor = { position: hunterState.position, platformId: hunterState.platformId };
     for (const unit of alive) {
-      if (unit.kind === "ally.ground") this.stepGroundAlly(unit, sighted, surfaceY, platforms, bounds, registry);
-      else this.stepAirAlly(unit, sighted, surfaceY, bounds, registry);
+      if (unit.kind === "ally.ground") this.stepGroundAlly(unit, sighted, surfaceY, platforms, bounds, registry, anchor);
+      else this.stepAirAlly(unit, sighted, surfaceY, bounds, registry, hunterState.position);
     }
   }
 
-  private stepGroundAlly(unit: AllyUnit, sighted: Readonly<{ position: Vec2; exposed: boolean }> | undefined, surfaceY: number, platforms: readonly Platform[], bounds: Readonly<{ left: number; right: number }>, registry: ActorRegistry): void {
+  private stepGroundAlly(unit: AllyUnit, sighted: Readonly<{ position: Vec2; exposed: boolean }> | undefined, surfaceY: number, platforms: readonly Platform[], bounds: Readonly<{ left: number; right: number }>, registry: ActorRegistry, hunter: Readonly<{ position: Vec2; platformId?: string | undefined }>): void {
     const controller = unit.controller as AlliedHunterController;
-    const decision = controller.step({ self: unit.position, grounded: unit.grounded, platformId: unit.platformId, surfaceY, platforms, worm: sighted });
+    const decision = controller.step({ self: unit.position, grounded: unit.grounded, platformId: unit.platformId, surfaceY, platforms, hunter, worm: sighted });
     unit.fire = decision.fire; unit.aim = decision.aim; unit.state = decision.state;
     const halfWidth = 10, halfHeight = 16;
     const previous = { position: unit.position, halfWidth, halfHeight };
@@ -207,9 +221,9 @@ export class HuntSystems {
     this.syncAlly(unit, registry);
   }
 
-  private stepAirAlly(unit: AllyUnit, sighted: Readonly<{ position: Vec2; exposed: boolean }> | undefined, surfaceY: number, bounds: Readonly<{ left: number; right: number; top: number; bottom: number }>, registry: ActorRegistry): void {
+  private stepAirAlly(unit: AllyUnit, sighted: Readonly<{ position: Vec2; exposed: boolean }> | undefined, surfaceY: number, bounds: Readonly<{ left: number; right: number; top: number; bottom: number }>, registry: ActorRegistry, hunter: Vec2): void {
     const controller = unit.controller as SupportHelicopterController;
-    const decision = controller.step({ self: unit.position, surfaceY, bounds, worm: sighted });
+    const decision = controller.step({ self: unit.position, surfaceY, bounds, hunter, worm: sighted });
     unit.fire = decision.fire; unit.aim = decision.aim; unit.state = decision.state;
     const x = clamp(unit.position.x + decision.moveX * allyBalance.airSpeed / 60, bounds.left + 60, bounds.right - 60);
     const y = clamp(unit.position.y + decision.moveY * allyBalance.airSpeed / 60, bounds.top + 80, surfaceY + 40);
@@ -227,12 +241,15 @@ export class HuntSystems {
   private spawnAlly(kind: AllyState["kind"], registry: ActorRegistry, surfaceY: number, tick: number): void {
     this.allySequence += 1;
     const id = kind === "ally.ground" ? `ally.ground.${String(this.allySequence)}` : `ally.heli.${String(this.allySequence)}`;
+    const hunter = this.hunter.snapshot();
     const side = this.allySequence % 2 === 0 ? 1 : -1;
-    const safePlatform = this.world?.snapshot().platforms.filter(p => p.y < surfaceY - 60).reduce<Platform | undefined>((best, p) => !best || p.y > best.y ? p : best, undefined);
-    const groundX = safePlatform ? clamp(side * 120, safePlatform.left + 24, safePlatform.right - 24) : side * 400;
+    const platforms = this.world?.snapshot().platforms ?? [];
+    const safePlatform = platforms.find(platform => platform.id === hunter.platformId && platform.y < surfaceY - 40)
+      ?? platforms.filter(p => p.y < surfaceY - 60).reduce<Platform | undefined>((best, p) => !best || p.y > best.y ? p : best, undefined);
+    const groundX = safePlatform ? clamp(hunter.position.x + side * allyBalance.escortOffset, safePlatform.left + 24, safePlatform.right - 24) : hunter.position.x + side * allyBalance.escortOffset;
     const position = kind === "ally.ground"
-      ? { x: groundX, y: (safePlatform?.y ?? surfaceY - 100) - 16 }
-      : { x: side * 520, y: surfaceY - allyBalance.airAltitude };
+      ? { x: groundX, y: (safePlatform?.y ?? surfaceY - 120) - 16 }
+      : { x: clamp(hunter.position.x + side * 260, -3400, 3400), y: surfaceY - allyBalance.airAltitude };
     registry.deferSpawn(spawnActor(id, kind === "ally.ground" ? "actor.ally" : "actor.heli", position));
     const controller = kind === "ally.ground" ? new AlliedHunterController() : new SupportHelicopterController();
     this.allyUnits.push({ id, kind, controller, position, velocity: { x: 0, y: 0 }, grounded: kind === "ally.ground" && safePlatform !== undefined, ...(kind === "ally.ground" && safePlatform ? { platformId: safePlatform.id } : {}), health: kind === "ally.ground" ? allyBalance.groundHealth : allyBalance.airHealth, dead: false, nextFireTick: tick + 30, firingUntilTick: 0, aim: position, fire: false, state: "advance" });
@@ -267,7 +284,9 @@ export class HuntSystems {
         unit.firingUntilTick = tick + 6;
         unit.aim = contact.position;
         commands.push({ sourceId: unit.id, targetId: "worm", abilityId: unit.kind === "ally.ground" ? "ability.ally-rifle" : "ability.ally-air", tick, amount: damage * (this.characterSkill?.snapshot(tick).markUntilTick ? 1.35 : 1), tags: ["ally", "rifle"], priority: 0 });
-        events.push(Object.freeze({ type: "rifle-fired" as const, tick, position: unit.position, to: contact.position }));
+        // The tracer starts at the drawn muzzle so the visual shot matches the pose.
+        const muzzle = muzzlePoint(unit);
+        events.push(Object.freeze({ type: "ally-fired" as const, tick, actorId: unit.id, kind: unit.kind, position: muzzle, to: contact.position }));
       }
     }
     return Object.freeze({ commands: Object.freeze(commands), events: Object.freeze(events) });
@@ -288,14 +307,18 @@ export class HuntSystems {
     const position = this.hunter.snapshot().position;
     const aim = action.aimWorld ? { x: action.aimWorld.x - position.x, y: action.aimWorld.y - position.y } : { x: action.aimX, y: action.aimY };
     const assisted = assistExposedAim(position, aim, worm, this.aimAssist, this.terrain.surfaceY(worm.head.position.x));
-    const length = Math.hypot(assisted.x, assisted.y); if (length > .001) this.aim = { x: assisted.x / length, y: assisted.y / length };
+    // The stored aim is what both the pose and the shot use, so the arm never
+    // points somewhere other than where the bullet goes.
+    const length = Math.hypot(assisted.x, assisted.y);
+    if (length > .001) this.aim = { x: assisted.x / length, y: assisted.y / length };
     const base = { ...action }; delete base.aimWorld;
     const rpg = this.rpg.snapshot();
     const useRifle = !rpg.owned || (rpg.rockets === 0 && rpg.reloadUntilTick > tick);
     if (!useRifle) this.rifle.cancelBurst();
     const frame = this.rifle.step({ ...base, ...(!useRifle ? { primary: neutralActionFrame(tick).primary } : {}), aimX: assisted.x, aimY: assisted.y }, { position: this.hunter.snapshot().position, regions, surfaceY: this.terrain.surfaceY(worm.head.position.x) }, tick);
     if (frame.shot) { this.shotsFired++; this.shot = { ...frame.shot, tick }; }
-    return { commands: frame.commands, events: frame.shot ? [{ type: "rifle-fired" as const, tick, position: frame.shot.from, to: frame.shot.to }] : [] };
+    const weaponId = this.rifle.snapshot().weaponId ?? "rifle";
+    return { commands: frame.commands, events: frame.shot ? [{ type: "rifle-fired" as const, tick, position: frame.shot.from, to: frame.shot.to, weaponId }] : [] };
   }
   observe(events: readonly DomainEvent[]): void {
     this.scoring.observe(events);

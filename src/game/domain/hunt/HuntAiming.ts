@@ -5,7 +5,9 @@ export function assistExposedAim(from: Vec2, aim: Vec2, worm: WormMotionSnapshot
   const length = Math.hypot(aim.x, aim.y);
   if (length === 0 || !Number.isFinite(length) || strength <= 0) return aim;
   const normal = { x: aim.x / length, y: aim.y / length };
-  let best: Vec2 | undefined, closest = Math.cos(Math.PI / 10);
+  // Only a tight cone snaps, so the drawn pose and the actual shot keep following
+  // the player's crosshair instead of silently pulling to a nearby target.
+  let best: Vec2 | undefined, closest = Math.cos(Math.PI / 30);
   for (const region of exposedWormRegions(worm, surfaceY)) {
     if (region.position.y > surfaceY) continue;
     const dx = region.position.x - from.x, dy = region.position.y - from.y, distance = Math.hypot(dx, dy);

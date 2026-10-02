@@ -6,6 +6,8 @@ export interface HelicopterPerception {
   readonly self: Vec2;
   readonly surfaceY: number;
   readonly bounds: Readonly<{ left: number; right: number }>;
+  /** The player's position keeps the patrol escorting the Hunter. */
+  readonly hunter: Vec2;
   readonly worm?: Readonly<{ position: Vec2; exposed: boolean }> | undefined;
 }
 
@@ -30,7 +32,7 @@ export class SupportHelicopterController {
     const worm = p.worm;
     const visible = worm !== undefined && worm.exposed && Math.abs(worm.position.x - p.self.x) <= allies.airRange;
     const aim = worm ? { x: worm.position.x, y: worm.position.y } : { x: p.self.x + this.direction * 120, y: p.surfaceY };
-    const patrolTarget = worm ? worm.position.x : p.self.x + this.direction * allies.airPatrolHalfWidth;
+    const patrolTarget = worm ? worm.position.x : p.hunter.x + this.direction * allies.airPatrolHalfWidth;
     const moveX = Math.abs(patrolTarget - p.self.x) > 40 ? Math.sign(patrolTarget - p.self.x) : this.direction;
     if (Math.abs(patrolTarget - p.self.x) > 40) this.direction = moveX;
     if (p.self.x <= p.bounds.left + 120) this.direction = 1;
