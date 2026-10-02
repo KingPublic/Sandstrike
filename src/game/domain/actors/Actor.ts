@@ -7,7 +7,7 @@ export type RemovalCause = "consumed" | "destroyed" | "expired";
 export interface ActorState {
   readonly id: ActorId;
   readonly definitionId: string;
-  readonly faction: "worm" | "world" | "military";
+  readonly faction: "worm" | "world" | "military" | "hunter";
   readonly position: Vec2;
   readonly velocity: Vec2;
   readonly direction: Vec2;

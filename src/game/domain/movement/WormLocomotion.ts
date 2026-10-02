@@ -7,6 +7,7 @@ import type {
   WormMotionPhase,
   WormMotionSnapshot,
   WormMovementConfig,
+  WormMotionEffects,
 } from "./WormMovementTypes";
 
 const VECTOR_EPSILON = 1e-9;
@@ -44,6 +45,7 @@ export class WormLocomotion {
     action: ActionFrame,
     dtSeconds: number,
     terrain: TerrainProfile,
+    effects?: WormMotionEffects,
   ): readonly WormMotionEvent[] {
     if (!Number.isFinite(dtSeconds) || dtSeconds <= 0) {
       throw new RangeError("Movement delta must be finite and positive.");
@@ -64,13 +66,21 @@ export class WormLocomotion {
     const events: WormMotionEvent[] = [];
 
     if (this.phase === "underground" || this.phase === "reentering") {
-      this.stepUnderground(action, dtSeconds);
+      this.stepUnderground(action, dtSeconds, effects?.turnScale ?? 1);
     } else {
-      this.stepAirborne(action, dtSeconds);
+      this.stepAirborne(action, dtSeconds, effects?.turnScale ?? 1);
     }
 
     if (action.boost.pressed && this.burstCooldownRemaining === 0) {
       this.applyBurst(events);
+    }
+
+    if (effects && effects.liftAcceleration > 0) {
+      const vx = this.velocity.x, vy = this.velocity.y - effects.liftAcceleration * dtSeconds;
+      const speed = Math.hypot(vx, vy), scale = Math.min(1, this.config.burstSpeedCap / speed);
+      this.velocity = freezeVec2(vx * scale, vy * scale);
+      this.speed = Math.hypot(this.velocity.x, this.velocity.y);
+      this.headingRadians = Math.atan2(this.velocity.y, this.velocity.x);
     }
 
     this.position = freezeVec2(
@@ -129,7 +139,7 @@ export class WormLocomotion {
     });
   }
 
-  private stepUnderground(action: ActionFrame, dtSeconds: number): void {
+  private stepUnderground(action: ActionFrame, dtSeconds: number, turnScale = 1): void {
     const desired = inputDirection(action);
     if (desired) {
       const desiredAngle = Math.atan2(desired.y, desired.x);
@@ -142,7 +152,7 @@ export class WormLocomotion {
       const authority =
         1 - (1 - this.config.highSpeedTurnFactor) * speedRatio;
       const maximumTurn =
-        this.config.lowSpeedTurnRate * authority * dtSeconds;
+        this.config.lowSpeedTurnRate * authority * dtSeconds * turnScale;
       this.headingRadians = rotateToward(
         this.headingRadians,
         desiredAngle,
@@ -170,7 +180,7 @@ export class WormLocomotion {
     );
   }
 
-  private stepAirborne(action: ActionFrame, dtSeconds: number): void {
+  private stepAirborne(action: ActionFrame, dtSeconds: number, turnScale = 1): void {
     const desired = inputDirection(action);
     let velocity = this.velocity;
     if (desired) {
@@ -179,7 +189,7 @@ export class WormLocomotion {
       const angle = rotateToward(
         currentAngle,
         desiredAngle,
-        this.config.lowSpeedTurnRate * this.config.airTurnFactor * dtSeconds,
+        this.config.lowSpeedTurnRate * this.config.airTurnFactor * dtSeconds * turnScale,
       );
       const magnitude = Math.hypot(velocity.x, velocity.y);
       velocity = freezeVec2(

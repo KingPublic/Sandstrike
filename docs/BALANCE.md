@@ -222,3 +222,14 @@ touch, GPU performance and human movement-feel tuning remain explicit limits.
 Final review corrections: pause input stops before the requested simulation tick
 and suppresses later catch-up ticks; lethal health cannot be restored by an attack
 later in the same tick; menu/Results interruption never exposes run controls.
+
+## Phase C Ranger/AI hypotheses (2026-10-02)
+Ranger moves 180 px/s; dodge 420 px/s for 12 ticks with 120-tick cooldown.
+Rifle: 8 damage, 30-tick cadence, six shots, 90-tick reload; exposed logical
+regions only, including above-surface followers when the head is buried.
+Snare: 42-tick arm, 150px radius, <=100px depth, 600-tick cooldown; force
+1200px/s² and turn scale .25 for 48 ticks, reveal for 120 ticks. Deep traps
+remain untriggered and can be recovered. AI locks a sector with 60-tick warning;
+12-tick decisions and expired 120-tick Hunter sightings. These are provisional.
+Evidence: 5 kit/contact tests and 8 AI/tracking/locomotion tests passed; two
+5400-tick replays identical, repeated warned breaches, finite bounded poses.

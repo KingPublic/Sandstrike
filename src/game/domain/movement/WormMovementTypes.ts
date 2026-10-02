@@ -1,4 +1,6 @@
 import type { Vec2 } from "../math/Vector2";
+
+export interface WormMotionEffects { readonly turnScale: number; readonly liftAcceleration: number }
 import type { PathPose } from "./PathHistory";
 
 export type WormMotionPhase =
