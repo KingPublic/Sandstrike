@@ -380,3 +380,26 @@ Seed33 no traversal skill: full Victory346.30-363.00s, climb247.53-248.87s,
 boss98.50-115.47s. Exact cases in SURVIVAL_PLAYTHROUGH.json; four baseline successes
 before distributed caches, failed Engineer rerun after them. Automated precise-aim
 runs establish feasibility only; physical/human play remains unmeasured.
+
+## Playtest feedback fixes (2026-10-02, commit a9f0615)
+
+Status: **provisional; deterministic and browser evidence, no human feel claim**.
+- Allies: 2 ground (90 HP) + 1 helicopter, replaced on a 240-tick cadence when a
+  slot is empty; escort leash 200px, stand-off 130px, jump 620 with the shared
+  1800 gravity. Measured: allies stay within ~170px of the Hunter in normal play
+  and are culled only if 220px under the hazard.
+- Aim: assist cone reduced from 18deg to 6deg; the stored aim is the exact
+  direction the shot uses. Browser check requires dot(aim, shot) > 0.96.
+- Audio: distinct procedural voices per weapon and skill; allied shots are
+  quieter (no shake, no particles) so the player''s own fire reads strongest.
+- Worm: seismic bearing quantized to 80px cells and refreshed every 20 ticks;
+  crossings lead the Hunter by 0.55s of their travel; the worm dives whenever it is
+  within 60px of the surface outside accelerate/breach; after a completed breach it
+  re-acquires at once instead of idling. Warning lead measured 490-550 ticks.
+  Crossings land within ~420px of the sensed Hunter (was effectively random).
+- Rebalance for the stronger AI: RPG 80 -> 200 damage; worm impact vs the Hunter
+  scaled to 0.5 (5-20 per hit). Seed-33 deterministic runs: ascent ~248s, totals
+  Ranger 412.5s, Siegebreaker 393.6s, Scout 405.4s, Engineer 413.2s,
+  Field Medic 409.4s, all Victory with the Hunter at 82-100 HP. These are scripted
+  inputs, not a human difficulty guarantee, and sit at the top of the 240-420s
+  acceptance band; a human with better aim should be faster.

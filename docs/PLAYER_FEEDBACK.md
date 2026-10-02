@@ -1,11 +1,45 @@
 # Player feedback - major corrections
 
 Recorded 2026-10-02 after the user's playtest. Applies after checkpoint 1ffe038
-and workflow preference commit 34a5971. Status: **OPEN, user-reported; not yet
-reproduced or fixed**. Passing automated tests does not establish satisfactory feel.
-The user requested recording these changes in this turn, not implementing them yet.
+and workflow preference commit 34a5971.
+Status: **items 1-5 reproduced and fixed in commit a9f0615; item 6 remains open
+and is a subjective quality judgement for the next playtest.** Passing automated
+tests still does not establish satisfactory feel.
 
-## Requested corrections
+## Fix log (2026-10-02, commit a9f0615)
+
+Reproduction used a 7200-tick scripted ascent run and a browser case:
+- Missing soldiers was real: ground allies existed but ended up ~3000px from the
+  Hunter (x~-3130 while the player was near x=0), i.e. permanently off camera.
+  Cause: no anchor to the player, spawn at fixed world offsets, and a climb rule
+  that walked them to the arena edge. Now they spawn beside the Hunter on their
+  ledge, escort within a 200px leash with a 130px stand-off, regroup when lagging
+  and climb with the player. Verified: browser case `hunt-clarity.spec.ts` holds
+  every ground ally within 460x320px of the Hunter for 25s (`hunt-squad.png`).
+- Strange allied fire: tracers now start at the drawn muzzle and the rifle follows
+  the real aim direction (recoil, muzzle flash), instead of a generic line.
+- Wrong aim/shot: `hunt.aim` was the aim-assist result (18-degree cone), so the pose
+  and the shot could point somewhere the player never aimed. The cone is now 6
+  degrees, the stored aim is exactly what the shot uses, and the tracer is drawn
+  from the muzzle to the real hit point. Verified: `dot(aim, shot direction) > 0.96`.
+- Weak weapon/skill audio: no shot or skill had any sound at all (no cue existed for
+  `rifle-fired` or `ability-activated`). Each weapon (rifle, carbine, SMG, burst,
+  sidearm, RPG), each skill (shield, heal, mark, grapple, decoy, fire, venom, shock,
+  surge) and allied fire now has its own procedural voice.
+- Stupid worm: it aimed at a static objective and cruised just under the surface, so
+  crossings were random and sometimes un-warned. It now senses the Hunter by
+  seismic bearing (80px cells, 20-tick cadence), leads the crossing by the Hunter's
+  travel, dives away from the surface outside an attack, and re-acquires immediately
+  after each breach. Crossings now land on the player with a >=490-tick warning.
+  Rebalanced for the stronger AI: RPG 200 damage, Hunter impact scale 0.5.
+  Deterministic 5-kit full runs still finish (ascent ~248s, total 393-413s).
+
+Still open (item 6, and feel): art/UI quality is subjective and needs the user's
+next playtest. The Hunt HUD already shows weapon name, skill name/cooldown, route
+cue, boss meter and objective after the earlier presentation pass; no further
+speculative art change was made without feedback.
+
+## Requested corrections (original record)
 
 1. **Weapon audio and shooting feel:** ordinary firearms/pistol and RPG currently
    feel weak and insufficiently different. Give RPG a clearly heavier firing and

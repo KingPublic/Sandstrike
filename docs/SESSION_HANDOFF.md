@@ -4,6 +4,18 @@ Updated 2026-10-02, latest execution. Root C:/Users/Adrian/Games/Sandstrike.
 Branch phase-b-ready. Work directly in root; no new worktree, branch switch, push
 or merge. User handles remote integration. Communicate in Bahasa Indonesia.
 
+## Latest checkpoint: playtest corrections (commit a9f0615, 2026-10-02)
+
+The user's five reproducible complaints from `docs/PLAYER_FEEDBACK.md` are fixed and
+committed; item 6 (UI/art quality) is intentionally left open pending their next
+playtest. Verified: 231 tests pass (76 files), lint and typecheck clean, browser
+cases pass for squad visibility and shot alignment (`tests/e2e/hunt-clarity.spec.ts`,
+capture `docs/verification/hunt-squad.png`), Hunt controls at four viewports and the
+summit boss. Deterministic seed-33 full runs: ascent ~248s, totals 393-413s, all
+Victory. Known limits: scripted runs now sit at the top of the 240-420s acceptance
+band (boss fight length is the first tuning lever), audio was verified by code and
+browser only (no human listening), and physical devices remain untested.
+
 ## Resume instructions
 1. Read README_START_HERE.md, AGENTS.md and this file.
 2. Read relevant sections of GAME_DESIGN, ARCHITECTURE, DECISIONS, BALANCE,

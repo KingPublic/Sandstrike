@@ -373,3 +373,27 @@ repeated helicopters, and strange allied fire/audio. PLAYER_FEEDBACK.md records
 all requested corrections. These are not fixed or reproduced yet; automated
 feasibility is not user acceptance. On continue, reproduce aiming/soldier presence
 briefly and execute focused fixes without Superpowers or new planning loops.
+
+## D-021 - Playtest corrections: squad anchoring, honest aim, weapon voices, seismic hunt (2026-10-02)
+
+Decision:
+- Ground allies anchor to the Hunter (escort leash) instead of navigating the arena
+  on their own, because "allied soldiers" must be visible next to the player.
+- The stored aim is exactly the direction the shot uses; aim assist is limited to a
+  6-degree cone so the drawn pose, muzzle and tracer never disagree with the bullet.
+- Every weapon, skill and allied shot has its own procedural audio voice; shooting
+  and skill use previously produced no sound at all.
+- The worm senses the Hunter by an approximate seismic bearing (80px cells, 20-tick
+  cadence) with crossing prediction, a surface dive guard and immediate re-acquire
+  after a breach. This is an original sense, not input reading or hidden coordinates.
+- Compensating rebalance: RPG 200 damage and a 0.5 impact scale against the Hunter,
+  keeping deterministic full runs inside the acceptance band.
+
+Why:
+The user's playtest reported missing soldiers, wrong aim, weak gun audio and a
+stupid worm. The fixes must make the game readable without adding unfair difficulty
+or duplicating systems.
+
+Status: implemented and locally verified (231 tests, lint/typecheck green, browser
+cases for squad visibility, shot alignment, controls and the boss). Human feel and
+art quality remain open in docs/PLAYER_FEEDBACK.md.

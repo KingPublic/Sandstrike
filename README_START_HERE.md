@@ -19,9 +19,19 @@ Read in this order, then check `git status`, recent commits and the actual sourc
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
 
 Current checkpoint (2026-10-02, latest execution): **the approved survival revision,
-pacing pass and presentation pass are implemented** in the root on phase-b-ready.
-Local checkpoint subject: feat: polish survival presentation and tune full-run pacing.
-Use git log/status for the actual commit/dirty state; no push or merge was performed.
+pacing pass, presentation pass and the first round of playtest corrections are
+implemented** in the root on phase-b-ready. Latest checkpoint commit:
+`fix: make allies visible, align aim and shots, and add weapon audio` (a9f0615).
+Use git log/status for the exact state; no push or merge was performed.
+
+Playtest corrections (a9f0615, from docs/PLAYER_FEEDBACK.md items 1-5): allied
+soldiers spawn beside the Hunter and escort them instead of drifting off camera;
+weapon, skill and allied fire now have distinct audio; the muzzle, pose and tracer
+follow the exact shot direction (assist cone 6 degrees); the worm senses the player
+seismically, leads the crossing, dives between attacks and re-acquires after a
+breach. Rebalanced with RPG 200 damage and a 0.5 Hunter impact scale; deterministic
+seed-33 runs still finish (ascent ~248s, totals 393-413s). Evidence:
+`docs/verification/hunt-squad.png`, `tests/e2e/hunt-clarity.spec.ts`, 231 tests.
 
 The user explicitly asked to SKIP Superpowers skills and further plan/review cycles.
 This is a persistent preference for future fixes and game updates, not just this
@@ -50,11 +60,13 @@ Verification: lint/typecheck pass;225 earlier domain tests, one new HUD regressi
 across focused runs. Root browser10 distinct cases, Pages boss1, production root/Pages
 smoke1each pass. dist is a normal root production build. See SURVIVAL_VERIFICATION.md.
 
-Exact next action: address the OPEN major issues in `docs/PLAYER_FEEDBACK.md`:
-weapon/skill sound and feel, wrong arm/shot aiming, missing allied soldiers, strange
-allied fire, weak worm AI and UI/art quality. These are user-reported and not fixed
-yet. On "lanjutkan", reproduce aiming/soldier presence briefly and execute focused
-fixes; do not restart a generic plan/review/testing cycle.
+Exact next action: commit a9f0615 fixed items 1-5 of `docs/PLAYER_FEEDBACK.md` and
+the user has NOT yet playtested it. On "lanjutkan", act on their judgement of those
+fixes (sound identity, aim/shot alignment, soldier presence, worm pressure) before
+changing more, and treat item 6 (UI/art quality) as still open and subjective.
+Because the scripted full runs now sit at the top of the 240-420s band, the boss
+fight length is the first thing to tune if a run feels long. Do not restart a
+generic plan/review/testing cycle.
 Physical devices, gamepad/audio/haptics, sustained performance and human difficulty
 still need real feedback. Visuals are stylized original procedural art, not photorealism.
 

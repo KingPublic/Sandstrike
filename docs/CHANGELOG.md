@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Playtest fixes: allied soldiers now escort the Hunter (spawning beside them,
+  regrouping when left behind, climbing with them) instead of drifting off camera,
+  and their tracers start at the drawn muzzle. Weapon and allied fire plus all ten
+  skills are now audible with distinct voices, and firing shows a muzzle flash and
+  a tracer along the real shot path. Aim assist no longer redirects shots outside a
+  tight 6-degree cone, so the arm, the muzzle and the bullet agree. The worm hunts
+  by seismic bearing, leads the Hunter's movement, keeps away from the surface
+  between attacks and re-acquires immediately after a breach, so crossings arrive
+  on target with a clear warning. RPG damage raised to 200 and a breach costs the
+  Hunter half as much, keeping full runs in the 6-7 minute band.
+
 - Alternating industrial catwalk climb with route cues, recovery supplies and a
   stronger3600HP boss; normal seed33 runs finish around5:46-6:03 without a timer.
 - Hunter contact recovery/dodge protection prevent frame-by-frame damage; first
