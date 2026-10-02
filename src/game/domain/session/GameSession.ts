@@ -44,6 +44,8 @@ import { ascentArena, ascentHunterBalance, type AscentStage } from "../../data/a
 import { AscentWorld } from "../world/AscentWorld";
 import { clampHealth } from "../combat/Health";
 import { HuntSystems } from "../hunt/HuntSystems";
+import { WormLifeDirector } from "../hunt/WormLifeDirector";
+import { collisionProfiles } from "../../data/collisionProfiles";
 import { HuntRules } from "../modes/HuntRules";
 import type { ModeRules } from "../modes/ModeRules";
 import type { ResponseBand } from "../spawning/ThreatDirector";
@@ -89,6 +91,8 @@ export class GameSession {
   private readonly rules: ModeRules;
   private readonly hunt: HuntSystems | undefined;
   private readonly world: AscentWorld | undefined;
+  private readonly wormLife: WormLifeDirector | undefined;
+  private readonly wormMovement: WormMovementConfig;
   private readonly commands: SessionCommand[] = [];
   private burialTicks = 0;
   private burialDamage = 0;
@@ -114,6 +118,8 @@ export class GameSession {
     const movement = options.mode
       ? { ...options.movement, ...(this.world ? { initialPosition: { x: 0, y: 900 }, initialDirection: { x: 1, y: 0 } } : {}), worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } }
       : options.movement;
+    this.wormMovement = movement;
+    this.wormLife = this.world ? new WormLifeDirector() : undefined;
     this.locomotion = new WormLocomotion(movement);
     const worm = this.locomotion.snapshot();
     this.actors = new ActorRegistry([
@@ -148,12 +154,14 @@ export class GameSession {
     this.world?.step(this.currentTick, this.currentStage());
     const huntStep = this.hunt?.prepare(action, this.locomotion.snapshot(), this.actors, this.random.stream("ai.worm"), this.currentTick);
     for (const event of huntStep?.events ?? []) this.events.publish(event);
-    const movementEvents = this.locomotion.step(
-      huntStep?.action ?? action,
-      this.stepSeconds,
-      this.terrain,
-      huntStep?.effects,
-    );
+    const movementEvents = this.wormIsAbsent()
+      ? []
+      : this.locomotion.step(
+        huntStep?.action ?? action,
+        this.stepSeconds,
+        this.terrain,
+        huntStep?.effects,
+      );
     for (const event of movementEvents) this.events.publish(mapMovementEvent(event));
     const worm = this.locomotion.snapshot();
     const wormActor = this.actors.get("worm");
@@ -227,10 +235,39 @@ export class GameSession {
   flushControlCommands(): SessionStepResult { return this.ended ? Object.freeze({ snapshot: this.snapshot(), events: Object.freeze([]), result: undefined }) : this.resolveBoundary([]); }
 
   private resolveBoundary(events: readonly DomainEvent[]): SessionStepResult {
+    const lifeEvents = this.applyWormLife();
     const snapshot = this.snapshot();
-    const update = this.rules.observe(snapshot, events, this.commands.splice(0));
+    const update = this.rules.observe(snapshot, [...events, ...lifeEvents], this.commands.splice(0));
     this.ended ??= update.result;
-    return Object.freeze({ snapshot, events: Object.freeze([...events, ...update.events]), result: update.result });
+    return Object.freeze({ snapshot, events: Object.freeze([...events, ...lifeEvents, ...update.events]), result: update.result });
+  }
+
+  private wormIsAbsent(): boolean {
+    return this.wormLife?.snapshot(this.currentTick).phase === "absent";
+  }
+
+  /** One ordinary ascent kill removes the worm for 600 ticks, then a stronger one returns. */
+  private applyWormLife(): readonly DomainEvent[] {
+    const life = this.wormLife;
+    if (!life) return [];
+    const worm = this.actors.get("worm");
+    const before = life.snapshot(this.currentTick).phase;
+    const state = life.step(this.currentTick, { wormDead: worm === undefined || worm.health <= 0, summitReached: false, ended: this.ended !== undefined });
+    const events: DomainEvent[] = [];
+    if (before !== "absent" && state.phase === "absent") {
+      if (worm) this.actors.update({ ...worm, collision: collisionProfiles.hidden });
+      this.hunt?.setWormAlive(false);
+      events.push(Object.freeze({ type: "actor-removed" as const, tick: this.currentTick, actorId: "worm", cause: "destroyed" as const, position: worm?.position ?? { x: 0, y: 0 } }));
+    }
+    if (life.consumeSpawnRequest()) {
+      const position = freezeVec2(this.wormMovement.initialPosition.x, this.world ? this.world.surfaceY() + 900 : this.wormMovement.initialPosition.y);
+      this.locomotion.reset({ position, direction: this.wormMovement.initialDirection, speed: this.wormMovement.initialSpeed }, this.currentTick);
+      if (worm) this.actors.update({ ...worm, health: worm.maxHealth, position, velocity: freezeVec2(this.wormMovement.initialDirection.x * this.wormMovement.initialSpeed, this.wormMovement.initialDirection.y * this.wormMovement.initialSpeed), direction: freezeVec2(this.wormMovement.initialDirection.x, this.wormMovement.initialDirection.y), collision: collisionProfiles.worm, lifecycle: "active" });
+      this.hunt?.setWormAlive(true);
+      this.hunt?.restartWorm(state.generation);
+      events.push(Object.freeze({ type: "actor-spawned" as const, tick: this.currentTick, actorId: "worm", definitionId: "actor.worm", position }));
+    }
+    return Object.freeze(events);
   }
 
   private currentStage(): AscentStage {
@@ -265,6 +302,7 @@ export class GameSession {
       themeId: this.options.themeId ?? "desert",
       arcade: this.options.arcade ?? false,
       ...(this.world ? { world: this.world.snapshot() } : {}),
+      ...(this.wormLife ? { wormLife: this.wormLife.snapshot(this.currentTick) } : {}),
       sessionId: this.options.sessionId ?? `seed.${String(this.options.seed)}`,
       mode: this.options.mode ?? "rampage",
       playerActorId: this.hunt ? "hunter" : "worm",

@@ -23,6 +23,16 @@ test("Hunt rifle victory, one record, retry and role switch", async ({ page }, i
 for (const [fixture, label] of [["hunter-defeat", "Ranger defeated"], ["relay-defeat", "Relay destroyed"]] as const) test(`${fixture} automatically ends at the shared combat boundary`, async ({ page }) => {
   await startHunt(page, fixture); await expect(page.getByText(label, { exact: true })).toBeVisible(); await expect(page.locator("[data-run-result]")).toHaveCount(1);
 });
+test("an ordinary kill removes the worm for ten seconds and returns a stronger one", async ({ page }) => {
+  test.setTimeout(60_000);
+  await startHunt(page, "ascent-kill");
+  await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().wormLife?.phase), { timeout: 15_000 }).toBe("absent");
+  await expect(page.locator('[data-hunt-field="worm"]')).toContainText("Maw returns");
+  await expect(page.locator("[data-run-result]")).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().wormLife?.phase), { timeout: 25_000 }).toBe("alive");
+  expect(await page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().wormLife?.generation)).toBe(1);
+});
+
 test("snare arms, reveals and permits an exposed hit", async ({ page }, info) => {
   await startHunt(page, "hunt-trap"); await page.keyboard.down("KeyQ");
   await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().hunt?.snare.phase)).not.toBe("none");

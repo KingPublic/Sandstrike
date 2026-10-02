@@ -1,5 +1,12 @@
 import type { SessionSnapshot } from "../../domain/session/SessionSnapshot";
-export type HuntHudFields = Readonly<Record<string, string | number>>;
+export type HuntHudFields = Readonly<Record<string, string | number | undefined>>;
+
+function wormLifeText(snapshot: SessionSnapshot): string | undefined {
+  const life = snapshot.wormLife;
+  if (!life) return undefined;
+  if (life.phase === "absent") return `Maw returns ${(life.returnInTicks / 60).toFixed(1)}s`;
+  return `Maw gen ${String(life.generation)} · kills ${String(life.kills)}`;
+}
 export const HuntHudModel = {
   fromSnapshot(snapshot: SessionSnapshot): HuntHudFields {
     const h = snapshot.hunt; if (!h) throw new Error("Hunt HUD requires Hunt snapshot.");
@@ -15,6 +22,7 @@ export const HuntHudModel = {
       stage: world.stage === "boss" ? "Boss stage" : "Ascent stage",
       danger: gap >= 0 ? `Sand gap ${String(gap)}` : `BURIED ${String(-gap)}`,
       ammo,
+      worm: wormLifeText(snapshot),
       skill: "Skill ready · Q",
       dodge,
       tracking: h.tracking.text,

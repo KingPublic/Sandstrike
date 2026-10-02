@@ -20,7 +20,10 @@ export class RunFactory {
       if (configuration.ascent ?? !legacyRelay) {
         const hunter = spawnActor("hunter", "actor.hunter", { x: -180, y: -16 });
         // "ascent-buried" starts the hazard at the base so burial damage is deterministic.
-        return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", ascent: true, ...(fixture === "ascent-buried" ? { ascentSurface: 0 } : {}), seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement: arcadeMovementBalance, terrain: new FlatTerrainProfile(0), actors: [hunter] });
+        // "ascent-kill" starts the worm at 1 HP with a lethal fixture shot so the
+        // remove/return cycle is reachable in deterministic runs and browser checks.
+        const kill = fixture === "ascent-kill";
+        return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", ascent: true, ...(fixture === "ascent-buried" ? { ascentSurface: 0 } : {}), seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement: arcadeMovementBalance, terrain: new FlatTerrainProfile(0), actors: [hunter], ...(kill ? { playerHealth: 1, initialProjectiles: [{ position: { x: 0, y: 900 }, direction: { x: 1, y: 0 } }] } : {}) });
       }
       const hunter = spawnActor("hunter", "actor.hunter", { x: -180, y: -16 }), relay = spawnActor("relay", "actor.relay", { x: 0, y: -30 });
       const defeat = fixture === "hunter-defeat" || fixture === "relay-defeat";

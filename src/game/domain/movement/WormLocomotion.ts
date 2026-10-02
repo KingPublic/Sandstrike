@@ -114,6 +114,20 @@ export class WormLocomotion {
     return Object.freeze(events);
   }
 
+  /** Fresh worm life: same configuration, new position, heading, speed and body. */
+  reset(initial: Readonly<{ position: Vec2; direction: Vec2; speed: number }>, tick = this.tick): void {
+    const direction = normalize(initial.direction);
+    this.position = freezeVec2(initial.position.x, initial.position.y);
+    this.headingRadians = Math.atan2(direction.y, direction.x);
+    this.speed = initial.speed;
+    this.velocity = scale(direction, this.speed);
+    this.phase = "underground";
+    this.phaseElapsedSeconds = 0;
+    this.burstCooldownRemaining = 0;
+    this.tick = tick;
+    this.seedFollowerHistory(direction, tick);
+  }
+
   snapshot(): WormMotionSnapshot {
     const tangent = this.motionTangent();
     const followers: PathPose[] = [];
@@ -303,14 +317,14 @@ export class WormLocomotion {
     );
   }
 
-  private seedFollowerHistory(tangent: Vec2): void {
+  private seedFollowerHistory(tangent: Vec2, tick = 0): void {
     const tailDistance =
       (this.config.segmentCount - 1) * this.config.segmentSpacing;
     const tail = freezeVec2(
       this.position.x - tangent.x * tailDistance,
       this.position.y - tangent.y * tailDistance,
     );
-    this.pathHistory.reset(tail, tangent, 0);
+    this.pathHistory.reset(tail, tangent, tick);
     for (let index = this.config.segmentCount - 2; index >= 0; index -= 1) {
       const distance = index * this.config.segmentSpacing;
       this.pathHistory.append(
@@ -319,7 +333,7 @@ export class WormLocomotion {
           this.position.y - tangent.y * distance,
         ),
         tangent,
-        0,
+        tick,
       );
     }
   }

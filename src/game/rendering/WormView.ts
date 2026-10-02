@@ -21,7 +21,13 @@ export class WormView {
     this.body = scene.add.graphics().setDepth(30);
   }
 
-  render(snapshot: WormMotionSnapshot, alpha: number, surfaceOnly = false, shielded = false): void {
+  render(snapshot: WormMotionSnapshot, alpha: number, surfaceOnly = false, shielded = false, visible = true): void {
+    if (!visible) {
+      this.body.clear();
+      this.previous = undefined;
+      this.current = undefined;
+      return;
+    }
     if (this.current?.tick !== snapshot.tick) {
       this.previous = this.current ?? snapshot;
       this.current = snapshot;

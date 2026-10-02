@@ -246,6 +246,19 @@ Evidence: advanced kit/contact checks passed; two 18000-tick replays identical
 with all bands, finite bounded motion, caps and zero event overflow. Replay
 runtime on this host ~13 seconds, so this test uses a specific 30-second limit.
 
+## Phase D pursuit hypotheses (2026-10-02)
+
+An ordinary ascent kill removes the worm for 600 ticks (10s) and increments the
+kill count; the next worm returns with fresh health/followers/AI at the hazard
+line +900px, never resetting the Hunter, hazard, tick or ammunition. Escalation by
+generation (cap 5): recovery 120/106/91/77/62/48 ticks, AI decisions 12→8 ticks,
+extra breach boost from generation 3; AI approach depths and breach targets are
+now relative to the moving surface and the forecast projects the same rising
+surface. Evidence: 5 director/pursuit tests, 186 total tests, and browser runs
+(hunt-flow 5, hunt-controls 4, hunt-warning 1) with no console errors; a real
+browser kill/return case takes 12.2s wall clock. Difficulty feel and long-match
+escalation remain unverified.
+
 ## Phase D ascent hypotheses (2026-10-02)
 
 Status: **provisional, domain/browser evidence only**. Survival runs share one

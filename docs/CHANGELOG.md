@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Ascent pursuit: an ordinary worm kill (HP 0) removes it for 600 ticks while the
+  Hunt keeps running, then a stronger worm returns at the hazard line with fresh
+  health, followers and per-life AI. Recovery shortens from 120 to 48 ticks over
+  five generations (capped); the AI senses and attacks relative to the rising
+  surface and projects the same future surface when forecasting breaches. The HUD
+  shows the return countdown, generation and kill count.
 - Hunt is now the survival ascent: a vertical Hunter (run, jump, one-way ledge
   landing, drop-through) climbs an authored outpost route while the hazard surface
   rises from the base toward the summit. Sand does not lift a buried Hunter; after

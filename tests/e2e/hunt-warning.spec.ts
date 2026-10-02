@@ -19,7 +19,7 @@ test("natural Hunt breach follows its visible warning sector", async ({ page }) 
     return new Promise<{ tick: number; x: number; bracket?: { left: number; right: number; warningTick: number } }>(resolve => {
       const observe = () => {
         const frame = window.__SANDSTRIKE_TEST__?.snapshot();
-        if (frame && frame.worm.head.position.y <= 0) {
+        if (frame && frame.worm.head.position.y <= (frame.world?.surfaceY ?? 0)) {
           const bracket = frame.hunt?.tracking.breachBracket;
           resolve({ tick: frame.tick, x: frame.worm.head.position.x, ...(bracket ? { bracket } : {}) });
         } else requestAnimationFrame(observe);
