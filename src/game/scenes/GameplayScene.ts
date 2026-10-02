@@ -9,6 +9,8 @@ import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
 import { GamepadInput } from "../input/GamepadInput";
 import { InputRouter } from "../input/InputRouter";
 import { KeyboardInput } from "../input/KeyboardInput";
+import { PointerInput } from "../input/PointerInput";
+import { HuntCueView } from "../rendering/HuntCueView";
 import { ScriptedInput } from "../input/ScriptedInput";
 import { TouchInput } from "../input/TouchInput";
 import type { ActionFrame } from "../input/ActionFrame";
@@ -25,6 +27,8 @@ import {
 
 export class GameplayScene extends Phaser.Scene {
   private keyboard: KeyboardInput | undefined;
+  private pointer: PointerInput | undefined;
+  private huntCues: HuntCueView | undefined;
   private touch: TouchInput | undefined;
   private scripted: ScriptedInput | undefined;
   private inputRouter: InputRouter | undefined;
@@ -47,17 +51,25 @@ export class GameplayScene extends Phaser.Scene {
 
   create(): void {
     const lifecycle = this.lifecycle();
-    const debug = lifecycle.debug ?? (import.meta.env.DEV && !__SANDSTRIKE_E2E__);
+    this.controller = lifecycle.controller ?? new SessionController();
+    if (!this.controller.active) this.controller.start();
+    const initial = this.controller.snapshot();
+    const debug = initial.mode === "hunt" ? !initial.hunt?.eligibleForRecords : lifecycle.debug ?? (import.meta.env.DEV && !__SANDSTRIKE_E2E__);
     new WorldRenderer(this).create();
 
     this.keyboard = new KeyboardInput(window);
     this.touch = new TouchInput();
     this.scripted = new ScriptedInput();
+    if (initial.mode === "hunt") {
+      this.huntCues = new HuntCueView(this);
+      this.pointer = new PointerInput(this.game.canvas, (x, y) => { const bounds = this.game.canvas.getBoundingClientRect(); return this.cameras.main.getWorldPoint((x - bounds.left) * this.scale.width / bounds.width, (y - bounds.top) * this.scale.height / bounds.height); });
+    }
     this.inputRouter = new InputRouter([
       this.keyboard,
       this.touch,
       new GamepadInput(),
       this.scripted,
+      ...(this.pointer ? [this.pointer] : []),
     ]);
     this.wormView = new WormView(this, debug);
     this.actorViews = new ActorViews(this);
@@ -67,12 +79,10 @@ export class GameplayScene extends Phaser.Scene {
       this.cameras.main,
       movementBalance,
     );
-    this.controller = lifecycle.controller ?? new SessionController();
-    if (!this.controller.active) this.controller.start();
     this.controller.attachInput(this.inputRouter);
     this.snapshot = this.controller.snapshot();
     this.cameraController.snap(this.snapshot);
-    this.wormView.render(this.snapshot.worm, 1);
+    this.wormView.render(this.snapshot.worm, 1, this.snapshot.mode === "hunt");
     lifecycle.onControlsReady?.(
       Object.freeze({
         enqueueActions: (frames: readonly ActionFrame[]) => { this.scripted?.enqueueActions(frames); },
@@ -118,11 +128,13 @@ export class GameplayScene extends Phaser.Scene {
       this.recentEvents = this.recentEvents.slice(-12);
     }
 
-    this.wormView.render(frame.snapshot.worm, frame.report.alpha);
+    this.wormView.render(frame.snapshot.worm, frame.report.alpha, frame.snapshot.mode === "hunt" && frame.snapshot.hunt?.tracking.exactTrace === undefined);
+    this.huntCues?.render(frame.snapshot);
     this.cameraController.update(frame.snapshot, deltaMs / 1000);
     const lifecycle = this.lifecycle();
     const settings = lifecycle.settings?.() ?? defaultPresentationSettings;
-    const commands = this.feedback.consume(frame.events, settings, lifecycle.audio?.ready ?? false);
+    const visibleEvents = frame.snapshot.mode === "hunt" && !frame.snapshot.hunt?.tracking.exactTrace ? frame.events.filter(e => !("position" in e) || e.position.y <= 0 || e.type === "snare-triggered") : frame.events;
+    const commands = this.feedback.consume(visibleEvents, settings, lifecycle.audio?.ready ?? false);
     this.actorViews?.sync(frame.snapshot, frame.report.alpha, settings.highContrast);
     this.effects?.consume(commands);
     this.effects?.update(deltaMs / 1000, settings.reducedMotion);
@@ -159,6 +171,8 @@ export class GameplayScene extends Phaser.Scene {
 
   private shutdown(): void {
     this.keyboard?.destroy();
+    this.pointer?.destroy(); this.pointer = undefined;
+    this.huntCues?.destroy(); this.huntCues = undefined;
     this.inputRouter?.clear();
     this.wormView?.destroy();
     this.actorViews?.destroy();

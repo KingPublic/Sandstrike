@@ -11,12 +11,13 @@ it("migrates genuine v1 and retains original bytes as the first backup", () => {
   expect(migrateSave(valid).settings.aimAssist).toBe(.35);
   saves.updateSettings({ shake: .5 });
   expect(repo.load(keys.backup)).toBe(raw);
-  expect(JSON.parse(repo.load(keys.primary) ?? "null").schemaVersion).toBe(2);
+  expect(migrateSave(JSON.parse(repo.load(keys.primary) ?? "null") as unknown).schemaVersion).toBe(2);
 });
 it("excludes debug results from records, onboarding and writes", () => {
   const run = new RunFactory().create({ seed: 1, mode: "hunt", debugAI: true });
-  run.queueCommand({ type: "RequestEnd", reason: "player-ended", requestedTick: 0 }); const result = run.flushControlCommands().result!;
+  run.queueCommand({ type: "RequestEnd", reason: "player-ended", requestedTick: 0 }); const result = run.flushControlCommands().result;
   const repo = new MemorySaveRepository(), saves = new SaveCoordinator(repo, "test"); saves.load();
+  if (!result) throw new Error("Missing result");
   expect(saves.acceptRunResult(result).newRecord).toBe(false);
   expect(saves.snapshot().onboarding.huntSeen).toBe(false);
   expect(repo.load(saveKeys("test").primary)).toBeNull();

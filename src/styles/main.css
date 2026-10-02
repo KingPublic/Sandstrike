@@ -561,3 +561,12 @@ h1 {
     transition-duration: 0.01ms !important;
   }
 }
+
+.hunt-status { display: flex; gap: 1rem; padding: .45rem .75rem; color: #ffe5b7; background: #201d2dcc; border-radius: .5rem; width: fit-content; margin-top: .35rem; font-size: .8rem; }
+.hunt-hud .hud-threat { max-width: min(80vw, 590px); font-size: .75rem; }
+.touch-action--ability { color: #8af1db; border-color: #8af1db99; }
+@media (max-height: 500px) { .hunt-hud .hud-stat { padding: .4rem .5rem; font-size: .7rem; } .hunt-hud .hud-threat { margin-top: .2rem; padding: .3rem .5rem; font-size: .65rem; } .hunt-status { font-size: .65rem; padding: .3rem .5rem; margin-top: .2rem; } }
+.hunt-status { position: absolute; top: 66px; left: max(12px, env(safe-area-inset-left)); }
+.hunt-hud .hud-threat { top: 110px; }
+.hunt-hud ~ .context-prompt { top: auto; bottom: 80px; font-size: 12px; }
+@media (max-height: 500px) { .hunt-status { top: 60px; } .hunt-hud .hud-threat { top: 92px; } }

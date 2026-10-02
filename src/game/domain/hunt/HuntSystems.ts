@@ -1,3 +1,4 @@
+import { assistExposedAim } from "./HuntAiming";
 import type { ActionFrame } from "../../input/ActionFrame";
 import type { ActorRegistry } from "../actors/ActorRegistry";
 import { freezeRecord } from "../actors/Actor";
@@ -13,6 +14,7 @@ import { SeismicSnare } from "./SeismicSnare";
 import { TrackingSystem, type TrackingState } from "./TrackingSystem";
 import { exposedWormRegions } from "./ExposedWormContacts";
 import { HuntScoreSystem } from "./HuntScoreSystem";
+import type { Vec2 } from "../math/Vector2";
 import type { HunterState, RifleState, SnareState } from "./HuntTypes";
 export interface HuntSnapshot {
   readonly hunter: HunterState; readonly rifle: RifleState; readonly snare: SnareState;
@@ -21,7 +23,7 @@ export interface HuntSnapshot {
   readonly breachInterruptions: number; readonly shotsFired: number; readonly shotsHit: number;
   readonly exposureWindowsUsed: number; readonly eligibleForRecords: boolean;
   readonly decision?: WormDecision | undefined;
-  readonly shot?: Readonly<{ from: import("../math/Vector2").Vec2; to: import("../math/Vector2").Vec2; tick: number }> | undefined;
+  readonly shot?: Readonly<{ from: Vec2; to: Vec2; tick: number }> | undefined;
 }
 export class HuntSystems {
   private readonly hunter: HunterLocomotion;
@@ -35,12 +37,12 @@ export class HuntSystems {
   private exposedLast = false; private usedWindow = false;
   private shot: HuntSnapshot["shot"];
   private interruptedAttack = -1;
-  constructor(private readonly terrain: TerrainProfile, private readonly debugAI: boolean, initial = { x: -180, y: -16 }) {
+  constructor(private readonly terrain: TerrainProfile, private readonly debugAI: boolean, initial = { x: -180, y: -16 }, private readonly aimAssist = .35) {
     this.hunter = new HunterLocomotion(terrain, { left: -2382, right: 2382 }, initial);
   }
   prepare(action: ActionFrame, worm: WormMotionSnapshot, registry: ActorRegistry, random: RandomStream, tick: number) {
     const hunter = this.hunter.step(action, tick), actor = registry.get("hunter");
-    if (actor) registry.update({ ...actor, position: hunter.position, direction: hunter.direction });
+    if (actor) registry.update({ ...actor, position: hunter.position, direction: hunter.direction, velocity: { x: (hunter.position.x - actor.position.x) * 60, y: 0 } });
     const snare = this.snare.step(action, hunter.position, worm.head.position, tick);
     if (snare.events.length) {
       this.trapTriggers++;
@@ -57,7 +59,11 @@ export class HuntSystems {
     const exposed = regions.length > 0;
     if (exposed && !this.exposedLast) this.usedWindow = false;
     this.exposedLast = exposed;
-    const frame = this.rifle.step(action, { position: this.hunter.snapshot().position, regions }, tick);
+    const position = this.hunter.snapshot().position;
+    const aim = action.aimWorld ? { x: action.aimWorld.x - position.x, y: action.aimWorld.y - position.y } : { x: action.aimX, y: action.aimY };
+    const assisted = assistExposedAim(position, aim, worm, this.aimAssist);
+    const base = { ...action }; delete base.aimWorld;
+    const frame = this.rifle.step({ ...base, aimX: assisted.x, aimY: assisted.y }, { position: this.hunter.snapshot().position, regions }, tick);
     if (frame.shot) { this.shotsFired++; this.shot = { ...frame.shot, tick }; }
     return { commands: frame.commands, events: frame.shot ? [{ type: "rifle-fired" as const, tick, position: frame.shot.from, to: frame.shot.to }] : [] };
   }

@@ -3,13 +3,20 @@ import { movementBalance } from "../data/movementBalance";
 import { FlatTerrainProfile } from "../domain/terrain/FlatTerrainProfile";
 import { spawnActor } from "../data/actors";
 
-export interface RunConfiguration { readonly seed: number; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly debugAI?: boolean }
+export interface RunConfiguration { readonly seed: number; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly debugAI?: boolean; readonly aimAssist?: number }
 export class RunFactory {
   private sequence = 0;
   constructor(private readonly namespace = Date.now().toString(36)) {}
   create(configuration: RunConfiguration): GameSession {
     this.sequence += 1;
-    if (configuration.mode === "hunt") return new GameSession({ sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", seed: configuration.seed, debugAI: configuration.debugAI ?? false, movement: movementBalance, terrain: new FlatTerrainProfile(0), actors: [spawnActor("hunter", "actor.hunter", { x: -180, y: -16 }), spawnActor("relay", "actor.relay", { x: 0, y: -30 })] });
+    if (configuration.mode === "hunt") {
+      const fixture = configuration.fixtureId;
+      const hunter = spawnActor("hunter", "actor.hunter", { x: -180, y: -16 }), relay = spawnActor("relay", "actor.relay", { x: 0, y: -30 });
+      const defeat = fixture === "hunter-defeat" || fixture === "relay-defeat";
+      const trap = fixture === "hunt-trap";
+      const movement = fixture === "hunt-victory" ? { ...movementBalance, initialPosition: { x: 100, y: -80 } } : defeat ? { ...movementBalance, initialPosition: { x: fixture === "hunter-defeat" ? -180 : 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 360 } : trap ? { ...movementBalance, initialPosition: { x: -180, y: 100 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 90 } : movementBalance;
+      return new GameSession({ sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement, terrain: new FlatTerrainProfile(0), ...(fixture === "hunt-victory" ? { playerHealth: 8 } : {}), actors: [{ ...hunter, health: fixture === "hunter-defeat" ? 10 : hunter.health }, { ...relay, health: fixture === "relay-defeat" ? 10 : relay.health }] });
+    }
     const stress = configuration.fixtureId === "phase-b-smoke";
     const defeat = configuration.fixtureId === "rampage-defeat";
     const breach = stress || configuration.fixtureId === "surface-breach" || configuration.fixtureId === "combat-breach" || configuration.fixtureId === "rampage-short";

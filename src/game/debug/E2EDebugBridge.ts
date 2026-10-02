@@ -3,6 +3,9 @@ import type { ActionFrame } from "../input/ActionFrame";
 import type { PresentationMetrics } from "./PresentationMetrics";
 
 export interface NextRunConfiguration {
+  readonly mode?: "rampage" | "hunt";
+  readonly debugAI?: boolean;
+  readonly aimAssist?: number;
   readonly seed: number;
   readonly fixtureId?: string;
 }

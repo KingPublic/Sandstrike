@@ -26,6 +26,8 @@ export function rayContacts(from: Vec2, to: Vec2, regions: readonly ExposedRegio
   hits.sort((a, b) => a.distance - b.distance || a.regionIndex - b.regionIndex);
   return Object.freeze(hits.slice(0, 1));
 }
-export function queryExposedWormContacts(from: Vec2, to: Vec2, worm: WormMotionSnapshot, surfaceY: number, _revealed: boolean): readonly ExposedContact[] {
+export function queryExposedWormContacts(from: Vec2, to: Vec2, worm: WormMotionSnapshot, surfaceY: number, revealed: boolean): readonly ExposedContact[];
+export function queryExposedWormContacts(from: Vec2, to: Vec2, worm: WormMotionSnapshot, surfaceY: number): readonly ExposedContact[] {
+  // Reveal affects tracking only; rifle contact still requires surface exposure.
   return rayContacts(from, to, exposedWormRegions(worm, surfaceY), surfaceY);
 }

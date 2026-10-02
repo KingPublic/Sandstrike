@@ -17,5 +17,5 @@ export function upgradeV1(value: unknown): SaveData {
   if (!Number.isSafeInteger(bestScore) || bestRun && bestRun.mode !== "rampage" || (bestRun?.score ?? 0) !== bestScore) throw new Error("Invalid v1 record.");
   const onboarding = data.onboarding === undefined ? { rampageSeen: false } : record(data.onboarding); keys(onboarding, ["rampageSeen"]);
   if (typeof onboarding.rampageSeen !== "boolean") throw new Error("Invalid v1 onboarding.");
-  return { ...defaults, appVersion: data.appVersion, rampage: { bestScore, bestRun: bestRun as SaveData["rampage"]["bestRun"] }, settings: { ...defaults.settings, ...settings }, onboarding: { rampageSeen: onboarding.rampageSeen, huntSeen: false } };
+  return { ...defaults, appVersion: data.appVersion, rampage: { bestScore, bestRun: bestRun }, settings: { ...defaults.settings, ...settings }, onboarding: { rampageSeen: onboarding.rampageSeen, huntSeen: false } };
 }

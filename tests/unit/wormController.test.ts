@@ -25,7 +25,7 @@ function replay() {
   expect(crossings).toBeGreaterThan(3);
   return trace;
 }
-it("replays finite relay-pressure attacks with warning before crossing", () => expect(replay()).toEqual(replay()));
+it("replays finite relay-pressure attacks with warning before crossing", () => { expect(replay()).toEqual(replay()); });
 it("expires sightings and never observes a deep hidden Hunter", () => {
   const sensing = new WormPerception(); const worm = new WormLocomotion(movementBalance).snapshot();
   const shallow = { ...worm, head: { ...worm.head, position: { x: 0, y: 30 } } };

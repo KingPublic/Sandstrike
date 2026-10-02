@@ -2,6 +2,7 @@ import Phaser from "phaser";
 
 import type { Vec2 } from "../domain/math/Vector2";
 import type { WormMotionSnapshot } from "../domain/movement/WormMovementTypes";
+import { clipAboveSurface, clippedCircle } from "./SurfaceClip";
 
 interface RenderPose {
   readonly position: Vec2;
@@ -20,7 +21,7 @@ export class WormView {
     this.body = scene.add.graphics().setDepth(30);
   }
 
-  render(snapshot: WormMotionSnapshot, alpha: number): void {
+  render(snapshot: WormMotionSnapshot, alpha: number, surfaceOnly = false): void {
     if (this.current?.tick !== snapshot.tick) {
       this.previous = this.current ?? snapshot;
       this.current = snapshot;
@@ -35,6 +36,7 @@ export class WormView {
     );
 
     this.body.clear();
+    if (surfaceOnly) { this.drawSurfaceBody(poses, current); return; }
     this.drawShadow(poses);
     this.drawBody(poses, current);
     if (this.debug) {
@@ -44,6 +46,24 @@ export class WormView {
 
   destroy(): void {
     this.body.destroy();
+  }
+
+  private drawSurfaceBody(poses: readonly RenderPose[], snapshot: WormMotionSnapshot): void {
+    for (let index = poses.length - 1; index >= 0; index--) {
+      const pose = poses[index]; if (!pose) continue;
+      const radius = segmentRadius(index, poses.length), next = poses[index - 1];
+      if (next) {
+        const n = { x: -pose.tangent.y * radius, y: pose.tangent.x * radius }, nr = segmentRadius(index - 1, poses.length), m = { x: -next.tangent.y * nr, y: next.tangent.x * nr };
+        const points = clipAboveSurface([{ x: pose.position.x + n.x, y: pose.position.y + n.y }, { x: next.position.x + m.x, y: next.position.y + m.y }, { x: next.position.x - m.x, y: next.position.y - m.y }, { x: pose.position.x - n.x, y: pose.position.y - n.y }]);
+        if (points.length >= 3) this.body.fillStyle(0x4a1f27).fillPoints(points.map(p => new Phaser.Math.Vector2(p.x, p.y)), true);
+      }
+      for (const [r, color] of [[radius + 2.5, 0x4a1f27], [radius, 0xc85b38]] as const) {
+        const points = clippedCircle(pose.position, r);
+        if (points.length >= 3) this.body.fillStyle(color).fillPoints(points.map(p => new Phaser.Math.Vector2(p.x, p.y)), true);
+      }
+      if (index === 0 && pose.position.y < -42) this.drawHead(pose, snapshot.phase);
+      else if (index > 0 && pose.position.y < -radius * 1.2) this.drawDorsalPlate(pose, radius, index);
+    }
   }
 
   private drawShadow(poses: readonly RenderPose[]): void {

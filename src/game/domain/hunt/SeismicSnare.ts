@@ -16,7 +16,7 @@ export class SeismicSnare {
     if (state.phase === "arming" && tick >= state.placedTick + b.snareArm) state = { ...state, phase: "armed" };
     if (state.phase === "armed" && state.position && wormPose.y >= state.position.y && wormPose.y - state.position.y <= b.snareDepth && Math.abs(wormPose.x - state.position.x) <= b.snareRadius) {
       state = { ...state, phase: "triggered", triggeredTick: tick, revealUntilTick: tick + b.snareReveal };
-      events.push({ type: "snare-triggered", tick, position: state.position! });
+      events.push({ type: "snare-triggered", tick, position: state.position ?? hunterPosition });
     }
     this.state = freezeRecord(state);
     const effects = state.phase === "triggered" && tick < state.triggeredTick + b.snareRestrict ? { turnScale: b.trappedTurnScale, liftAcceleration: b.liftAcceleration } : undefined;

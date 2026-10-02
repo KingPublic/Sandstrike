@@ -34,6 +34,7 @@ export interface ViewportLayoutResult {
   readonly joystick: LayoutRect;
   readonly primaryButton: LayoutRect;
   readonly boostButton: LayoutRect;
+  readonly abilityButton: LayoutRect;
   readonly targetSize: number;
   readonly portraitBlocked: boolean;
   readonly touchControlsVisible: boolean;
@@ -88,6 +89,7 @@ export function computeViewportLayout(
     gameRect.width * 0.44,
     gameRect.height * 0.6,
   );
+  const abilityButton = rect(boostButton.x, boostButton.y - targetSize * 1.15, targetSize, targetSize);
   const portraitBlocked =
     input.orientation === "portrait" || input.cssHeight > input.cssWidth;
   const touchControlsVisible =
@@ -103,6 +105,7 @@ export function computeViewportLayout(
     joystick: input.leftHanded ? mirror(joystick, gameRect) : joystick,
     primaryButton: input.leftHanded ? mirror(primaryButton, gameRect) : primaryButton,
     boostButton: input.leftHanded ? mirror(boostButton, gameRect) : boostButton,
+    abilityButton: input.leftHanded ? mirror(abilityButton, gameRect) : abilityButton,
     targetSize,
     portraitBlocked,
     touchControlsVisible,

@@ -6,10 +6,12 @@ import type { ComboState } from "../scoring/ComboSystem";
 import type { ScoreState } from "../scoring/ScoreSystem";
 import type { ThreatState } from "../spawning/ThreatDirector";
 
+import type { HuntSnapshot } from "../hunt/HuntSystems";
+
 export interface SessionSnapshot {
   readonly mode: "rampage" | "hunt";
   readonly playerActorId: "worm" | "hunter";
-  readonly hunt?: import("../hunt/HuntSystems").HuntSnapshot;
+  readonly hunt?: HuntSnapshot;
   readonly sessionId: string;
   readonly tick: number;
   readonly seed: number;

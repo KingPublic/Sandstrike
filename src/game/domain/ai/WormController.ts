@@ -21,7 +21,7 @@ export class WormController {
       else if (this.state === "roam" || this.state === "recover" && tick - this.enteredTick >= 120) this.transition("acquire", tick);
       else if (this.state === "acquire") {
         const hunterUtility = p.hunter ? .9 : 0;
-        this.target = hunterUtility > (tick >= 3600 ? 1 : .65) ? p.hunter!.position : p.relay;
+        this.target = hunterUtility > (tick >= 3600 ? 1 : .65) ? (p.hunter?.position ?? p.relay) : p.relay;
         this.side = random.float() < .5 ? -1 : 1; this.transition("reposition", tick);
       } else if (this.state === "reposition" && Math.abs(head.x - (this.target.x - this.side * 260)) < 100 && head.y > 100) this.transition("stalk", tick);
       else if (this.state === "stalk") {

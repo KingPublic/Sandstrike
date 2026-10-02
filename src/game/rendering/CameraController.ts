@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import type { WormMovementConfig } from "../domain/movement/WormMovementTypes";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
 import { computeCameraFraming } from "./CameraFraming";
+import { huntCameraTarget } from "./HuntPresentation";
 
 export interface CameraDebugBounds {
   readonly left: number;
@@ -59,6 +60,7 @@ export class CameraController {
   }
 
   private targetFor(snapshot: SessionSnapshot) {
+    if (snapshot.mode === "hunt") return huntCameraTarget(snapshot, this.camera.width, this.camera.height);
     return computeCameraFraming(
       snapshot.worm.head,
       this.camera.height,

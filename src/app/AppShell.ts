@@ -1,5 +1,7 @@
 import type Phaser from "phaser";
 import { RampageHud } from "../game/ui/hud/RampageHud";
+import { HuntHud } from "../game/ui/hud/HuntHud";
+import type { HudPort } from "../game/ui/hud/HudPort";
 import { SettingsPanel } from "../game/ui/hud/SettingsPanel";
 import { defaultPresentationSettings, type PresentationSettings } from "../game/rendering/FeedbackController";
 import { PhaserAudioAdapter } from "../game/infrastructure/phaser/PhaserAudioAdapter";
@@ -39,7 +41,8 @@ export class AppShell {
   private controls: GameplayControlPort | undefined;
   private touchControls: TouchControls | undefined;
   private game: Phaser.Game | undefined;
-  private hud: RampageHud | undefined;
+  private hud: HudPort | undefined;
+  private selectedMode: "rampage" | "hunt" = "rampage";
   private settingsPanel: SettingsPanel | undefined;
   private settings: PresentationSettings = defaultPresentationSettings;
   private readonly audio = new PhaserAudioAdapter();
@@ -233,13 +236,15 @@ export class AppShell {
     this.status.textContent = "Preparing the arena...";
     if (this.startButton) this.startButton.disabled = true;
     this.audio.unlock();
-    const configuration = this.nextConfiguration ?? { ...this.lastConfiguration, seed: this.lastConfiguration.seed + 7919 };
+    const configuration = this.nextConfiguration ?? { ...this.lastConfiguration, mode: this.selectedMode, aimAssist: this.settings.aimAssist, debugAI: this.root?.querySelector<HTMLInputElement>("[data-ai-debug]")?.checked ?? this.lastConfiguration.debugAI ?? false, seed: this.lastConfiguration.seed + 7919 };
+    this.selectedMode = configuration.mode ?? "rampage";
     this.nextConfiguration = undefined; this.lastConfiguration = configuration;
     this.controller.start(configuration);
     if (this.navigation.state !== "run") this.navigation.go("run");
     history.pushState({ sandstrike: true }, "", location.href);
     if (this.gameFrame) {
-      this.hud = new RampageHud(this.gameFrame, () => { this.pause.add("user"); }, () => { this.pause.add("user"); this.settingsPanel?.open(); });
+      const Hud = this.selectedMode === "hunt" ? HuntHud : RampageHud;
+      this.hud = new Hud(this.gameFrame, () => { this.pause.add("user"); }, () => { this.pause.add("user"); this.settingsPanel?.open(); });
     }
 
     try {
@@ -272,14 +277,14 @@ export class AppShell {
       return;
     }
 
-    this.status.textContent = "Rampage ready.";
+    this.status.textContent = this.selectedMode === "hunt" ? "Hunt ready." : "Rampage ready.";
     if (this.startButton) this.startButton.disabled = false;
     this.root?.classList.add("sandstrike-playing");
     this.game.scale.getParentBounds();
     this.game.scale.refresh();
     this.refreshLayout();
     this.focusCanvas();
-    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt"; prompt.textContent = "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
+    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt"; prompt.textContent = this.selectedMode === "hunt" ? "Read tremors · Q Snare · Click Fire · Shift Dodge" : "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
   }
 
   private handleFatalError(): void {
@@ -297,7 +302,7 @@ export class AppShell {
     }
 
     canvas.tabIndex = 0;
-    canvas.setAttribute("aria-label", "Sandstrike Rampage playfield");
+    canvas.setAttribute("aria-label", `Sandstrike ${this.selectedMode === "hunt" ? "Hunt" : "Rampage"} playfield`);
     canvas.focus({ preventScroll: true });
   }
 
@@ -325,6 +330,7 @@ export class AppShell {
     this.touchControls = new TouchControls(
       this.gameFrame,
       controls.touchInput,
+      this.selectedMode === "hunt" ? "hunter" : "worm",
     );
     this.refreshLayout();
   }
@@ -349,7 +355,7 @@ export class AppShell {
       orientation,
       coarsePointer,
       touchCapable,
-      role: "worm",
+      role: this.selectedMode === "hunt" ? "hunter" : "worm",
       leftHanded: this.settings.leftHanded,
     });
     this.touchControls.applyLayout(layout);
@@ -445,12 +451,13 @@ export class AppShell {
     this.refreshLayout();
   }
 
-  private renderMenu(): void { this.menu?.render(this.navigation.state); }
+  private renderMenu(): void { this.menu?.render(this.navigation.state, this.selectedMode); }
   private handleMenuAction(action: string): void {
     switch (action) {
       case "enter": this.navigation.go("menu"); break;
       case "play": this.navigation.go("selection"); break;
-      case "choose": this.navigation.go("preview"); break;
+      case "choose": this.selectedMode = "rampage"; this.navigation.go("preview"); break;
+      case "choose-hunt": this.selectedMode = "hunt"; this.onboardingShown = this.saves.snapshot().onboarding.huntSeen; this.navigation.go("preview"); break;
       case "selection": this.navigation.go("selection"); break;
       case "menu": this.navigation.go("menu"); break;
       case "help": this.navigation.open("how-to-play"); break;
@@ -473,7 +480,7 @@ export class AppShell {
     this.controller.pause(); this.controls?.clear(); this.touchControls?.clearPointers(); this.game?.scene.pause("Gameplay");
     if (this.pauseOverlay) this.pauseOverlay.hidden = true;
     const acceptance = this.saves.acceptRunResult(result); this.refreshSaveNotice();
-    const record = acceptance.newRecord ? "New local record" : `Local best · ${this.saves.snapshot().rampage.bestScore.toLocaleString("en-US")}`;
+    const record = result.mode === "hunt" && !result.eligibleForRecords ? "Practice run · AI inspection · no record" : acceptance.newRecord ? "New local record" : `Local best · ${this.saves.snapshot()[result.mode].bestScore.toLocaleString("en-US")}`;
     this.results = new ResultsView(this.gameFrame, result, { retry: () => { this.retryRun(); }, changeMode: () => { this.returnToMenu(true); }, menu: () => { this.returnToMenu(false); } }, record);
   }
   private refreshSaveNotice(): void { const notice = this.root?.querySelector<HTMLElement>("[data-save-notice]"); if (!notice) return; const status = this.saves.status(); notice.hidden = status.diagnostics.length === 0; notice.textContent = status.memoryOnly ? "Saving unavailable. Progress and settings are kept for this session." : status.diagnostics.at(-1) ?? ""; }

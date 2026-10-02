@@ -42,6 +42,7 @@ export interface GameSessionOptions {
   readonly sessionId?: string;
   readonly mode?: "rampage" | "hunt";
   readonly debugAI?: boolean;
+  readonly aimAssist?: number;
   readonly seed: number;
   readonly movement: WormMovementConfig;
   readonly terrain: TerrainProfile;
@@ -92,7 +93,7 @@ export class GameSession {
       ...(options.actors ?? []),
     ]);
     this.random = new RandomSource(options.seed);
-    this.hunt = options.mode === "hunt" ? new HuntSystems(options.terrain, options.debugAI ?? false, this.actors.get("hunter")?.position) : undefined;
+    this.hunt = options.mode === "hunt" ? new HuntSystems(options.terrain, options.debugAI ?? false, this.actors.get("hunter")?.position, options.aimAssist ?? .35) : undefined;
     this.projectiles = new ProjectileSystem(this.actors);
     for (const shot of options.initialProjectiles ?? []) this.projectiles.spawn("fixture", shot.position, shot.direction, 0);
     this.actors.commit();

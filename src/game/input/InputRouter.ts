@@ -63,8 +63,9 @@ export class InputRouter {
       });
     });
     const heldButtons = this.mergeButtons(samples);
-    const owner = this.selectAnalogOwner(samples);
-    const hasAnalog = owner !== undefined;
+    const owner = this.selectAnalogOwner(samples, "move");
+    const aimOwner = this.selectAnalogOwner(samples, "aim");
+    const hasAnalog = owner !== undefined || (aimOwner !== undefined && (aimOwner.aim.x !== 0 || aimOwner.aim.y !== 0));
     const hasButtons = ACTION_BUTTONS.some((button) => heldButtons[button]);
 
     if (this.awaitingNeutral) {
@@ -86,7 +87,7 @@ export class InputRouter {
       }
     }
 
-    const frame = createFrame(tick, owner, heldButtons, this.previousButtons);
+    const frame = createFrame(tick, owner, heldButtons, this.previousButtons, aimOwner);
     this.previousButtons = heldButtons;
     return frame;
   }
@@ -112,20 +113,18 @@ export class InputRouter {
 
   private selectAnalogOwner(
     samples: readonly SourceSample[],
+    kind: "move" | "aim",
   ): SourceSample | undefined {
     let owner: SourceSample | undefined;
     let latestSequence = Number.NEGATIVE_INFINITY;
 
     for (const sample of samples) {
-      const hasAxes =
-        sample.move.x !== 0 ||
-        sample.move.y !== 0 ||
-        sample.aim.x !== 0 ||
-        sample.aim.y !== 0;
+      const axes = kind === "move" ? sample.move : sample.aim;
+      const hasAxes = axes.x !== 0 || axes.y !== 0;
       const hasAimWorld =
         sample.frame.aimWorld !== undefined &&
         isFiniteVec2(sample.frame.aimWorld);
-      if (!hasAxes && !hasAimWorld) {
+      if (!hasAxes && !(kind === "aim" && hasAimWorld)) {
         continue;
       }
 
@@ -148,6 +147,7 @@ function createFrame(
   owner: SourceSample | undefined,
   heldButtons: Record<ActionButton, boolean>,
   previousButtons: Record<ActionButton, boolean>,
+  aimOwner: SourceSample | undefined = owner,
 ): ActionFrame {
   const buttonStates = Object.fromEntries(
     ACTION_BUTTONS.map((button) => [
@@ -160,12 +160,12 @@ function createFrame(
     tick,
     moveX: owner?.move.x ?? 0,
     moveY: owner?.move.y ?? 0,
-    aimX: owner?.aim.x ?? 0,
-    aimY: owner?.aim.y ?? 0,
+    aimX: aimOwner?.aim.x ?? 0,
+    aimY: aimOwner?.aim.y ?? 0,
     ...buttonStates,
   };
 
-  const aimWorld = owner?.frame.aimWorld;
+  const aimWorld = aimOwner?.frame.aimWorld;
   if (aimWorld && isFiniteVec2(aimWorld)) {
     return Object.freeze({
       ...frame,

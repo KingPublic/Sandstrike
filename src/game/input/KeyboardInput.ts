@@ -8,6 +8,7 @@ import {
 const BUTTON_CODES: Readonly<Partial<Record<string, ActionButton>>> = Object.freeze({
   Space: "primary",
   ControlLeft: "secondary",
+  KeyR: "secondary",
   ControlRight: "secondary",
   KeyQ: "ability",
   ShiftLeft: "boost",

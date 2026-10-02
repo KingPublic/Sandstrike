@@ -11,7 +11,7 @@ export class SettingsPanel {
     this.root.setAttribute("role", "dialog"); this.root.setAttribute("aria-modal", "true"); this.root.setAttribute("aria-label", "Presentation settings");
     this.root.innerHTML = `<div class="settings-card"><h2>Settings</h2><p>Make the desert feel right for you.</p><div class="settings-fields"></div><button type="button" data-close-settings>Close settings</button></div>`;
     const fields = this.root.querySelector(".settings-fields");
-    for (const [key, label] of Object.entries({ masterVolume: "Master volume", musicVolume: "Music volume", effectsVolume: "Effects volume", shake: "Screen shake", reducedMotion: "Reduced motion", reducedFlashes: "Reduced flashes", highContrast: "High contrast", leftHanded: "Left-handed touch", touchOpacity: "Touch opacity", haptics: "Haptics" })) {
+    for (const [key, label] of Object.entries({ masterVolume: "Master volume", musicVolume: "Music volume", effectsVolume: "Effects volume", aimAssist: "Hunt aim assist (next run)", shake: "Screen shake", reducedMotion: "Reduced motion", reducedFlashes: "Reduced flashes", highContrast: "High contrast", leftHanded: "Left-handed touch", touchOpacity: "Touch opacity", haptics: "Haptics" })) {
       const name = key as keyof PresentationSettings;
       const row = document.createElement("label"); row.textContent = label;
       const input = document.createElement("input"); const value = initial[name];
