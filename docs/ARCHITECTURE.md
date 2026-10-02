@@ -872,3 +872,34 @@ GameplayScene never auto-enables debug from import.meta.env.DEV. HuntCueView hid
 tracking labels outside debug; EffectsRenderer allocates floating label objects
 only in debug. Domain feedback/particles/audio are unchanged. HuntHudModel has an
 explicit debug parameter; essential objectives remain ordinary gameplay fields.
+
+## Ascent rampage systems (2026-10-02)
+
+`domain/rivals/RivalHunterController.ts` is the opponent brain. It receives a
+bounded perception (self, grounded, active platform, surfaceY, summit bounds,
+platform list, crate-armed flag, fire-ready flag, exposed worm) and returns a
+decision (moveX/jump/drop/fire/aim/activity). It climbs the next reachable ledge
+whenever the sand closes in, holds to shoot only at an exposed worm, and switches to
+the heavy round on the summit crate. Like the Hunt worm AI it is a small FSM with no
+runtime LLM and no knowledge of anything the player cannot see.
+
+`domain/rivals/RivalSystems.ts` owns deployment, the per-rival `HunterLocomotion`
+instances, fire cadence/magazine bookkeeping, hazard burial damage and carrion
+spawning. It never touches the projectile or actor systems directly: it returns
+`fires` (from/to/heavy) and damage `events`, and `GameSession` spawns the rounds
+through the existing `ProjectileSystem`, so combat, feedback and rendering need no
+new paths. Rival burial mirrors the Hunter's grace-then-damage rule with its own
+accumulator instead of reusing the hardcoded `"hunter"` actor.
+
+`ProjectileSystem` gained an optional bounds argument because the arena reaches
+y = -2800 while the classic enemy bounds stop at -1200; ascent runs pass the arena
+bounds so rifle and heavy rounds survive the climb.
+
+Carrion is a new `actor.carrion` definition that reuses the prey collision profile
+and the `prey`/`consumable` tags, so the existing automatic mouth feeding and
+`CombatSystem` consumption path heal the worm with no special-casing.
+
+Mode plumbing: `RunConfiguration.ascentRampage` selects the variant, `GameSession`
+derives `rivalMode` from `mode !== "hunt" && ascent === true`, and the session
+validates `mode.ascent-rampage` instead of `mode.rampage`. Fixtures always keep the
+classic path so the historical regression arena is unchanged.

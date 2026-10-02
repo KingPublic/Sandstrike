@@ -127,7 +127,7 @@ clarify the next decision rather than compete with the playfield.
 | Playable Worm | One balanced segmented worm, working name **Dune Maw** | Offensive and armored worms; final roster naming |
 | Playable Hunter | One mobile rifle specialist, working name **Ranger** | Heavy hunter and alternate loadouts |
 | Modes | Rampage and Hunt | Campaign, Survival variants, Challenge, mini-games |
-| Rampage targets | Desert fauna, infantry, one light ground vehicle, one aerial threat | Large enemy catalogue, elite hunters, bosses |
+| Rampage targets | Hunt five Hunter bots up the rising-sand tower; carrion is the only healing | Large enemy catalogue, elite hunters, bosses |
 | Hunt opposition | One observable AI worm and one protected surface objective | Allied squads, multiple worms, escorts, rescue missions |
 | Worm kit | Steering/thrust, bite/impact, and short burst | Projectiles, elemental trails, evolution trees |
 | Hunter kit | Rifle, dodge, and one Seismic Snare | Grenades, shields, alternate traps, weapon inventory |
@@ -179,7 +179,25 @@ but repeated breaches expose the worm to increasingly capable counters.
    dangerous targets for score, then respond to the next threat tier.
 
 The loop repeats until the worm is defeated or the player ends the run.
-Rampage has no finite victory state in the MVP.
+
+### 7.2b Rampage today: hunting the five (2026-10-02)
+
+Rampage is the mirror of the Hunter mode instead of an endless arena chase. The
+worm burrows inside the same rising sand the Hunter climbs, and the sand is what
+lifts its reach, so the two modes lean on one ascent language from opposite sides.
+
+- Five Hunter bots (the existing Hunter kits) deploy one at a time as the sand
+  climbs; at most two are on the field at once so the pressure stays readable.
+- Each rival races for the rooftop crate. Reaching it arms the objective weapon,
+  which is the real threat: slower, heavier rounds that punish a stalled worm.
+- The worm's only healing is carrion drifting in the sand - it must surface, eat and
+  dive again, which is exactly when the rivals get their shots.
+- Defeating all five wins the run; running out of health loses it.
+- Rivals only shoot at a worm that is out of the sand, so diving is a reliable
+  escape, and they keep climbing while the sand closes in rather than standing still.
+
+The older endless arena loop (prey for health, response bands, score chase) is still
+available as the classic arena option and is not part of the intended Rampage pitch.
 
 ### 7.3 Worm movement rules
 

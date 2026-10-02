@@ -31,7 +31,7 @@ test("boots one accessible Phaser canvas and preserves it across pause/resume", 
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Enter desert" })).toBeFocused();
   await openRampagePreview(page);
-  const start = page.getByRole("button", { name: "Start Rampage" });
+  const start = page.getByRole("button", { name: "Start classic arena" });
 
   await start.click();
   await expect(page.getByRole("status")).toContainText("Preparing the arena");
@@ -52,7 +52,7 @@ test("recovers from an injected boot failure without leaking a canvas", async ({
 
   await page.goto("/?e2eBootFailure=1");
   await openRampagePreview(page);
-  await page.getByRole("button", { name: "Start Rampage" }).click();
+  await page.getByRole("button", { name: "Start classic arena" }).click();
 
   await expect(page.getByRole("alert")).toContainText(
     "Rampage could not start",

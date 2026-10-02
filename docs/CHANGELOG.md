@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Rampage is now the worm hunting five Hunters up the rising-sand tower.** The
+  player worm burrows into the same climb the Hunter mode uses: the sand rises,
+  five Hunter bots (Ranger, Scout, Engineer, Siegebreaker, Field Medic) deploy one
+  at a time as it climbs, race to the rooftop and arm the RPG crate. Carrion drifts
+  in the sand and is the worm's only healing, so staying alive means eating while
+  the climb comes to you. Kill all five to win; losing your health to their fire
+  ends the run. The HUD shows how many Hunters are left and warns when one is armed.
+- The previous endless arena score chase is still playable: pick **Choose classic
+  arena** on the mode screen. Its records, fixtures and behaviour are unchanged.
+
 - Mouse controls: the right mouse button now triggers Boost/Dodge in both modes,
   so a mouse-only player can sprint-burst the worm or dodge the Hunter without
   reaching for Shift. A quick click always registers instead of being dropped

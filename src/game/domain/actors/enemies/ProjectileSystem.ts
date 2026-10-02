@@ -13,7 +13,7 @@ export class ProjectileSystem {
   private readonly slots: ProjectileSlot[];
   private sequence = 0;
 
-  constructor(private readonly registry: ActorRegistry, capacity: number = enemies.projectileCapacity) {
+  constructor(private readonly registry: ActorRegistry, capacity: number = enemies.projectileCapacity, private readonly bounds: Readonly<{ left: number; right: number; top: number; bottom: number }> = enemies.bounds) {
     if (!Number.isSafeInteger(capacity) || capacity <= 0) throw new RangeError("Invalid projectile capacity.");
     this.slots = Array.from({ length: capacity }, () => ({ id: undefined, remainingSeconds: 0, definition: projectiles.infantry, ownerId: "" }));
   }
@@ -42,7 +42,7 @@ export class ProjectileSystem {
       if (!actor) continue;
       slot.remainingSeconds -= dtSeconds;
       const position = { x: actor.position.x + actor.velocity.x * dtSeconds, y: actor.position.y + actor.velocity.y * dtSeconds };
-      if (slot.remainingSeconds <= 0 || position.x < enemies.bounds.left || position.x > enemies.bounds.right || position.y < enemies.bounds.top || position.y > enemies.bounds.bottom) {
+      if (slot.remainingSeconds <= 0 || position.x < this.bounds.left || position.x > this.bounds.right || position.y < this.bounds.top || position.y > this.bounds.bottom) {
         this.retire(slot, "expired");
         continue;
       }

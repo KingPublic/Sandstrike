@@ -9,6 +9,7 @@ import type { ThreatState } from "../spawning/ThreatDirector";
 import type { HuntSnapshot } from "../hunt/HuntSystems";
 import type { AscentWorldSnapshot } from "../world/AscentWorld";
 import type { WormLifeSnapshot } from "../hunt/WormLifeDirector";
+import type { RivalSnapshot } from "../rivals/RivalSystems";
 
 import type { ThemeId } from "../../data/themes";
 import type { CharacterId } from "../../data/characters";
@@ -21,6 +22,8 @@ export interface SessionSnapshot {
   readonly arcade?: boolean;
   readonly world?: AscentWorldSnapshot;
   readonly wormLife?: WormLifeSnapshot;
+  /** Ascent rampage only: the five Hunter bots hunting the player worm. */
+  readonly rivals?: RivalSnapshot;
   readonly mode: "rampage" | "hunt";
   readonly playerActorId: "worm" | "hunter";
   readonly hunt?: HuntSnapshot;

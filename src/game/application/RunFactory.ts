@@ -9,10 +9,23 @@ import { spawnActor } from "../data/actors";
 import { huntBalance } from "../data/huntBalance";
 import type { ThemeId } from "../data/themes";
 
+/** The compact player-worm profile, scaled by character speed like gravity. */
+function scaledArcadeMovement(speed: number) {
+  return {
+    ...arcadeMovementBalance,
+    initialSpeed: arcadeMovementBalance.initialSpeed * speed,
+    cruiseSpeed: arcadeMovementBalance.cruiseSpeed * speed,
+    burstSpeedCap: arcadeMovementBalance.burstSpeedCap * speed,
+    burstSpeedGain: arcadeMovementBalance.burstSpeedGain * speed,
+    burstLiftSpeed: arcadeMovementBalance.burstLiftSpeed * speed,
+    gravity: arcadeMovementBalance.gravity * speed ** 2,
+  };
+}
+
 /** Historical relay objectives kept as regression fixtures; every other Hunt run is the ascent. */
 const LEGACY_RELAY_FIXTURES = new Set(["hunt-relay", "hunt-victory", "hunt-trap", "hunter-defeat", "relay-defeat"]);
 
-export interface RunConfiguration { readonly seed: number; readonly characterId?: CharacterId; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly ascent?: boolean; readonly debugAI?: boolean; readonly aimAssist?: number; readonly themeId?: ThemeId }
+export interface RunConfiguration { readonly seed: number; readonly characterId?: CharacterId; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly ascent?: boolean; readonly ascentRampage?: boolean; readonly debugAI?: boolean; readonly aimAssist?: number; readonly themeId?: ThemeId }
 export class RunFactory {
   private sequence = 0;
   constructor(private readonly namespace = Date.now().toString(36)) {}
@@ -20,6 +33,11 @@ export class RunFactory {
     const character = characterForRole(configuration.mode ?? "rampage", configuration.characterId);
     if (!character) throw new RangeError("Character does not match the selected role.");
     this.sequence += 1;
+    // Ascent rampage: the worm hunts five Hunter bots up the rising-sand tower.
+    // Fixtures always stay on the classic arena, which is what they were built for.
+    if (configuration.mode !== "hunt" && configuration.ascentRampage === true && configuration.fixtureId === undefined) {
+      return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "rampage", arcade: true, ascent: true, characterId: character.id, seed: configuration.seed, debugAI: configuration.debugAI ?? false, movement: scaledArcadeMovement(character.speed), terrain: new FlatTerrainProfile(0) });
+    }
     if (configuration.mode === "hunt") {
       const fixture = configuration.fixtureId;
       const legacyRelay = fixture !== undefined && LEGACY_RELAY_FIXTURES.has(fixture);
@@ -48,7 +66,7 @@ export class RunFactory {
     const laboratory = configuration.fixtureId === "surface-breach";
     const advancedBand = configuration.fixtureId === "rampage-band-3" ? 3 : configuration.fixtureId === "rampage-band-2" ? 2 : undefined;
     const arcade = configuration.mode === "rampage" && configuration.fixtureId === undefined;
-    const movement = arcade ? { ...arcadeMovementBalance, initialSpeed: arcadeMovementBalance.initialSpeed * character.speed, cruiseSpeed: arcadeMovementBalance.cruiseSpeed * character.speed, burstSpeedCap: arcadeMovementBalance.burstSpeedCap * character.speed, burstSpeedGain: arcadeMovementBalance.burstSpeedGain * character.speed, burstLiftSpeed: arcadeMovementBalance.burstLiftSpeed * character.speed, gravity: arcadeMovementBalance.gravity * character.speed ** 2 } : breach ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: movementBalance.cruiseSpeed } : movementBalance;
+    const movement = arcade ? scaledArcadeMovement(character.speed) : breach ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: movementBalance.cruiseSpeed } : movementBalance;
     const actors = stress ? [
       ...Array.from({ length: 3 }, (_, index) => spawnActor(`smoke.prey.${String(index + 1)}`, "actor.prey", { x: 0, y: -10 })),
       ...Array.from({ length: 4 }, (_, index) => spawnActor(`smoke.infantry.${String(index + 1)}`, "actor.infantry", { x: 0, y: -16 })),

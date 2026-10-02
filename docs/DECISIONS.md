@@ -454,3 +454,36 @@ right-click Dodge in Hunt, the mobile skill button firing the skill with its rin
 the Scout grapple touch button, and the HUD gauges at five viewports). This also
 repaired the stale `hunt-flow` expectation about the worm return countdown. Art
 quality beyond the HUD/control presentation remains a subjective, open item.
+
+## D-024 - Rampage becomes the mirrored ascent hunt, classic arena kept as an option (2026-10-02)
+
+Decision:
+- Rampage is no longer an endless arena score chase. The worm now hunts five Hunter
+  bots up the existing rising-sand tower: they deploy one at a time as the sand
+  climbs, race to the rooftop crate and arm the RPG; the worm heals only from carrion
+  floating in the sand. Clearing all five wins; losing the worm's health ends the run.
+- The player keeps the arcade worm kit (burst leap, active skill, automatic mouth
+  feeding) so the mode needs no new controls, and the sand is deliberately harmless
+  to the worm: the rising hazard that threatens the Hunters is what lifts the worm's
+  reach, which is what makes the two modes mirror images rather than a reskin.
+- The old arena experience stays playable as "Choose classic arena" on the mode
+  screen: same balance, fixtures, records and tests. Rampage fixtures always run on
+  the classic arena because that is the arena they were authored for.
+- Internally this is `mode: "rampage"` + `arcade` + `ascent: true` with a
+  `mode.ascent-rampage` definition, a `RivalSystems`/`RivalHunterController` pair and
+  an optional `ascentRampage` flag in the run result. No save schema bump and no new
+  `SessionSnapshot.mode`, so existing v1-v3 saves and every Hunt path are untouched;
+  the cost is that ascent rampage scores share the Rampage record slot for now.
+
+Why:
+The user reported that Rampage had no clear objective (random prey/infantry/vehicle
+spawns) and should instead be the worm hunting the five Hunters while the sand rises
+and the bots rush the rooftop RPG, healing only from carrion. They also asked to keep
+the classic arena available separately.
+
+Status: Stage 1 implemented and locally verified - 241 domain tests across 77 files
+(heavy Hunt full-run gate excluded) including five new ascent-rampage integration
+cases (deployment, climbing, carrion healing, death, five-kill win), plus browser
+cases proving the new mode deploys rivals that climb while the sand rises and that
+classic arena still starts unchanged. Stage 2 (per-kit rival skills, crate/pickup
+presentation) and Stage 3 (HUD/art/balance, human feel) remain open.

@@ -39,7 +39,7 @@ test("combined combat, warning, protected pause, record reload and retry", async
 test("lethal damage reaches one Results view without a manual exit", async ({ page }) => {
   await page.goto("./");
   await page.evaluate(() => window.__SANDSTRIKE_TEST__?.configureNextRun({ seed: 903, fixtureId: "rampage-defeat" }));
-  await openRampagePreview(page); await page.getByRole("button", { name: "Start Rampage" }).click();
+  await openRampagePreview(page); await page.getByRole("button", { name: "Start classic arena" }).click();
   await expect(page.getByText("Worm defeated", { exact: true })).toBeVisible();
   await expect(page.locator("[data-run-result]")).toHaveCount(1);
   await expect(page.getByRole("button", { name: "Retry" })).toBeFocused();

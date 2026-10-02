@@ -25,6 +25,8 @@ export const actorDefinitions: readonly ActorDefinition[] = Object.freeze([
   Object.freeze({ id: "actor.heli", faction: "hunter", health: allies.airHealth, armor: 0, tags: Object.freeze(["ally", "ally-air"]), collision: collisionProfiles.aerial }),
   Object.freeze({ id: "actor.worm", faction: "worm", health: combatBalance.wormHealth, armor: 0, tags: Object.freeze(["worm"]), collision: collisionProfiles.worm }),
   Object.freeze({ id: "actor.prey", faction: "world", health: combatBalance.preyHealth, armor: 0, tags: Object.freeze(["prey", "consumable"]), collision: collisionProfiles.prey }),
+  // Bait carcass in the rising sand: the only healing the rampaging worm gets.
+  Object.freeze({ id: "actor.carrion", faction: "world", health: combatBalance.preyHealth, armor: 0, tags: Object.freeze(["prey", "consumable", "carrion"]), collision: collisionProfiles.prey }),
   Object.freeze({ id: "actor.infantry", faction: "military", health: enemies.infantryHealth, armor: 0, tags: Object.freeze(["infantry"]), collision: collisionProfiles.infantry }),
 ]);
 

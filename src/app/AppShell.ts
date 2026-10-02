@@ -48,6 +48,8 @@ export class AppShell {
   private game: Phaser.Game | undefined;
   private hud: HudPort | undefined;
   private selectedMode: "rampage" | "hunt" = "rampage";
+  /** Rampage defaults to the ascent hunt; classic arena play is a separate choice. */
+  private rampageAscent = true;
   private selectedTheme: ThemeId = "desert";
   private selectedWorm: WormId = "dune-maw";
   private selectedHunter: HunterId = "ranger";
@@ -246,7 +248,7 @@ export class AppShell {
     this.status.textContent = "Preparing the arena...";
     if (this.startButton) this.startButton.disabled = true;
     this.audio.unlock();
-    const configuration = this.nextConfiguration ?? { ...this.lastConfiguration, themeId: this.selectedTheme, mode: this.selectedMode, characterId: this.selectedMode === "hunt" ? this.selectedHunter : this.selectedWorm, aimAssist: this.settings.aimAssist, debugAI: this.root?.querySelector<HTMLInputElement>("[data-ai-debug]")?.checked ?? this.lastConfiguration.debugAI ?? false, seed: this.lastConfiguration.seed + 7919 };
+    const configuration = this.nextConfiguration ?? { ...this.lastConfiguration, themeId: this.selectedTheme, mode: this.selectedMode, ...(this.selectedMode === "rampage" ? { ascentRampage: this.rampageAscent } : {}), characterId: this.selectedMode === "hunt" ? this.selectedHunter : this.selectedWorm, aimAssist: this.settings.aimAssist, debugAI: this.root?.querySelector<HTMLInputElement>("[data-ai-debug]")?.checked ?? this.lastConfiguration.debugAI ?? false, seed: this.lastConfiguration.seed + 7919 };
     this.selectedMode = configuration.mode ?? "rampage"; this.selectedTheme = configuration.themeId ?? "desert";
     this.nextConfiguration = undefined; this.lastConfiguration = configuration;
     this.controller.start(configuration);
@@ -471,7 +473,7 @@ export class AppShell {
     this.refreshLayout();
   }
 
-  private renderMenu(): void { const id = this.selectedMode === "hunt" ? this.selectedHunter : this.selectedWorm; this.menu?.render(this.navigation.state, this.selectedMode, this.selectedTheme, id); const art = this.root?.querySelector<HTMLElement>("[data-character-art]"); if (art) art.innerHTML = characterPreview(this.selectedMode, this.selectedTheme, id); }
+  private renderMenu(): void { const id = this.selectedMode === "hunt" ? this.selectedHunter : this.selectedWorm; this.menu?.render(this.navigation.state, this.selectedMode, this.selectedTheme, id, this.rampageAscent); const art = this.root?.querySelector<HTMLElement>("[data-character-art]"); if (art) art.innerHTML = characterPreview(this.selectedMode, this.selectedTheme, id); }
   private handleMenuAction(action: string): void {
     if (action.startsWith("character:")) {
       const character = characterForRole(this.selectedMode, action.slice(10));
@@ -489,7 +491,8 @@ export class AppShell {
     switch (action) {
       case "enter": this.navigation.go("menu"); break;
       case "play": this.navigation.go("selection"); break;
-      case "choose": this.selectedMode = "rampage"; this.navigation.go("preview"); break;
+      case "choose": this.selectedMode = "rampage"; this.rampageAscent = true; this.navigation.go("preview"); break;
+      case "choose-classic": this.selectedMode = "rampage"; this.rampageAscent = false; this.navigation.go("preview"); break;
       case "choose-hunt": this.selectedMode = "hunt"; this.onboardingShown = this.saves.snapshot().onboarding.huntSeen; this.navigation.go("preview"); break;
       case "selection": this.navigation.go("selection"); break;
       case "menu": this.navigation.go("menu"); break;

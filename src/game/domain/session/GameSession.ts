@@ -51,6 +51,8 @@ import { HuntSystems } from "../hunt/HuntSystems";
 import { WormLifeDirector } from "../hunt/WormLifeDirector";
 import { collisionProfiles } from "../../data/collisionProfiles";
 import { HuntRules } from "../modes/HuntRules";
+import { RivalSystems } from "../rivals/RivalSystems";
+import { rivalProjectiles } from "../../data/ascentRampage";
 import type { ModeRules } from "../modes/ModeRules";
 import type { ResponseBand } from "../spawning/ThreatDirector";
 
@@ -96,6 +98,7 @@ export class GameSession {
   private readonly threat: ThreatDirector;
   private readonly rules: ModeRules;
   private readonly hunt: HuntSystems | undefined;
+  private readonly rivals: RivalSystems | undefined;
   private readonly world: AscentWorld | undefined;
   private readonly wormLife: WormLifeDirector | undefined;
   private readonly wormMovement: WormMovementConfig;
@@ -117,9 +120,11 @@ export class GameSession {
     this.character = options.arcade || options.ascent ? characterForRole(options.mode ?? "rampage", options.characterId) : undefined;
     if ((options.arcade || options.ascent) && !this.character) throw new RangeError("Invalid character role.");
     this.wormSkill = options.arcade && this.character ? new CharacterSkills(this.character) : undefined;
-    this.rules = options.mode === "hunt" ? new HuntRules() : new RampageRules(stepSeconds);
+    const rivalMode = options.mode !== "hunt" && options.ascent === true;
+    this.rules = options.mode === "hunt" ? new HuntRules() : new RampageRules(stepSeconds, rivalMode);
     this.threat = new ThreatDirector(options.initialBand ?? 0);
-    if (options.mode === "rampage") validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.rampage });
+    if (rivalMode) validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.ascentRampage });
+    else if (options.mode === "rampage") validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.rampage });
     this.world = options.ascent === true
       ? new AscentWorld(options.ascentSurface === undefined ? ascentArena : { ...ascentArena, initialSurface: options.ascentSurface })
       : undefined;
@@ -137,7 +142,8 @@ export class GameSession {
     ]);
     this.random = new RandomSource(options.seed);
     this.hunt = options.mode === "hunt" ? new HuntSystems(this.terrain, options.debugAI ?? false, movement, this.actors.get("hunter")?.position, options.aimAssist ?? .35, this.world, this.character) : undefined;
-    this.projectiles = new ProjectileSystem(this.actors);
+    this.rivals = rivalMode ? new RivalSystems(this.terrain) : undefined;
+    this.projectiles = new ProjectileSystem(this.actors, enemies.projectileCapacity, this.world ? ascentArena.bounds : undefined);
     for (const shot of options.initialProjectiles ?? []) this.projectiles.spawn("fixture", shot.position, shot.direction, 0);
     this.actors.commit();
   }
@@ -184,7 +190,8 @@ export class GameSession {
     if (!wormActor) throw new Error("Session has no player worm.");
     this.actors.update({ ...wormActor, position: worm.head.position, direction: worm.head.tangent, velocity: worm.head.velocity });
     for (const event of this.applyBurialDamage()) this.events.publish(event);
-    this.stepInfantry();
+    if (this.rivals) this.stepRivals(worm);
+    else this.stepInfantry();
     const projectileFrame = this.projectiles.step(this.stepSeconds, this.collisions, this.currentTick, previousActors);
     for (const event of projectileFrame.events) this.events.publish(event);
     const ability = this.bite.step(this.currentTick, this.hunt || this.options.arcade ? false : action.primary.pressed);
@@ -226,7 +233,7 @@ export class GameSession {
     const award = this.score.consume(combatEvents, combo);
     for (const event of combatEvents) this.events.publish(event);
     if (award.points > 0) this.events.publish({ type: "score-awarded", tick: this.currentTick, points: award.points, total: this.score.snapshot().points });
-    if (this.options.mode === "rampage") {
+    if (this.options.mode === "rampage" && this.rivals === undefined) {
       const previousThreat = this.threat.snapshot();
       const threat = this.threat.step({ tick: this.currentTick, basePoints: this.score.snapshot().basePoints }, combatEvents);
       if (previousThreat.warningStartedTick === undefined && threat.warningStartedTick !== undefined) this.events.publish({ type: "response-warning", tick: this.currentTick, band: (threat.band + 1) as 1 | 2 | 3 });
@@ -339,6 +346,7 @@ export class GameSession {
       ...(skill ? { skill } : {}),
       arcade: this.options.arcade ?? false,
       ...(this.world ? { world: this.world.snapshot() } : {}),
+      ...(this.rivals ? { rivals: this.rivals.snapshot(this.actors) } : {}),
       ...(this.wormLife ? { wormLife: this.wormLife.snapshot(this.currentTick) } : {}),
       sessionId: this.options.sessionId ?? `seed.${String(this.options.seed)}`,
       mode: this.options.mode ?? "rampage",
@@ -355,6 +363,17 @@ export class GameSession {
       ai: Object.freeze([...this.infantry].sort(([a], [b]) => a.localeCompare(b)).map(([actorId, controller]) => Object.freeze({ actorId, decision: controller.snapshot() }))),
       diagnostics: Object.freeze({ eventOverflowCount: this.events.overflowCount, projectileCount: this.projectiles.activeCount }),
     });
+  }
+
+  private stepRivals(worm: ReturnType<WormLocomotion["snapshot"]>): void {
+    const system = this.rivals;
+    if (!system) return;
+    const step = system.step(this.actors, worm, this.currentTick, this.random.stream("rivals"));
+    for (const event of step.events) this.events.publish(event);
+    for (const fire of step.fires) {
+      const projectileId = this.projectiles.spawn(fire.actorId, fire.from, { x: fire.to.x - fire.from.x, y: fire.to.y - fire.from.y }, this.currentTick, fire.heavy ? rivalProjectiles.heavy : rivalProjectiles.rifle);
+      if (projectileId !== undefined) this.events.publish({ type: "projectile-fired", tick: this.currentTick, actorId: fire.actorId, projectileId, position: fire.from });
+    }
   }
 
   private stepInfantry(): void {

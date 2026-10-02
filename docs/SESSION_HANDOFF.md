@@ -4,7 +4,33 @@ Updated 2026-10-02, latest execution. Root C:/Users/Adrian/Games/Sandstrike.
 Branch phase-b-ready. Work directly in root; no new worktree, branch switch, push
 or merge. User handles remote integration. Communicate in Bahasa Indonesia.
 
-## Latest checkpoint: mouse controls and UI/control presentation (2026-10-02)
+## Latest checkpoint: Rampage becomes the ascent hunt (2026-10-02, Stage 1)
+
+User report: Rampage should be the worm hunting the five Hunters, not an unclear
+object-collecting arena - the sand should rise, the smart Hunter bots should rush the
+rooftop RPG, and the worm should heal only from carrion appearing slowly in the sand.
+The user chose to keep the classic arena as a separate mode option.
+
+Implemented: `mode: "rampage"` + `arcade` + `ascent: true` now runs the ascent arena
+with the player as the worm (the sand is harmless to the worm and lifts its reach).
+`RivalSystems`/`RivalHunterController` deploy five Hunter kits one at a time (max two
+active), climb ledge by ledge under sand pressure, fire only at an exposed worm with
+travel lead and arm heavier crate rounds at the summit. `actor.carrion` spawns every
+600 ticks in the sand and is the only healing (8 HP through the normal mouth path).
+Clearing all five wins, worm death loses, and the result carries `ascentRampage` with
+`huntersDefeated`. The classic arena keeps its balance, records and specs and is
+reached with "Choose classic arena"; Rampage fixtures stay classic by design.
+
+Verified: lint and typecheck clean; 241 domain tests across 77 files pass with the
+heavy 5-run survival gate excluded, including the five new ascent-rampage integration
+cases. Browser: `rampage-hunt.spec.ts` (2 cases - rivals deploy and climb while the
+sand rises, HUD shows "Hunters 5 / 5", carrion appears, classic still starts), plus
+re-verified boot, static hosting, phase-b smoke, menu, selection, arcade controls,
+Rampage HUD at five viewports, worm leap and mouse controls. Not run: the heavy full
+Hunt simulations (Hunt paths untouched) and physical devices. Screenshot:
+`docs/verification/rampage-hunt.png`.
+
+## Previous checkpoint: mouse controls and UI/control presentation (2026-10-02)
 
 User request: continue the UI/art work, add mouse control for the Shift action
 (right click), keep desktop skill bindings (`Q`, grapple included), and make sure

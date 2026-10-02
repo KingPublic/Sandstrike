@@ -2,11 +2,36 @@
 
 Recorded 2026-10-02 after the user's playtest. Applies after checkpoint 1ffe038
 and workflow preference commit 34a5971.
-Status: **items 1-5 fixed in commit a9f0615; item 7 (weak Rampage worm jump) fixed
-in the leap commit; item 8 (mouse controls, UI/art pass, mobile skill buttons) fixed
-in the control/UI commit recorded below; item 6 (art/UI quality) is partly addressed
-but still a subjective judgement for the next playtest.** Passing automated tests
-still does not establish satisfactory feel.
+Status: **Stage 1 of the new Rampage (ascent hunt) landed; item 6 (art quality) remains
+a subjective judgement for the next playtest.**
+
+## Fix log (2026-10-02, Rampage becomes the mirrored ascent hunt - Stage 1)
+
+User report: Rampage should not be an unclear "collect random objects" arena; the worm
+should hunt the five Hunters while the sand rises, the smart Hunter bots should rush
+up to take the RPG, and the worm should heal only from carrion that appears slowly in
+the sand. They also asked to keep the classic arena as a separate mode option.
+
+Implemented (Stage 1):
+- Rampage now runs the existing ascent arena with the player as the worm: the sand
+  rises, the worm swims in it (the hazard does not hurt the worm - it lifts its reach)
+  and five Hunter kits deploy one at a time as it climbs, at most two at once.
+- `RivalHunterController` climbs ledge by ledge under sand pressure, only fires at an
+  exposed worm with a lead on its travel, and switches to heavy rounds once it reaches
+  the rooftop crate. Heavy rounds are slower and dodgeable.
+- Carrion (`actor.carrion`) spawns every 600 ticks, up to three, floating in the sand
+  and healing the existing 8 HP per bite through the normal mouth-feeding path, so
+  carrion really is the only healing source in the mode.
+- Win: all five rivals defeated. Lose: worm health reaches 0. The results screen shows
+  "Hunters defeated x / 5" and the run result carries `ascentRampage`.
+- The classic arena is intact and reachable via "Choose classic arena" on the mode
+  screen; its behaviour, records, fixtures and specs are unaffected.
+- Evidence: `tests/integration/rivalHunt.test.ts` (deployment, climbing under the
+  rising sand, carrion healing, worm death, five-kill win) plus
+  `tests/e2e/rampage-hunt.spec.ts` (browser: rivals deploy and climb while the sand
+  rises, the HUD reads "Hunters 5 / 5", carrion appears, and classic still starts).
+- Still open: per-kit rival skills and RPG-crate presentation (Stage 2), HUD/art polish
+  and real balance tuning (Stage 3), and a human feel pass.
 
 ## Fix log (2026-10-02, mouse controls and UI/control presentation)
 

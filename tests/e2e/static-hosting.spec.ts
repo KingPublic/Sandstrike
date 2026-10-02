@@ -37,7 +37,7 @@ test("boots the compiled game at its configured static-host path", async ({
   ).toBeVisible();
 
   await openRampagePreview(page);
-  await page.getByRole("button", { name: "Start Rampage" }).click();
+  await page.getByRole("button", { name: "Start classic arena" }).click();
   await expect(page.locator("canvas")).toHaveCount(1);
   await expect(page.getByRole("status")).toContainText("Rampage ready");
 

@@ -1,4 +1,5 @@
 import { freezeRecord } from "../domain/actors/Actor";
+import { ascentRampageBalance } from "./ascentRampage";
 import { rampageBalance } from "./rampageBalance";
 
 export interface SpawnRule {
@@ -21,4 +22,12 @@ export const modes = freezeRecord({ rampage: {
     { definitionId: "actor.vehicle", weight: 1, cap: rampageBalance.vehicleCap },
     { definitionId: "actor.aerial", weight: 1, cap: rampageBalance.aerialCap },
   ], warningTicks: rampageBalance.warningTicks,
+} satisfies ModeDefinition,
+/** Ascent rampage: carrion in the sand and the five rival Hunters. */
+ascentRampage: {
+  id: "mode.ascent-rampage", playerTags: ["worm"], abilityIds: ["ability.bite"],
+  spawnRules: [
+    { definitionId: "actor.carrion", weight: 1, cap: ascentRampageBalance.carrionCap + 32 },
+    { definitionId: "actor.hunter", weight: 1, cap: ascentRampageBalance.rivals.length + 2 },
+  ], warningTicks: ascentRampageBalance.rivalFireCadenceTicks,
 } satisfies ModeDefinition });

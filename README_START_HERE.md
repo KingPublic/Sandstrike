@@ -19,11 +19,19 @@ Read in this order, then check `git status`, recent commits and the actual sourc
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
 
 Current checkpoint (2026-10-02, latest execution): **the approved survival revision,
-pacing pass, presentation pass, the first round of playtest corrections, the Rampage
-worm leap and the mouse/UI-control pass are implemented** in the root on
-phase-b-ready. Latest checkpoint commit subject: `feat: add mouse boost and control
-readiness gauges`. Use git log/status for the exact SHAs; no push or merge was
-performed.
+pacing pass, presentation pass, first playtest corrections, the Rampage worm leap,
+the mouse/UI-control pass and Stage 1 of the new Rampage (ascent hunt) are
+implemented** in the root on phase-b-ready. Latest checkpoint commit subject:
+`feat: make Rampage hunt five Hunter bots up the rising sand`. Use git log/status for
+the exact SHAs; no push or merge was performed.
+
+New Rampage (Stage 1): the worm now runs the ascent arena as the hunter. Five Hunter
+kits deploy one at a time as the sand rises (max two active), climb ledge by ledge,
+shoot only at an exposed worm and arm heavy rounds at the rooftop crate; carrion in
+the sand is the worm's only healing. Kill all five to win, lose all health to fail.
+The old endless arena is untouched and reachable via "Choose classic arena" on the
+mode screen, so nothing classic regressed. Stage 2 (per-kit rival skills, crate
+presentation) and Stage 3 (HUD/art/balance, human feel) still to come.
 
 Mouse and control presentation (latest): the right mouse button mirrors Shift (worm
 Burst in Rampage, Hunter Dodge in Hunt) beside left-click aim/fire, a quick click is

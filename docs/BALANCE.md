@@ -382,7 +382,6 @@ before distributed caches, failed Engineer rerun after them. Automated precise-a
 runs establish feasibility only; physical/human play remains unmeasured.
 
 ## Playtest feedback fixes (2026-10-02, commit a9f0615)
-
 Status: **provisional; deterministic and browser evidence, no human feel claim**.
 - Allies: 2 ground (90 HP) + 1 helicopter, replaced on a 240-tick cadence when a
   slot is empty; escort leash 200px, stand-off 130px, jump 620 with the shared
@@ -426,3 +425,29 @@ Status: **measured in deterministic tests; human feel not yet re-verified**.
   is audible and visible on both desktop and touch.
 - Touch: the worm's Burst control is now a full-size thumb target (same rect size
   as the skill button) instead of a 0.5x chip.
+
+## Rampage (ascent) - Stage 1 tuning (2026-10-02)
+
+Status: **provisional; deterministic tests and browser checks only, no human feel
+pass yet.** Data lives in `src/game/data/ascentRampage.ts`.
+
+- Sand: the arena's existing 5px/s rise and 90-tick burial grace are reused, so the
+  tower is identical to Hunt. The worm starts 700px under the surface and is not
+  hurt by the sand; the rise is what lifts its reach.
+- Rivals: five kits deploy one at a time (`afterTicks` 0 / 900 / 2100 / 3600 / 5400,
+  i.e. the third lands after 35s), at most two active at once, 420-1200px from the
+  worm on the nearest safe ledge. 100 HP each, no armor, no per-hit invulnerability,
+  so a breach that lands on them is decisive.
+- Rival fire: rifle rounds 10 damage on a 42-tick cadence with a 5-round magazine
+  and a 150-tick reload; they only shoot at an exposed worm (out of the sand), lead
+  the aim by 0.16s of the worm's travel and use 520px/s rounds. The rooftop crate
+  arms heavy rounds: 55 damage, 330px/s, 240-tick cadence - slower and dodgeable.
+- Carrion: one every 600 ticks (10s) up to three at a time, floating 60-160px under
+  the rising surface anywhere in the arena. Eating one heals the existing
+  `preyHealing` of 8 HP, which keeps recovery slow and forced into the sand.
+- Worm: keeps its arcade profile (burst leap apex 275px, skill on Space, automatic
+  mouth feeding) so it can reach ledges and eat carrion without new controls.
+- Win: all five rivals defeated. Lose: worm health reaches 0.
+- Known balance gaps: no per-kit rival skills yet (Stage 2), no summit boss or
+  crate-restock visuals (Stage 3), and a rival that reaches the crate keeps heavy
+  fire forever. Scores share the Rampage record slot with classic arena runs.
