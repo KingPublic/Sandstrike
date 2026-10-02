@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Ascent support: two survivor allies and one helicopter join Hunt with original
+  friendly silhouettes, animated rotors and visible aiming lines. Ground allies
+  climb toward platforms above the rising hazard and only fire at exposed worm
+  regions they can see; the helicopter patrols at a fixed altitude over the sand.
+  Populations are capped and replaced on a cadence, allies can damage exposed
+  worms, and they never damage the player or take objectives.
 - Ascent pursuit: an ordinary worm kill (HP 0) removes it for 600 ticks while the
   Hunt keeps running, then a stronger worm returns at the hazard line with fresh
   health, followers and per-life AI. Recovery shortens from 120 to 48 ticks over

@@ -188,6 +188,9 @@ export class GameSession {
     const rifle = this.hunt?.fire(action, worm, this.currentTick);
     commands.push(...(rifle?.commands ?? []));
     for (const event of rifle?.events ?? []) this.events.publish(event);
+    const support = this.hunt?.alliesFire(worm, this.currentTick);
+    commands.push(...(support?.commands ?? []));
+    for (const event of support?.events ?? []) this.events.publish(event);
     for (const contact of this.collisions.query(previousActors, currentActors)) {
       if (contact.kind === "projectile") continue;
       this.events.publish({ type: "contact", tick: this.currentTick, contact });

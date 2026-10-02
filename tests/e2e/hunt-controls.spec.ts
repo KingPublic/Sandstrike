@@ -6,6 +6,8 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 915, height: 412 
   await expect(page.getByRole("status")).toContainText("Hunt ready");
   await expect(page.locator("canvas")).toBeFocused();
   await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().tick ?? 0)).toBeGreaterThan(10);
+  await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().hunt?.allies.length ?? 0), { timeout: 15_000 }).toBeGreaterThan(0);
+  expect(await page.evaluate(() => (window.__SANDSTRIKE_TEST__?.snapshot().hunt?.allies ?? []).length)).toBeLessThanOrEqual(3);
   const before = await page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().hunt?.hunter.position.x ?? 0);
   await page.keyboard.down("KeyD"); await page.mouse.move(viewport.width * .6, viewport.height * .25); await page.mouse.down();
   await expect.poll(() => page.evaluate(() => window.__SANDSTRIKE_TEST__?.snapshot().hunt?.hunter.position.x ?? 0)).toBeGreaterThan(before + 12);

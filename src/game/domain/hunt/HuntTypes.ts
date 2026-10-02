@@ -14,4 +14,14 @@ export interface SnareState { readonly phase: "none" | "arming" | "armed" | "tri
 export interface SnareEvent { readonly type: "snare-triggered"; readonly tick: number; readonly position: Vec2 }
 export interface SnareStep { readonly state: SnareState; readonly events: readonly SnareEvent[]; readonly effects?: WormMotionEffects }
 export interface ExposedRegion { readonly position: Vec2; readonly radius: number; readonly index: number }
+export interface AllyState {
+  readonly id: string;
+  readonly kind: "ally.ground" | "ally.air";
+  readonly position: Vec2;
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly state: string;
+  readonly firing: boolean;
+  readonly aim: Vec2;
+}
 export interface ExposedContact { readonly targetId: "worm"; readonly regionIndex: number; readonly position: Vec2; readonly distance: number }

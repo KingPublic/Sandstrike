@@ -5,6 +5,7 @@ import { collisionProfiles } from "./collisionProfiles";
 import { combatBalance } from "./combatBalance";
 import { enemies } from "./enemies";
 import { huntBalance } from "./huntBalance";
+import { allies } from "./allies";
 
 export interface ActorDefinition {
   readonly id: string;
@@ -20,6 +21,8 @@ export const actorDefinitions: readonly ActorDefinition[] = Object.freeze([
   Object.freeze({ id: "actor.vehicle", faction: "military", health: enemies.vehicleHealth, armor: enemies.vehicleArmor, tags: Object.freeze(["vehicle"]), collision: collisionProfiles.vehicle }),
   Object.freeze({ id: "actor.aerial", faction: "military", health: enemies.aerialHealth, armor: 0, tags: Object.freeze(["aerial"]), collision: collisionProfiles.aerial }),
   Object.freeze({ id: "actor.relay", faction: "hunter", health: huntBalance.relayHealth, armor: 0, tags: Object.freeze(["relay"]), collision: collisionProfiles.relay }),
+  Object.freeze({ id: "actor.ally", faction: "hunter", health: allies.groundHealth, armor: 0, tags: Object.freeze(["ally", "hunter"]), collision: collisionProfiles.hunter }),
+  Object.freeze({ id: "actor.heli", faction: "hunter", health: allies.airHealth, armor: 0, tags: Object.freeze(["ally", "ally-air"]), collision: collisionProfiles.aerial }),
   Object.freeze({ id: "actor.worm", faction: "worm", health: combatBalance.wormHealth, armor: 0, tags: Object.freeze(["worm"]), collision: collisionProfiles.worm }),
   Object.freeze({ id: "actor.prey", faction: "world", health: combatBalance.preyHealth, armor: 0, tags: Object.freeze(["prey", "consumable"]), collision: collisionProfiles.prey }),
   Object.freeze({ id: "actor.infantry", faction: "military", health: enemies.infantryHealth, armor: 0, tags: Object.freeze(["infantry"]), collision: collisionProfiles.infantry }),

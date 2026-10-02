@@ -1,6 +1,7 @@
 import type Phaser from "phaser";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
 import type { ActorState } from "../domain/actors/Actor";
+import type { AllyState } from "../domain/hunt/HuntTypes";
 
 export class ActorViews {
   private readonly views = new Map<string, Phaser.GameObjects.Graphics>();
@@ -20,13 +21,36 @@ export class ActorViews {
       const blend = Math.max(0, Math.min(1, alpha));
       view.setVisible(true).setPosition(previous.position.x + (actor.position.x - previous.position.x) * blend, previous.position.y + (actor.position.y - previous.position.y) * blend).clear();
       const decision = snapshot.ai.find((item) => item.actorId === actor.id)?.decision;
-      this.draw(view, actor, snapshot.tick - 1 + blend, highContrast, decision?.state === "telegraph", decision?.aimPoint?.x);
+      const ally = snapshot.hunt?.allies.find((item) => item.id === actor.id);
+      this.draw(view, actor, snapshot.tick - 1 + blend, highContrast, decision?.state === "telegraph", decision?.aimPoint?.x, ally);
     }
   }
   actorIds(): readonly string[] { return Object.freeze([...this.views.keys()].sort()); }
   reset(): void { for (const view of this.views.values()) { view.clear().setVisible(false); this.pool.push(view); } this.views.clear(); this.current = undefined; this.previous = undefined; }
   destroy(): void { for (const view of [...this.views.values(), ...this.pool]) view.destroy(); this.views.clear(); this.pool.length = 0; }
-  private draw(view: Phaser.GameObjects.Graphics, actor: ActorState, tick: number, contrast: boolean, telegraph: boolean, aimX?: number): void {
+  private draw(view: Phaser.GameObjects.Graphics, actor: ActorState, tick: number, contrast: boolean, telegraph: boolean, aimX?: number, ally?: AllyState): void {
+    if (actor.tags.includes("ally")) {
+      const toAim = { x: (ally?.aim.x ?? actor.position.x + actor.direction.x) - actor.position.x, y: (ally?.aim.y ?? actor.position.y) - actor.position.y };
+      if (actor.tags.includes("ally-air")) {
+        view.fillStyle(0x24313c).fillRoundedRect(-32, -14, 64, 26, 8);
+        view.fillStyle(contrast ? 0xdffffa : 0x8af1db).fillRoundedRect(-24, -19, 40, 22, 6);
+        view.lineStyle(4, 0x2b4453).lineBetween(-46, -28, 46, -28);
+        view.lineStyle(3, 0x295f66).lineBetween(0, -19, 0, -30);
+        view.lineStyle(3, 0x8af1db).lineBetween(-20, 14, 24, 14);
+        if (ally?.firing) view.lineStyle(2, 0xffd79a, .85).lineBetween(0, -4, toAim.x, toAim.y);
+        return;
+      }
+      const stride = Math.sin(tick * 0.19) * (Math.abs(actor.velocity.x) > 0 ? 4 : 0.6);
+      view.fillStyle(0x100d18, 0.28).fillEllipse(1, 17, 29, 7);
+      view.lineStyle(3, 0x35424c).lineBetween(-3, 3, -4 - stride, 16).lineBetween(4, 3, 5 + stride, 16);
+      view.fillStyle(contrast ? 0xdffffa : 0x63b8ad).fillRoundedRect(-7, -7, 14, 15, 3);
+      view.fillStyle(0xf7d2a2).fillCircle(0, -12, 5);
+      view.fillStyle(0x334b58).fillRoundedRect(-7, -18, 14, 6, 2);
+      const sign = toAim.x >= 0 ? 1 : -1;
+      view.lineStyle(4, 0x1b2734).lineBetween(sign * 2, -5, sign * 20, -5);
+      if (ally?.firing) view.lineStyle(2, 0xffd79a, .85).lineBetween(sign * 20, -5, toAim.x, toAim.y);
+      return;
+    }
     if (actor.tags.includes("relay")) {
       view.fillStyle(0x252e3f).fillRoundedRect(-26, -30, 52, 60, 6);
       view.lineStyle(3, 0x8af1db).strokeRoundedRect(-26, -30, 52, 60, 6);

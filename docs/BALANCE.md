@@ -246,6 +246,19 @@ Evidence: advanced kit/contact checks passed; two 18000-tick replays identical
 with all bands, finite bounded motion, caps and zero event overflow. Replay
 runtime on this host ~13 seconds, so this test uses a specific 30-second limit.
 
+## Phase D support hypotheses (2026-10-02)
+
+Bounded support: at most two ground allies and one helicopter, replaced every 420
+ticks when a slot is empty. Ground ally 60HP, 150px/s, damage 6 on a 48-tick
+cadence within 640px, jump 620 with the shared 1800 gravity; helicopter 80HP,
+130px/s, damage 7 on a 60-tick cadence within 900px, holding the hazard surface
+minus 320px. Allies fire only at exposed worm regions while unburied and stop
+entirely while the worm is absent; they cannot target the player. Evidence: 4 ally
+tests (buried/deep-worm hold fire, climb and altitude, capped population with 5400
+simulated ticks generating ally hits and zero friendly fire, retry independence),
+190 total tests, and hunt-controls browser cases at four viewports. Visual polish
+of the ally art and long-match support balance remain unverified.
+
 ## Phase D pursuit hypotheses (2026-10-02)
 
 An ordinary ascent kill removes the worm for 600 ticks (10s) and increments the
