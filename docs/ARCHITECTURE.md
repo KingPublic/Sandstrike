@@ -807,6 +807,21 @@ Snapshots expose `world`, `wormLife`, `hunt.boss`, `hunt.rpg` and `hunt.allies`,
 and rendering owns no timers. Relay-defense compositions remain available through
 the legacy fixtures.
 
+## Pointer, mouse and touch controls (2026-10-02)
+
+`PointerInput` owns canvas mouse input for both modes: the left button is `primary`
+(aim/fire) and the right button is `boost`, so Burst/Dodge work with the mouse
+alone. A press is latched for at least one sample (`pendingPrimary`/`pendingBoost`)
+because a fast click can start and end between two simulation frames; the canvas
+`contextmenu` event is suppressed so the right button never opens the browser menu.
+
+`ui/ControlReadiness.ts` is the single place that turns a `SessionSnapshot` into
+per-action readiness (0 = busy, 1 = ready) from the existing cooldown ticks. The HUD
+models use it for the new gauges and `TouchControls.setReadiness` maps it onto the
+touch buttons, which draw a conic-gradient ring from a `--ready` custom property.
+Adding a cooldown-visible control therefore needs only a readiness value, not a new
+event stream.
+
 ## Ballistic movement profiles (2026-10-02)
 
 arcadeMovementBalance owns compact player breach tuning; huntMovementBalance owns

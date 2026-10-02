@@ -425,3 +425,32 @@ Status: implemented and locally verified (233 domain tests across 75 files with 
 heavy Hunt full-run gate excluded, plus browser leap cases on desktop keyboard and a
 phone viewport measuring a peak above helicopter altitude + 20px). Human feel of the
 leap, the new sound and the touch control remains open in docs/PLAYER_FEEDBACK.md.
+
+## D-023 - Mouse mirrors the mobility action, and every control shows its cooldown (2026-10-02)
+
+Decision:
+- The right mouse button is a first-class alias for the mobility action: worm Burst
+  in Rampage, Hunter Dodge in Hunt. PointerInput latches a press for at least one
+  simulation sample so a quick click can never be dropped between frames, and the
+  canvas context menu is suppressed. Desktop skill bindings stay as they are
+  (`Q` for the Hunter skill and grapple); touch keeps the same actions on buttons.
+- Cooldown visibility becomes shared UI state instead of per-widget text:
+  `ui/ControlReadiness.ts` derives boost/ability/primary readiness from the existing
+  snapshot cooldowns, the HUD draws filled gauges for health, skill, dodge, ammo and
+  Burst, and touch buttons draw a readiness ring. A tap during a cooldown is now
+  visibly explained rather than silently ignored.
+- The worm return countdown ("Maw returns 8.3s") is player information and shows in
+  normal Hunt play again; only the generation/kill counters stay behind debug.
+
+Why:
+The user asked for mouse access to the Shift action, for the UI/art pass to continue,
+and for mobile skill buttons that are present, responsive and working (grapple
+included). Readiness had previously been expressed only as text on the HUD, which
+cannot be read while looking at a touch button.
+
+Status: implemented and locally verified (236 domain tests across 76 files with the
+heavy Hunt full-run gate excluded; browser cases for right-click Burst in Rampage,
+right-click Dodge in Hunt, the mobile skill button firing the skill with its ring,
+the Scout grapple touch button, and the HUD gauges at five viewports). This also
+repaired the stale `hunt-flow` expectation about the worm return countdown. Art
+quality beyond the HUD/control presentation remains a subjective, open item.

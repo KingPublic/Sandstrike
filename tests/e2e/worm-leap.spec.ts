@@ -118,11 +118,11 @@ test("a full-size touch Burst button leaps the worm on a phone viewport", async 
     pointerId: 72,
     pointerType: "touch",
   });
-  await expect(boost).toHaveAttribute("data-burst-ready", "false");
+  await expect(boost).toHaveAttribute("data-ready", "false");
   await page.waitForTimeout(350);
   await page.screenshot({ path: "docs/verification/worm-leap-mobile.png" });
   const peak = await sampling;
-  await expect(boost).toHaveAttribute("data-burst-ready", "true", {
+  await expect(boost).toHaveAttribute("data-ready", "true", {
     timeout: 4000,
   });
   await boost.dispatchEvent("pointerup", {

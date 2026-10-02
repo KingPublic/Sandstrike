@@ -3,9 +3,36 @@
 Recorded 2026-10-02 after the user's playtest. Applies after checkpoint 1ffe038
 and workflow preference commit 34a5971.
 Status: **items 1-5 fixed in commit a9f0615; item 7 (weak Rampage worm jump) fixed
-in the leap commit recorded above; item 6 (art/UI quality) remains open and is a
-subjective quality judgement for the next playtest.** Passing automated tests still
-does not establish satisfactory feel.
+in the leap commit; item 8 (mouse controls, UI/art pass, mobile skill buttons) fixed
+in the control/UI commit recorded below; item 6 (art/UI quality) is partly addressed
+but still a subjective judgement for the next playtest.** Passing automated tests
+still does not establish satisfactory feel.
+
+## Fix log (2026-10-02, mouse controls and UI/control presentation)
+
+User request: continue the UI/art work, and add mouse control for the Shift action
+(right click should also work), while keeping desktop skill bindings (`Q`, grapple
+included) and making sure mobile buttons exist, are responsive and actually work.
+
+Implemented:
+- Mouse: `PointerInput` now reports `boost` from the right button in both modes
+  (worm Burst, Hunter Dodge) next to the left-button aim/fire, suppresses the canvas
+  context menu, and latches a press for one sample so a fast click is never missed.
+  Browser proof: `tests/e2e/mouse-controls.spec.ts` (right click bursts in Rampage
+  and clears the helicopter altitude; right click dodges in Hunt).
+- UI/art: filled gauges for health, skill, dodge, ammo and Burst on both HUDs, plus
+  readiness rings on the touch Burst/skill buttons and the Hunter fire button while
+  reloading. `ui/ControlReadiness.ts` is the single readiness source, so the rings and
+  gauges cannot disagree with the simulation cooldowns. Verified at five viewports in
+  `rampage-hud.spec.ts` (gauge present and filled) and in `hunt-controls.spec.ts`
+  (mobile skill button fires the skill and then reports not-ready).
+- Mobile skill coverage: the ability button already carries the selected kit's skill
+  name; a new browser case selects the Scout and confirms the touch button reads
+  "Grapple", fires it and starts its cooldown ring. Desktop grapple stays on `Q`.
+- Repaired a stale expectation: the worm return countdown is real player information
+  and is visible in normal Hunt play again (generation/kill counters stay debug-only),
+  which also un-breaks `tests/e2e/hunt-flow.spec.ts` (it failed on the pre-change
+  baseline, confirmed by stashing).
 
 ## Fix log (2026-10-02, Rampage leap)
 
@@ -39,6 +66,8 @@ target was literally just out of reach. Fixed:
   page errors; capture `docs/verification/worm-leap-mobile.png`.
 - Campaign (Hunt) worm movement is deliberately unchanged: `huntMovementBalance`
   keeps `burstLiftSpeed = 0`. Only real player Rampage (arcade) gets the leap.
+- The leap is reachable from the mouse too: the right button is the same Burst/
+  Dodge action as Shift (see the mouse/UI fix log below).
 
 ## Fix log (2026-10-02, commit a9f0615)
 Reproduction used a 7200-tick scripted ascent run and a browser case:
@@ -97,22 +126,29 @@ speculative art change was made without feedback.
 5. **Allied firing:** NPC shots look strange and lack impact/audio. Correct allied
    weapon pose, muzzle/tracer alignment, target choice and firing feedback for
    both soldiers and helicopters. They must fire convincingly at exposed targets.
-6. **(open) UI and art quality:** subjective; needs the user's judgement before any
-   speculative art change.
+6. **(partly addressed) UI and art quality:** subjective. This pass added filled
+   health/ammo/cooldown gauges and touch readiness rings plus a visible worm return
+   countdown; whether the art direction is good enough still needs the user's verdict.
 7. **Weak Rampage worm jump (fixed):** boosting upward barely lifted the worm, so it
    could never reach and eat a helicopter. Fixed with the intent-based upward Burst
    leap described in the leap fix log above. User also asked for a more comfortable
    mobile and desktop experience; the leap now has audio/dust feedback, a full-size
    touch Burst button and a readiness ring, and the HUD advertises the leap whenever
    an air target is alive.
+8. **Mouse controls and mobile skill buttons (fixed):** the right mouse button now
+   mirrors Shift (worm Burst / Hunter Dodge) and keeps left click for aim and fire;
+   desktop skill bindings stay (`Q`, grapple included). Mobile keeps a button for
+   every action with a readiness ring, and the Scout grapple button is verified in a
+   browser on a phone viewport.
 
 ## Resume from these issues
 
 On the next request to continue, start with a short real-game reproduction of the
 reported problem, then execute focused corrections. This is an issue record, not a
 requirement to write another lengthy plan or start a new phase. Remaining open:
-item 6 (UI/art quality, user judgement) and the earlier items' human feel
-(sound identity, aim alignment, soldier presence, worm pressure, leap feel).
+item 6 (art quality, user judgement) and the human feel of the earlier fixes
+(sound identity, aim alignment, soldier presence, worm pressure, leap feel, the new
+right-click control and the HUD gauges).
 
 Relevant entry points (inspect only the current issue's files):
 - Aiming/rendering: HunterCharacterView.ts, ActorViews.ts, HuntSystems.ts,

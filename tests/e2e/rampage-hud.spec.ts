@@ -17,6 +17,10 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1280, height: 720
     expect(canvas).not.toBeNull();
     expect(canvas?.width).toBeCloseTo(Math.min(viewport.width, viewport.height * 16 / 9), 0);
     await expect(page.locator("[data-hud-health]")).toContainText("100");
+    const healthGauge = await page.locator('[data-hud-gauge="health"]').boundingBox();
+    expect(healthGauge).not.toBeNull();
+    expect(healthGauge?.width ?? 0).toBeGreaterThan(0);
+    expect(await page.locator('[data-hud-gauge="health"]').evaluate((element) => (element as HTMLElement).style.getPropertyValue("--fill"))).not.toBe("");
     await page.waitForFunction(() => (window.__SANDSTRIKE_TEST__?.snapshot().actors.length ?? 0) > 1);
     await page.waitForFunction(() => (window.__SANDSTRIKE_TEST__?.presentation().actorIds.length ?? 0) > 0);
     const presentation = await page.evaluate(() => ({ ids: window.__SANDSTRIKE_TEST__?.presentation().actorIds ?? [], expected: window.__SANDSTRIKE_TEST__?.snapshot().actors.filter((a) => a.id !== "worm").map((a) => a.id).sort() }));

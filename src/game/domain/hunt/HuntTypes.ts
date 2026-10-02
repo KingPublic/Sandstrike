@@ -28,6 +28,8 @@ export interface RpgHudState {
   readonly owned: boolean;
   readonly rockets: number;
   readonly reloading: boolean;
+  /** Ticks of reload still to run, so UI can draw a progress ring. */
+  readonly reloadTicksRemaining: number;
   readonly crateReady: boolean;
   readonly inCrateZone: boolean;
 }

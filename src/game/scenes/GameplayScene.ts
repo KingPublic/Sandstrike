@@ -65,16 +65,17 @@ export class GameplayScene extends Phaser.Scene {
     this.keyboard = new KeyboardInput(window, { skillOnSpace: initial.arcade === true, hunter: initial.mode === "hunt" && initial.world !== undefined });
     this.touch = new TouchInput();
     this.scripted = new ScriptedInput();
+    // Both modes get mouse aim: the right button doubles as Boost/Dodge.
+    this.pointer = new PointerInput(this.game.canvas, (x, y) => { const bounds = this.game.canvas.getBoundingClientRect(); return this.cameras.main.getWorldPoint((x - bounds.left) * this.scale.width / bounds.width, (y - bounds.top) * this.scale.height / bounds.height); });
     if (initial.mode === "hunt") {
       this.huntCues = new HuntCueView(this, debug);
-      this.pointer = new PointerInput(this.game.canvas, (x, y) => { const bounds = this.game.canvas.getBoundingClientRect(); return this.cameras.main.getWorldPoint((x - bounds.left) * this.scale.width / bounds.width, (y - bounds.top) * this.scale.height / bounds.height); });
     }
     this.inputRouter = new InputRouter([
       this.keyboard,
       this.touch,
       new GamepadInput(undefined, { skillOnTrigger: initial.arcade === true, hunter: initial.mode === "hunt" && initial.world !== undefined }),
       this.scripted,
-      ...(this.pointer ? [this.pointer] : []),
+      this.pointer,
     ]);
     this.wormView = new WormView(this, debug, initial.mode === "rampage" ? initial.characterId : undefined);
     this.skillView = new CharacterSkillView(this);

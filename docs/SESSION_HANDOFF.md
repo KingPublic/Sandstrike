@@ -4,7 +4,35 @@ Updated 2026-10-02, latest execution. Root C:/Users/Adrian/Games/Sandstrike.
 Branch phase-b-ready. Work directly in root; no new worktree, branch switch, push
 or merge. User handles remote integration. Communicate in Bahasa Indonesia.
 
-## Latest checkpoint: Rampage worm leap (2026-10-02)
+## Latest checkpoint: mouse controls and UI/control presentation (2026-10-02)
+
+User request: continue the UI/art work, add mouse control for the Shift action
+(right click), keep desktop skill bindings (`Q`, grapple included), and make sure
+mobile buttons exist, are responsive and work.
+
+Implemented: the right mouse button mirrors the mobility action in both modes (worm
+Burst, Hunter Dodge) beside left-click aim/fire, with press latching so a fast click
+is never dropped and no browser context menu on the field. `ui/ControlReadiness.ts`
+now derives boost/ability/primary readiness from existing snapshot cooldowns; both
+HUDs draw filled health/skill/dodge/ammo/Burst gauges and every touch button with a
+cooldown (Burst, skill, reloading fire) draws a readiness ring. The worm return
+countdown is visible again in normal Hunt play (generation/kill counters stay debug),
+which also repaired the stale `tests/e2e/hunt-flow.spec.ts` expectation - it failed
+on the pre-change baseline (confirmed by stashing).
+
+Verified: lint and typecheck clean; 236 domain tests across 76 files pass with the
+heavy 5-run survival gate excluded (including a new readiness suite). Browser:
+`mouse-controls.spec.ts` (right-click Burst + right-click Dodge), `hunt-controls.spec.ts`
+(mobile skill button fires the skill and hides its ring; a phone-viewport Scout grapple
+button reads "Grapple", fires and cools down), `worm-leap.spec.ts`, `rampage-hud.spec.ts`
+(gauges, five viewports), `gameplay-clutter.spec.ts`, `hunt-flow.spec.ts`,
+`arcade-controls.spec.ts`, `movement-controls.spec.ts`, `ascent-boss.spec.ts` - all
+pass with no page errors. Not re-run: the 5 heavy full-run Hunt simulations (movement
+and balance untouched) and physical devices. `huntAllies.test.ts` now has an explicit
+30s timeout because it is a 5400-tick simulation that can exceed the 5s default under
+full-suite load (observed once; it passes in isolation and on repeat runs).
+
+## Previous checkpoint: Rampage worm leap (2026-10-02)
 
 User report: in Rampage the worm's jump was far too weak - even boosting upward it
 could not reach the helicopters - and they asked for a more comfortable game on
@@ -101,14 +129,14 @@ Resolve its SHA using git log; no remote publication.
   No full old Phase B/C E2E rerun; no new review-agent or Superpowers workflow.
 
 ## Exact next action
-The user's newest request (weak Rampage worm jump + mobile/desktop comfort) is
-implemented and committed; it has NOT been playtested by the user yet. On
-"lanjutkan", take the user's verdict on the leap feel, the new Burst sound/dust,
-the full-size touch Burst button and its cooldown ring, and then act on any
-remaining item from PLAYER_FEEDBACK.md (item 6 UI/art quality is still open and
-subjective). Do not restart a generic phase/plan or Superpowers cycle, and do not
-rebalance Hunt because of this change. Passing automated tests does not overrule
-human feedback. Item 6 (UI/art) still needs the user's own judgement.
+The user's newest request (UI/art pass, right-click mouse control for Shift, and
+working mobile skill buttons) is implemented and committed; it has NOT been
+playtested by the user yet. On "lanjutkan", take the user's verdict on the right-click
+Boost/Dodge, the new HUD gauges and touch readiness rings, the visible worm return
+countdown and the mobile skill/grapple buttons, then act on what remains in
+PLAYER_FEEDBACK.md (item 6, art quality, is still subjective and open). Do not
+restart a generic phase/plan or Superpowers cycle, and do not rebalance Hunt because
+of these changes. Passing automated tests does not overrule human feedback.
 
 ## Practical limits
 Procedural stylized visuals, not photorealistic/GOTY production assets. Seed33 is

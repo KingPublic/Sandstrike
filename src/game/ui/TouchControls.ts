@@ -1,4 +1,5 @@
 import type { TouchInput } from "../input/TouchInput";
+import type { ControlReadiness } from "./ControlReadiness";
 import type { ViewportLayoutResult } from "./ViewportLayout";
 
 type TouchAction = "primary" | "boost" | "ability" | "jump";
@@ -16,7 +17,8 @@ export class TouchControls {
   private joystickPointerId: number | undefined;
   private primaryPointerId: number | undefined;
   private boostPointerId: number | undefined;
-  private burstReadiness = 1;
+  private readonly readiness: Record<TouchAction, number> = { primary: 1, boost: 1, ability: 1, jump: 1 };
+  private readonly primaryBinding: "primary" | "ability";
 
   private readonly handleJoystickDown = (event: PointerEvent): void => {
     if (this.joystickPointerId !== undefined) {
@@ -75,12 +77,17 @@ export class TouchControls {
     this.root.append(this.joystick, this.boostButton, this.primaryButton, this.abilityButton, this.jumpButton);
     container.append(this.root);
 
+    this.primaryBinding = arcade && role === "worm" ? "ability" : "primary";
+    this.boostButton.dataset.gauge = "true";
+    this.abilityButton.dataset.gauge = "true";
+    if (role === "hunter") this.primaryButton.dataset.gauge = "true";
+
     this.joystick.addEventListener("pointerdown", this.handleJoystickDown);
     this.joystick.addEventListener("pointermove", this.handleJoystickMove);
     this.joystick.addEventListener("pointerup", this.handleJoystickEnd);
     this.joystick.addEventListener("pointercancel", this.handleJoystickEnd);
     this.joystick.addEventListener("lostpointercapture", this.handleJoystickEnd);
-    this.bindButton(this.primaryButton, arcade && role === "worm" ? "ability" : "primary");
+    this.bindButton(this.primaryButton, this.primaryBinding);
     this.bindButton(this.boostButton, "boost");
     this.bindButton(this.abilityButton, "ability");
     this.bindButton(this.jumpButton, "jump");
@@ -100,15 +107,26 @@ export class TouchControls {
     }
   }
 
-  /** Draws how much of the Burst wait is left, so a tap never feels ignored. */
-  setBurstReadiness(readiness: number): void {
+  /** Draws how much of each action's wait is left, so a tap never feels ignored. */
+  setReadiness(readiness: ControlReadiness): void {
+    this.applyReadiness("boost", readiness.boost);
+    this.applyReadiness(this.primaryBinding, readiness[this.primaryBinding]);
+    this.applyReadiness("ability", readiness.ability);
+  }
+
+  private applyReadiness(action: TouchAction, readiness: number): void {
     const value = Number.isFinite(readiness) ? Math.min(1, Math.max(0, readiness)) : 1;
-    if (this.burstReadiness === value) {
+    const button = this.buttonFor(action);
+    if (this.readiness[action] === value) {
       return;
     }
-    this.burstReadiness = value;
-    this.boostButton.style.setProperty("--burst-ready", value.toFixed(3));
-    this.boostButton.dataset.burstReady = value >= 1 ? "true" : "false";
+    this.readiness[action] = value;
+    button.style.setProperty("--ready", value.toFixed(3));
+    button.dataset.ready = value >= 1 ? "true" : "false";
+  }
+
+  private buttonFor(action: TouchAction): HTMLButtonElement {
+    return action === "primary" ? this.primaryButton : action === "boost" ? this.boostButton : action === "ability" ? this.abilityButton : this.jumpButton;
   }
 
   clearPointers(): void {

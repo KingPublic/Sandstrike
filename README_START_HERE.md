@@ -19,10 +19,20 @@ Read in this order, then check `git status`, recent commits and the actual sourc
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
 
 Current checkpoint (2026-10-02, latest execution): **the approved survival revision,
-pacing pass, presentation pass, the first round of playtest corrections and the
-Rampage worm leap fix are implemented** in the root on phase-b-ready. Latest
-checkpoint commit subject: `fix: strengthen the rampaging worm leap`. Use git
-log/status for the exact SHAs; no push or merge was performed.
+pacing pass, presentation pass, the first round of playtest corrections, the Rampage
+worm leap and the mouse/UI-control pass are implemented** in the root on
+phase-b-ready. Latest checkpoint commit subject: `feat: add mouse boost and control
+readiness gauges`. Use git log/status for the exact SHAs; no push or merge was
+performed.
+
+Mouse and control presentation (latest): the right mouse button mirrors Shift (worm
+Burst in Rampage, Hunter Dodge in Hunt) beside left-click aim/fire, a quick click is
+never dropped and the field suppresses the browser menu. Both HUDs now draw filled
+health/skill/dodge/ammo/Burst gauges, touch buttons with a cooldown (Burst, the active
+skill, reloading fire) draw a readiness ring, and the worm return countdown is visible
+again in normal Hunt play. Desktop skill bindings are unchanged (`Q`, grapple
+included); mobile keeps a working button for every action, including the Scout
+grapple, verified in a browser at a phone viewport.
 
 Rampage leap (latest): holding an upward steer while pressing Burst (Shift, or the
 touch Burst button) now launches the player worm ~275px above the surface instead
@@ -64,19 +74,20 @@ Measured seed33 full runs: Ranger5:59, Siege5:53, Scout5:46, Medic5:58,
 Engineer6:03. These are deterministic input runs, not a human difficulty guarantee;
 Scout grapple was not used. Four baseline runs precede the extra cache placement;
 only failed Engineer was rerun after the focused change. See SURVIVAL_PLAYTHROUGH.json.
-Verification: lint/typecheck pass; 233 domain tests across 75 files pass with the
-heavy 5-run survival gate excluded, plus 2 new browser leap cases
-(`tests/e2e/worm-leap.spec.ts`) and 10 worm-control/HUD browser cases. `dist` is a
-normal root production build. See SURVIVAL_VERIFICATION.md.
+Verification: lint/typecheck pass; 236 domain tests across 76 files pass with the
+heavy 5-run survival gate excluded, plus browser cases for the leap, mouse controls,
+the mobile skill/grapple buttons, HUD gauges at five viewports and worm controls.
+`dist` is a normal root production build. See SURVIVAL_VERIFICATION.md.
 
-Exact next action: playtest the Rampage worm leap and the earlier playtest fixes
-(items 1-5 of `docs/PLAYER_FEEDBACK.md`) in the real game. New this turn: hold
-up + Burst to leap, eat a helicopter, and check the new Burst sound, dust, touch
-button size and cooldown ring on both desktop and a phone viewport. Item 6
-(UI/art quality) is still open and subjective - do not make speculative art
-changes without the user's judgement. Because the scripted full Hunt runs sit at
-the top of the 240-420s band, the boss fight length is the first thing to tune if
-a run feels long. Do not restart a generic plan/review/testing cycle.
+Exact next action: playtest the newest batch in the real game - right-click
+Boost/Dodge on desktop, the new HUD health/ammo/cooldown gauges, the touch readiness
+rings and the mobile skill/grapple buttons - plus the earlier Rampage worm leap
+(hold up + Burst, or right click) and the a9f0615 fixes (items 1-5 of
+`docs/PLAYER_FEEDBACK.md`). Item 6 (art quality) is still open and subjective - do
+not make speculative art changes without the user's judgement. Because the scripted
+full Hunt runs sit at the top of the 240-420s band, the boss fight length is the
+first thing to tune if a run feels long. Do not restart a generic
+plan/review/testing cycle.
 Physical devices, gamepad/audio/haptics, sustained performance and human difficulty
 still need real feedback. Visuals are stylized original procedural art, not photorealism.
 

@@ -2,8 +2,21 @@
 
 ## Unreleased
 
-- Rampage worm leap: holding up while pressing Burst (Shift, or the Burst button)
-  now launches the worm high above the surface instead of only nudging a sprint.
+- Mouse controls: the right mouse button now triggers Boost/Dodge in both modes,
+  so a mouse-only player can sprint-burst the worm or dodge the Hunter without
+  reaching for Shift. A quick click always registers instead of being dropped
+  between two simulation frames, and the browser menu is suppressed on the field.
+  Left click still aims and fires.
+
+- HUD and control presentation: health, skill, dodge, ammo and Burst now draw
+  filled gauges instead of text alone, the touch Burst and skill buttons (and the
+  Hunter fire button while reloading) show a readiness ring, and the worm return
+  countdown ("Maw returns 8.3s") is visible again in normal Hunt play while the
+  worm is away.
+
+- Rampage worm leap: holding up while pressing Burst (Shift, right click, or the
+  Burst button) now launches the worm high above the surface instead of only
+  nudging a sprint.
   The leap peaks about 275px up, which finally reaches the patrol height of enemy
   helicopters, so the worm can surface and bite them out of the sky. Burst now has
   its own rising leap sound and dust on both desktop and touch. Campaign (Hunt)

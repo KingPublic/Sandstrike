@@ -288,6 +288,14 @@ h1 {
 .hud-top { position: absolute; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); display: flex; gap: 10px; align-items: center; }
 .hud-stat, .hud-threat, .hud-cooldowns { border: 1px solid #ffcf843f; border-radius: 12px; padding: 10px 14px; background: #170f1ee6; box-shadow: 0 4px 18px #08061040; }
 .hud-stat { white-space: nowrap; }
+.hud-stat--gauge { display: inline-flex; flex-direction: column; gap: 6px; }
+.hud-chip { display: inline-flex; align-items: center; gap: 8px; }
+.hud-gauge { position: relative; display: inline-block; width: 100%; min-width: 64px; height: 6px; border-radius: 999px; background: rgb(255 255 255 / 12%); box-shadow: inset 0 1px 0 rgb(0 0 0 / 38%); overflow: hidden; }
+.hud-gauge::after { content: ""; position: absolute; inset: 0; width: calc(var(--fill, 1) * 100%); border-radius: inherit; background: linear-gradient(90deg, #ffd894, #ff9d5c); box-shadow: 0 0 8px #ffb46a80; transition: width 90ms linear; }
+.hud-cooldowns .hud-gauge { width: 48px; min-width: 48px; }
+[data-hud-gauge="health"]::after, [data-hunt-gauge="health"]::after { background: linear-gradient(90deg, #9bf0c0, #46c88a); box-shadow: 0 0 8px #7fe6ad73; }
+[data-hunt-gauge="ammo"]::after { background: linear-gradient(90deg, #ffe6a8, #f2a24d); }
+.rampage-hud[data-low-health="true"] [data-hud-gauge="health"]::after { background: linear-gradient(90deg, #ffa89a, #ff6252); box-shadow: 0 0 10px #ff7b6aa8; }
 .hud-combo { position: relative; overflow: hidden; }
 .hud-combo::after { content: ""; position: absolute; bottom: 0; left: 0; height: 3px; width: calc(var(--combo-progress, 0) * 100%); background: #ffd894; }
 .rampage-hud[data-decay="true"] .hud-combo { border-style: dashed; }
@@ -295,7 +303,7 @@ h1 {
 .hud-actions { margin-left: auto; display: flex; gap: 8px; pointer-events: auto; }
 .hud-actions button, .settings-card button { min-width: 48px; min-height: 48px; border: 1px solid #ffce8866; border-radius: 12px; background: #241726f2; color: #fff2d2; font-weight: 750; cursor: pointer; padding: 8px 12px; }
 .hud-threat { position: absolute; left: 50%; top: max(75px, calc(env(safe-area-inset-top) + 75px)); transform: translateX(-50%); white-space: nowrap; }
-.hud-cooldowns { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; gap: 20px; font-size: 13px; white-space: nowrap; }
+.hud-cooldowns { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; max-width: min(94vw, 720px); font-size: 13px; }
 .settings-overlay { position: absolute; z-index: 90; inset: 0; background: #100b18e8; display: grid; place-items: center; padding: 14px; }
 .settings-overlay { position: fixed; z-index: 150; }
 .menu-action { display: block; width: 100%; min-height: 48px; padding: 12px 18px; margin: 10px 0; border: 1px solid #ffca7b70; border-radius: 12px; background: #34202e; color: #fff0c9; font: inherit; font-weight: 750; cursor: pointer; }
@@ -400,14 +408,14 @@ h1 {
   background: rgb(71 33 44 / 82%);
 }
 
-/* Burst readiness ring: empty means the leap is on cooldown. */
-.touch-action--boost::after {
+/* Readiness ring: empty means the action is still on cooldown. */
+.touch-action[data-gauge="true"]::after {
   content: "";
   position: absolute;
   inset: -3px;
   border-radius: 50%;
   background: conic-gradient(
-    rgb(255 232 181 / 70%) calc(var(--burst-ready, 1) * 1turn),
+    rgb(255 232 181 / 70%) calc(var(--ready, 1) * 1turn),
     rgb(255 255 255 / 8%) 0
   );
   mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
@@ -415,7 +423,7 @@ h1 {
   pointer-events: none;
 }
 
-.touch-action--boost[data-burst-ready="false"] {
+.touch-action[data-ready="false"] {
   color: rgb(255 230 193 / 45%);
   border-color: rgb(255 232 181 / 20%);
 }

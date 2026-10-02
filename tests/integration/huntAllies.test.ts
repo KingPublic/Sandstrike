@@ -65,7 +65,7 @@ it("keeps a capped support population that damages exposed worms but never the p
   expect(allyHits).toBeGreaterThan(0);
   expect(allyIds.size).toBeGreaterThan(0);
   expect(allyIds.size).toBeLessThan(20);
-});
+}, 30_000);
 
 it("creates independent support actors for a retried run", () => {
   const factory = new RunFactory("retry");

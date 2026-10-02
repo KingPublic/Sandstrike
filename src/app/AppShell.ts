@@ -21,6 +21,7 @@ import {
   type GameplayControlPort,
 } from "../game/createGame";
 import { TouchControls } from "../game/ui/TouchControls";
+import { controlReadiness } from "../game/ui/ControlReadiness";
 import {
   computeViewportLayout,
   type SafeAreaInsets,
@@ -264,7 +265,7 @@ export class AppShell {
         controller: this.controller,
         debug: configuration.debugAI ?? false,
         onResult: (result) => { this.showResults(result); },
-        onSnapshot: (snapshot) => { this.hud?.update(snapshot, this.settings.reducedMotion); const worm = snapshot.worm; this.touchControls?.setBurstReadiness(worm.burstCooldownTotalSeconds > 0 ? 1 - worm.burstCooldownSeconds / worm.burstCooldownTotalSeconds : 1); },
+        onSnapshot: (snapshot) => { this.hud?.update(snapshot, this.settings.reducedMotion); this.touchControls?.setReadiness(controlReadiness(snapshot)); },
         settings: () => this.settings,
         audio: this.audio,
         onReady: () => {

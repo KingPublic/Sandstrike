@@ -16,6 +16,8 @@ describe("semantic Rampage HUD model", () => {
     expect(model.score).toBe(0);
     expect(model.biteLabel).toContain("0.4");
     expect(model.burstLabel).toContain("1.8");
+    expect(model.healthFraction).toBeCloseTo(0.2, 8);
+    expect(model.burstReadiness).toBe(0);
     expect(model.status).toContain("Low health");
     expect(model.motionLabel).toBe("Reduced motion");
   });

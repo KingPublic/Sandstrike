@@ -341,12 +341,20 @@ Default physical mappings are design baselines and may be tuned during the
 vertical slice:
 
 - **Keyboard/mouse:** keyboard movement; mouse aim for Hunter; primary on mouse
-  or keyboard fallback; nearby keys for Ability and Mobility; `Esc` pauses.
+  or keyboard fallback; **right mouse button mirrors the Mobility action**
+  (worm Burst / Hunter Dodge) so the mouse alone can move, aim, fire and burst;
+  nearby keys for Ability (the Hunter's Skill/grapple stays on `Q`) and Mobility;
+  `Esc` pauses.
 - **Gamepad:** left stick movement/steering, right stick Hunter aim, trigger for
   Primary, face/shoulder buttons for Ability and Mobility, menu button to pause.
 - **Touch:** a left-side movement/steering region and large right-side action
   controls. Hunter aim supports a right-side drag/aim region plus configurable
-  aim assistance; touch controls may swap sides for handedness.
+  aim assistance; touch controls may swap sides for handedness. Every action
+  offered on desktop has a reachable touch button in the same mode: Burst/Dodge
+  and the active skill are always present, and Jump/drop appear in the climbing
+  Hunt. Buttons with a cooldown (Burst, skill, and reloading fire) draw a
+  readiness ring so a tap during a cooldown is visibly explained rather than
+  silently ignored.
 
 Worm steering must feel continuous on every device even if physical gestures
 differ. Touch and gamepad input use analog magnitude where available. Keyboard
