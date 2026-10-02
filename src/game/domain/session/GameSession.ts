@@ -41,6 +41,7 @@ import { RampageRules } from "../modes/RampageRules";
 import type { RunResult } from "../modes/RunResult";
 import type { SessionCommand } from "./SessionCommand";
 import { ascentArena, ascentHunterBalance, type AscentStage } from "../../data/ascentArena";
+import { bossBalance } from "../../data/bossBalance";
 import { AscentWorld } from "../world/AscentWorld";
 import { clampHealth } from "../combat/Health";
 import { HuntSystems } from "../hunt/HuntSystems";
@@ -191,6 +192,9 @@ export class GameSession {
     const support = this.hunt?.alliesFire(worm, this.currentTick);
     commands.push(...(support?.commands ?? []));
     for (const event of support?.events ?? []) this.events.publish(event);
+    const objective = this.hunt?.bossFire(action, worm, this.currentTick);
+    commands.push(...(objective?.commands ?? []));
+    for (const event of objective?.events ?? []) this.events.publish(event);
     for (const contact of this.collisions.query(previousActors, currentActors)) {
       if (contact.kind === "projectile") continue;
       this.events.publish({ type: "contact", tick: this.currentTick, contact });
@@ -255,12 +259,16 @@ export class GameSession {
     if (!life) return [];
     const worm = this.actors.get("worm");
     const before = life.snapshot(this.currentTick).phase;
-    const state = life.step(this.currentTick, { wormDead: worm === undefined || worm.health <= 0, summitReached: false, ended: this.ended !== undefined });
+    const state = life.step(this.currentTick, { wormDead: worm === undefined || worm.health <= 0, summitReached: this.hunt?.huntStage === "boss", ended: this.ended !== undefined });
     const events: DomainEvent[] = [];
     if (before !== "absent" && state.phase === "absent") {
       if (worm) this.actors.update({ ...worm, collision: collisionProfiles.hidden });
       this.hunt?.setWormAlive(false);
       events.push(Object.freeze({ type: "actor-removed" as const, tick: this.currentTick, actorId: "worm", cause: "destroyed" as const, position: worm?.position ?? { x: 0, y: 0 } }));
+    }
+    if (this.hunt?.consumeBossSpawn() === true) {
+      events.push(this.spawnBoss());
+      return Object.freeze(events);
     }
     if (life.consumeSpawnRequest()) {
       const position = freezeVec2(this.wormMovement.initialPosition.x, this.world ? this.world.surfaceY() + 900 : this.wormMovement.initialPosition.y);
@@ -273,8 +281,9 @@ export class GameSession {
     return Object.freeze(events);
   }
 
+  /** The hunt decides the stage; the world only follows it. */
   private currentStage(): AscentStage {
-    return "ascent";
+    return this.hunt?.huntStage ?? "ascent";
   }
 
   /** Terrain every actor follows: the rising hazard surface in ascent runs. */
@@ -298,6 +307,18 @@ export class GameSession {
     const health = clampHealth(hunter.health - amount, hunter.maxHealth);
     this.actors.update({ ...hunter, health });
     return [Object.freeze({ type: "damage-applied" as const, tick: this.currentTick, sourceId: "hazard", targetId: "hunter", abilityId: "hazard.burial", amount: hunter.health - health, tags: Object.freeze(["hazard"]), position: hunter.position })];
+  }
+
+  /** Summit entrance: a fresh, warned, much stronger boss replaces the arena worm. */
+  private spawnBoss(): DomainEvent {
+    const summitY = this.world?.snapshot().summit.y ?? 0;
+    const position = freezeVec2(0, summitY + bossBalance.approachDepth + bossBalance.depthRequirement);
+    this.locomotion.reset({ position, direction: this.wormMovement.initialDirection, speed: this.wormMovement.cruiseSpeed }, this.currentTick);
+    const worm = this.actors.get("worm");
+    if (worm) this.actors.update({ ...worm, health: bossBalance.bossHealth, maxHealth: bossBalance.bossHealth, position, velocity: freezeVec2(this.wormMovement.initialDirection.x * this.wormMovement.cruiseSpeed, this.wormMovement.initialDirection.y * this.wormMovement.cruiseSpeed), direction: freezeVec2(this.wormMovement.initialDirection.x, this.wormMovement.initialDirection.y), collision: collisionProfiles.worm, lifecycle: "active" });
+    this.hunt?.setWormAlive(true);
+    this.hunt?.beginBoss();
+    return Object.freeze({ type: "boss-entrance" as const, tick: this.currentTick, position });
   }
 
   snapshot(): SessionSnapshot {

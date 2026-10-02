@@ -23,6 +23,12 @@ export const HuntHudModel = {
       danger: gap >= 0 ? `Sand gap ${String(gap)}` : `BURIED ${String(-gap)}`,
       ammo,
       worm: wormLifeText(snapshot),
+      boss: h.boss.stage === "boss"
+        ? `Boss ${String(Math.max(0, Math.ceil(h.boss.health)))} / ${String(h.boss.maxHealth)}${h.boss.shieldActive ? " · SHIELD" : h.boss.shieldPhase === "windup" ? " · shield charging" : ""}`
+        : `Summit ${String(Math.max(0, 1600 - Math.round(-world.surfaceY)))} away`,
+      rpg: h.rpg.owned
+        ? h.rpg.reloading ? "RPG reloading" : `RPG ${String(h.rpg.rockets)} / 2 · LMB fire`
+        : h.rpg.inCrateZone ? "RPG crate · picking up" : h.rpg.crateReady ? "RPG crate ready · reach the summit" : "RPG crate spent",
       skill: "Skill ready · Q",
       dodge,
       tracking: h.tracking.text,

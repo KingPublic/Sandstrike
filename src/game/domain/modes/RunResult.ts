@@ -13,5 +13,6 @@ export interface HuntRunResult {
   readonly trapTriggers: number; readonly breachInterruptions: number;
   readonly shotsFired: number; readonly shotsHit: number; readonly exposureWindowsUsed: number;
   readonly hunterHealth: number; readonly relayIntegrity: number; readonly eligibleForRecords: boolean;
+  readonly bossDefeated?: boolean;
 }
 export type RunResult = RampageRunResult | HuntRunResult;

@@ -292,3 +292,35 @@ Status: user-requested direction and boss clarification recorded. Concrete desig
 is proposed for written review; no product implementation in this checkpoint.
 The plan must preserve shared simulation, original IP, root workflow and efficient
 verification. Existing systems and historical records are migrated, not discarded.
+
+## D-020 - Survival ascent implementation rulings (2026-10-02)
+
+Decision:
+Implement the approved survival revision inside the existing root checkout and
+shared simulation, with these concrete rulings:
+- A Hunt run without a legacy relay fixture id is the ascent; the historical relay
+  scenarios remain explicit fixtures (`hunt-relay`, `hunt-victory`, `hunt-trap`,
+  `hunter-defeat`, `relay-defeat`) and keep their old physics.
+- `AscentWorld` owns the world clock: a hazard surface that rises 5px/s from the
+  base outpost, the authored ledge route and the summit bounds; every actor uses it
+  as the terrain profile, so sand motion is shared rather than special-cased.
+- Start the hazard at y=200 (below the base platform) so the climb has a fair grace
+  period instead of instant burial.
+- Burial damage is applied by `GameSession` as a `hazard` source rather than through
+  `CombatSystem`, because CombatSystem requires a live source actor.
+- The ascent worm is one AI actor at a time: an ordinary kill hides it (no collision,
+  no AI, no exposure) for 600 ticks and the next worm returns stronger, capped at
+  five generations. The boss reuses the arena worm id so exposure, rifle and ally
+  fire need no duplicate code paths; only its stats, AI depth and skill change.
+- Allies are ascent-only, bounded (two ground, one air) and can never target the
+  player or take the objective; the summit crate is player-only.
+- The RPG is the objective weapon with finite rockets restocked at the crate; the
+  starter rifle remains usable, and victory is exactly one boss defeat result.
+
+Why:
+Keeps one simulation, one terminal boundary and stable interfaces while delivering
+the user-requested experience; historical scenarios stay comparable for regression.
+
+Status: implemented and locally verified (197 unit/integration tests, lint/typecheck
+green, root browser cases for menu, controls, kill/return, warning and boss). Human
+feel, the 5-6 minute run target and physical devices remain open.

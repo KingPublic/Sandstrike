@@ -6,6 +6,16 @@ Implementation checkpoint (2026-10-02): Phase B and the Phase C two-role prototy
 are implemented. Actual evidence and remaining release gates are recorded in
 `docs/PHASE_C_VERIFICATION.md`; provisional feel/performance targets remain pending.
 
+Survival revision checkpoint (2026-10-02): the user-approved redesign in
+`docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md` supersedes the
+relay-defense Hunt objective. Implemented so far: compact multi-theme menus, the
+arcade worm profile with automatic mouth feeding and Sandguard, the vertical Hunter
+ascent with a rising hazard and platforms, 10-second escalating worm returns, two
+allied survivors plus a support helicopter, and the summit boss fight with the
+objective RPG. Sections of this document describing relay defense as Hunt's main
+objective are now historical fixture behaviour, not the default mode. The ten-kit
+roster, selection UI and revised record migration are still pending.
+
 Project Sandstrike is a working title.
 
 Evidence boundary: verified reference observations, confidence, and access limits

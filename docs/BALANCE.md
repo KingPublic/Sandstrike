@@ -246,6 +246,24 @@ Evidence: advanced kit/contact checks passed; two 18000-tick replays identical
 with all bands, finite bounded motion, caps and zero event overflow. Replay
 runtime on this host ~13 seconds, so this test uses a specific 30-second limit.
 
+## Phase D summit boss hypotheses (2026-10-02)
+
+Status: **provisional; deterministic and browser evidence, no human timing yet**.
+Summit entry freezes the hazard at least 420px below the summit arena and starts
+one 600 HP boss with a 90-tick entrance warning. Boss immunity cycles: 30-tick
+visible windup, 180-tick (3s) immunity, 900-tick cooldown; immunity cannot revive
+the boss, freeze timers or bypass the existing per-hit worm protection. Objective
+RPG: 80 damage, 1400px range, 72-tick cadence, two rockets, 120-tick reload,
+restocked when the player stands in the 180px-wide summit crate zone every 240
+ticks. The starter rifle stays at 8 damage/30-tick cadence. The boss approaches
+260px under the frozen surface instead of the ascent's 760px so its breach arc
+still reaches the summit arena. Victory bonus 2000 plus 2 per Hunter HP. Evidence:
+7 boss tests (transition, absent-worm summit entry, exact shield ticks, RPG
+magazine/reload/restock, shield-blocked objective fire, one-result victory rules,
+21600-tick finite run), 197 total tests, and the ascent-boss browser case. The
+1-2 minute fight length and the 5-6 minute whole-run target remain unverified; the
+existing per-hit worm immunity can consume late RPG shots and needs playtest tuning.
+
 ## Phase D support hypotheses (2026-10-02)
 
 Bounded support: at most two ground allies and one helicopter, replaced every 420

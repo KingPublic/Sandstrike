@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Summit boss fight: reaching the summit freezes the rising hazard, cancels any
+  pending worm return and introduces one warned 600 HP armored boss (visual
+  presence enlarged, logical hitboxes unchanged) with a windup/3s-immunity
+  cycle. The rooftop crate hands the player a high-damage RPG (80 damage, two
+  rockets, finite cadence) and restocks it so a missed shot never removes the win
+  path. A boss defeat wins the run once; a normal worm kill still does not win.
+  HUD adds a boss bar, shield state, height/hazard gap and RPG readiness.
 - Ascent support: two survivor allies and one helicopter join Hunt with original
   friendly silhouettes, animated rotors and visible aiming lines. Ground allies
   climb toward platforms above the rising hazard and only fire at exposed worm

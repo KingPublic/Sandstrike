@@ -13,6 +13,10 @@ export class WormView {
   private readonly body: Phaser.GameObjects.Graphics;
   private previous: WormMotionSnapshot | undefined;
   private current: WormMotionSnapshot | undefined;
+  private radiusScale = 1;
+
+  /** Logical hitboxes stay exact; only the drawn presence changes for the boss. */
+  private radius(index: number, count: number): number { return segmentRadius(index, count) * this.radiusScale; }
 
   constructor(
     scene: Phaser.Scene,
@@ -21,7 +25,8 @@ export class WormView {
     this.body = scene.add.graphics().setDepth(30);
   }
 
-  render(snapshot: WormMotionSnapshot, alpha: number, surfaceOnly = false, shielded = false, visible = true): void {
+  render(snapshot: WormMotionSnapshot, alpha: number, surfaceOnly = false, shielded = false, visible = true, boss = false): void {
+    this.radiusScale = boss ? 1.35 : 1;
     if (!visible) {
       this.body.clear();
       this.previous = undefined;
@@ -47,7 +52,7 @@ export class WormView {
     this.drawBody(poses, current);
     if (shielded) {
       this.body.lineStyle(2.5, 0x9beaf0, .85);
-      for (const [index, pose] of poses.entries()) this.body.strokeCircle(pose.position.x, pose.position.y, segmentRadius(index, poses.length) + 7);
+      for (const [index, pose] of poses.entries()) this.body.strokeCircle(pose.position.x, pose.position.y, this.radius(index, poses.length) + 7);
     }
     if (this.debug) {
       this.drawDebug(poses);
@@ -61,9 +66,9 @@ export class WormView {
   private drawSurfaceBody(poses: readonly RenderPose[], snapshot: WormMotionSnapshot): void {
     for (let index = poses.length - 1; index >= 0; index--) {
       const pose = poses[index]; if (!pose) continue;
-      const radius = segmentRadius(index, poses.length), next = poses[index - 1];
+      const radius = this.radius(index, poses.length), next = poses[index - 1];
       if (next) {
-        const n = { x: -pose.tangent.y * radius, y: pose.tangent.x * radius }, nr = segmentRadius(index - 1, poses.length), m = { x: -next.tangent.y * nr, y: next.tangent.x * nr };
+        const n = { x: -pose.tangent.y * radius, y: pose.tangent.x * radius }, nr = this.radius(index - 1, poses.length), m = { x: -next.tangent.y * nr, y: next.tangent.x * nr };
         const points = clipAboveSurface([{ x: pose.position.x + n.x, y: pose.position.y + n.y }, { x: next.position.x + m.x, y: next.position.y + m.y }, { x: next.position.x - m.x, y: next.position.y - m.y }, { x: pose.position.x - n.x, y: pose.position.y - n.y }]);
         if (points.length >= 3) this.body.fillStyle(0x4a1f27).fillPoints(points.map(p => new Phaser.Math.Vector2(p.x, p.y)), true);
       }
@@ -83,7 +88,7 @@ export class WormView {
       if (!pose) {
         continue;
       }
-      const radius = segmentRadius(index, poses.length);
+      const radius = this.radius(index, poses.length);
       this.body.fillEllipse(
         pose.position.x + 8,
         pose.position.y + 13,
@@ -106,8 +111,8 @@ export class WormView {
       this.drawConnector(
         pose,
         next,
-        segmentRadius(index, poses.length),
-        segmentRadius(index - 1, poses.length),
+        this.radius(index, poses.length),
+        this.radius(index - 1, poses.length),
       );
     }
 
@@ -116,7 +121,7 @@ export class WormView {
       if (!pose) {
         continue;
       }
-      const radius = segmentRadius(index, poses.length);
+      const radius = this.radius(index, poses.length);
       const heat = 0.78 + Math.sin(snapshot.tick * 0.11 - index * 0.72) * 0.08;
       this.body.fillStyle(0x4a1f27, 1);
       this.body.fillCircle(pose.position.x, pose.position.y, radius + 2.5);
@@ -240,7 +245,7 @@ export class WormView {
   private drawDebug(poses: readonly RenderPose[]): void {
     this.body.lineStyle(1, 0x5ffff2, 0.55);
     poses.forEach((pose, index) => {
-      const radius = segmentRadius(index, poses.length);
+      const radius = this.radius(index, poses.length);
       this.body.strokeCircle(pose.position.x, pose.position.y, radius);
       this.body.lineBetween(
         pose.position.x,

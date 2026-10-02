@@ -14,6 +14,24 @@ export interface SnareState { readonly phase: "none" | "arming" | "armed" | "tri
 export interface SnareEvent { readonly type: "snare-triggered"; readonly tick: number; readonly position: Vec2 }
 export interface SnareStep { readonly state: SnareState; readonly events: readonly SnareEvent[]; readonly effects?: WormMotionEffects }
 export interface ExposedRegion { readonly position: Vec2; readonly radius: number; readonly index: number }
+export interface BossState {
+  readonly stage: "ascent" | "boss";
+  readonly warningTicks: number;
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly shieldPhase: "idle" | "windup" | "active";
+  readonly shieldActive: boolean;
+  readonly shieldTicksRemaining: number;
+}
+
+export interface RpgHudState {
+  readonly owned: boolean;
+  readonly rockets: number;
+  readonly reloading: boolean;
+  readonly crateReady: boolean;
+  readonly inCrateZone: boolean;
+}
+
 export interface AllyState {
   readonly id: string;
   readonly kind: "ally.ground" | "ally.air";

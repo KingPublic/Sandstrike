@@ -1,16 +1,59 @@
 ﻿# SESSION HANDOFF - Project Sandstrike
 
-Updated: 2026-10-02. Active root: C:/Users/Adrian/Games/Sandstrike.
+Updated: 2026-10-02 (later session). Active root: C:/Users/Adrian/Games/Sandstrike.
 Branch: phase-b-ready. No extra worktrees. User handles remote push/merge.
+
+## Checkpoint 2026-10-02: Survival Foundation + Full Ascent (pause for playtest)
+
+The user asked to stop after Survival Ascent Task 4 so they can playtest before the
+roster work. Commits in order: `287afc2` (compact themes, arcade breaches,
+automatic feeding, Sandguard), `ef34688` (vertical ascent world/platforms/hazard),
+`ee44d17` (escalating worm returns and moving-surface pursuit), `59e9589` (bounded
+allied survivors and support helicopter), and the final `feat: add rooftop RPG boss
+fight` commit for the summit batch. Verify the last one with `git log`.
+
+Implemented in this batch:
+- Compact viewport-bound menus with a frozen per-run environment choice and original
+  desert/ruins/frozen palettes (`src/game/data/themes.ts`).
+- Arcade worm profile, automatic swept-mouth feeding and the Space Sandguard skill.
+- `AscentWorld` rising hazard (5px/s from y=200, frozen at the summit stage), an
+  authored 17-ledge route, vertical Hunter locomotion with swept one-way landings
+  and drop-through, and jump/drop inputs on keyboard, gamepad and touch.
+- Worm lives: an ordinary kill hides the worm for 600 ticks, then a stronger one
+  returns (recovery 120 to 48 ticks over five capped generations).
+- Bounded support: two allied survivors that climb above the hazard and one
+  helicopter, with original friendly silhouettes, rotors and aiming lines.
+- Summit boss: one 600 HP boss with a 90-tick entrance warning, a 30/180/900-tick
+  shield cycle, plus the objective RPG (80 damage, two rockets, crate restock) and a
+  single boss-defeat victory.
+
+Verified in this checkpoint: 197 unit/integration tests pass; lint and typecheck
+clean; browser cases pass for menus (3), arcade controls (2), Hunt controls at
+1440x900/915x412/844x390/1024x768 (4), kill/return (1), natural moving-surface
+breach warning (1) and the summit boss (1). Captures are in `docs/verification/`.
+Production build was verified through the e2e build and `npm run test:e2e` runs.
+
+Known limits (do not overclaim): the 5-6 minute whole-run target, the 1-2 minute
+boss length, human feel of the climb, physical phone/tablet/gamepad, audio/haptics
+and long-match balance remain unverified. The existing per-hit worm immunity can
+swallow late RPG shots (recorded in `docs/BALANCE.md`). The ten-kit roster,
+character selection and revised record buckets are not implemented yet, so ascent
+runs are not yet separated from legacy records.
+
+Exact next action: run `npm run verify` plus the ascent browser cases if the last
+tree state was not verified, playtest the ascent, then implement **Survival Roster**
+(`docs/superpowers/plans/2026-10-02-survival-roster.md`): ten kits and strategies,
+selection UI, save v3 migration with `legacyRecords`, then the whole-revision
+verification and documentation refresh.
 
 ## Active redesign work (2026-10-02)
 
-User explicitly requested immediate plan execution without another review pause.
-Survival Foundation tasks1-3 are in progress, changes uncommitted. Menu/theme
-checks passed; arcade feeding/movement/skill integration is awaiting final checks.
-Resume from README_START_HERE.md, not the historical Phase C completion below.
+Resolved: Survival Foundation and the complete Ascent batch are implemented and
+committed; see the checkpoint above. Remaining redesign work is Survival Roster
+(ten kits, selection, save v3, whole-revision verification). Prefer
+README_START_HERE.md over the historical Phase C material below.
 
-## Current checkpoint
+## Earlier Phase C checkpoint (historical)
 
 Phase A and Phase B are complete. Phase C two-role prototype is implemented:
 Ranger/Hunt plus vehicle/aerial response and Rampage bands 0-3. Product checkpoint

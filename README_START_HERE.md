@@ -17,13 +17,18 @@ Read in this order, then check `git status`, recent commits and the actual sourc
    `docs/DECISIONS.md`, `docs/BALANCE.md`, `docs/ASSET_LICENSES.md`, and
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
 
-Current checkpoint: Phase C prototype remains the baseline. Survival Foundation is
-in progress in the root: compact menu and three themes passed browser checks;
-arcade movement, passive feeding and Sandguard are being integrated. On 2026-10-02
-the user explicitly authorized immediate execution of the existing approved plan,
-without another plan-review pause. Continue inline with focused verification.
-Exact next action: finish and verify Survival Foundation Tasks 2-3, then execute
-Survival Ascent, followed by Survival Roster. Do not replay old Phase A/B/C plans.
+Current checkpoint (2026-10-02, later session): **Survival Foundation and the whole
+Survival Ascent batch are implemented and committed** in the root. Commits:
+`287afc2` compact themes/arcade feeding/Sandguard, `ef34688` vertical ascent,
+`ee44d17` escalating worm returns, `59e9589` Hunt squad and helicopter, plus the
+rooftop RPG boss fight. Evidence: 197 unit/integration tests pass, lint/typecheck
+green, browser cases pass for menus, controls at four viewports, kill/return,
+warning and the summit boss (`docs/verification/survival-boss.png`).
+Working tree at this checkpoint: the boss-task changes are uncommitted (see
+`git status`); commit them before starting new work if that was not done yet.
+The user asked to pause here after Ascent Task 4 so they can playtest.
+Exact next action: playtest the ascent, then execute **Survival Roster** (ten kits,
+selection + save v3 records, final verification). Do not replay old Phase A/B/C plans.
 
 Required target: 5 worms + 5 Hunters, unique active skills, automatic mouth feeding,
 agile/high breaches, compact desktop menu, allied Hunt NPCs/helicopters, climbable
@@ -51,21 +56,26 @@ Ranger Hunt and completes Rampage response bands 0-3.
 ## Play the current slice
 
 From the project root, run `npm ci` once, then `npm run dev` and open the local
-URL printed by Vite. Choose Enter desert → Play → Rampage or Hunt → Start.
+URL printed by Vite. Choose Enter desert → Play → Rampage or Hunt → Start. The
+environment selector (desert outpost / urban ruins / frozen facility) is on the
+mode screen and is frozen for the run.
 
-- Keyboard: WASD or arrow keys steer, Space activates Sandguard, Shift bursts, Escape pauses.
-- Touch: drag the joystick; use Sandguard and Burst with another finger. Landscape
-  is required during play; portrait safely pauses the run.
-- Gamepad: left stick steers, right trigger activates Sandguard, right bumper bursts, Start
-  pauses. The shared action adapter is tested; physical hardware remains unverified.
+- Rampage: WASD or arrow keys steer, Space activates Sandguard (3s immunity), Shift
+  bursts, Escape pauses. Food is eaten automatically through the mouth.
+- Hunt (survival ascent): A/D move, Space or W jump, S drops through a platform,
+  mouse aims and fires, Q uses the character skill, Shift dodges, R reloads.
+  Climb the outpost route above the rising sand, survive the worms (each ordinary
+  kill buys 10 seconds before a stronger worm returns), reach the rooftop crate for
+  the RPG and finish the boss at the summit.
+- Touch: joystick plus Jump, Fire/Aim drag, Skill and Dodge (Rampage: Sandguard and
+  Burst). Landscape is required during play; portrait safely pauses the run.
+- Gamepad: left stick steers/moves, right stick aims, RT fires, LT reloads, RB
+  boost/dodge, LB skill, A jumps and B drops through. The shared action adapter is
+  tested; physical hardware remains unverified.
 - Pause offers Resume, Restart and End run. Results offers Retry, mode selection
   and the main menu. Restart/end/reset require explicit confirmation.
 - Settings control feedback, volume, touch handedness/opacity and accessibility.
   Muted play retains critical text/shape cues. There is no music track yet.
-- Hunt: WASD/arrows move, mouse aims, click/Space fires, Q places or recovers a
-  snare, Shift dodges, R/Control reloads. Touch uses independent movement,
-  captured Fire/Aim drag, Snare and Dodge. Gamepad uses both sticks, RT fire,
-  LT reload, LB snare, RB dodge. Protect the relay and shoot exposed worm regions.
 
 Burrow, turn upward to breach, strike prey for healing and chain varied targets.
 Infantry, armored vehicles and aerial threats lock aim before firing. Each new

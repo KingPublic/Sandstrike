@@ -132,7 +132,7 @@ export class GameplayScene extends Phaser.Scene {
     }
 
     if (frame.snapshot.world) this.worldView?.updateWorld(frame.snapshot.world);
-    this.wormView.render(frame.snapshot.worm, frame.report.alpha, frame.snapshot.mode === "hunt" && frame.snapshot.hunt?.tracking.exactTrace === undefined, frame.snapshot.arcade && frame.snapshot.abilities.some(skill => skill.active), frame.snapshot.wormLife?.phase !== "absent");
+    this.wormView.render(frame.snapshot.worm, frame.report.alpha, frame.snapshot.mode === "hunt" && frame.snapshot.hunt?.tracking.exactTrace === undefined, (frame.snapshot.arcade === true && frame.snapshot.abilities.some(skill => skill.active)) || frame.snapshot.hunt?.boss.shieldActive === true, frame.snapshot.wormLife?.phase !== "absent", frame.snapshot.hunt?.boss.stage === "boss");
     this.huntCues?.render(frame.snapshot);
     this.cameraController.update(frame.snapshot, deltaMs / 1000);
     const lifecycle = this.lifecycle();

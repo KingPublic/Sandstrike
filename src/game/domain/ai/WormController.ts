@@ -19,14 +19,18 @@ export class WormController {
   private recoverTicks = 120;
   private decisionTicks = 12;
   private breachBoost = false;
+  private approachDepth = 960;
+  private depthRequirement = 760;
   constructor(private readonly movement: WormMovementConfig, private readonly terrain: TerrainProfile, private readonly surfaceRisePerSecond = 0) {}
 
   /** Escalation from the life director: shorter recovery and cadence, capped. */
-  setAggression(generation: number): void {
+  setAggression(generation: number, tuning: Readonly<{ approachDepth?: number; depthRequirement?: number }> = {}): void {
     const profile = aggressionProfile(generation);
     this.recoverTicks = profile.recoverTicks;
     this.decisionTicks = profile.decisionTicks;
     this.breachBoost = profile.breachBoost;
+    this.approachDepth = tuning.approachDepth ?? 960;
+    this.depthRequirement = tuning.depthRequirement ?? 760;
   }
 
   /** Fresh worm life keeps the escalation but starts from a clean behaviour state. */
@@ -54,7 +58,7 @@ export class WormController {
         if (bounds && this.target.x > bounds.right - 600) this.side = 1;
         else if (bounds && this.target.x < bounds.left + 600) this.side = -1;
         this.transition("reposition", tick);
-      } else if (this.state === "reposition" && Math.abs(head.x - (this.target.x - this.side * 260)) < 120 && head.y > surfaceY + 760) this.transition("stalk", tick);
+      } else if (this.state === "reposition" && Math.abs(head.x - (this.target.x - this.side * 260)) < 120 && head.y > surfaceY + this.depthRequirement) this.transition("stalk", tick);
       else if (this.state === "stalk") {
         const crossingX = predictBreachX(p.self, { x: this.target.x, y: Math.min(surfaceY - 260, this.target.y - 160) }, this.movement, this.terrain, this.surfaceRisePerSecond);
         if (crossingX !== undefined) {
@@ -68,8 +72,8 @@ export class WormController {
     let steeringTarget: Vec2;
     if (this.state === "breach" || this.state === "accelerate") steeringTarget = { x: this.target.x, y: Math.min(surfaceY - 260, this.target.y - 160) };
     else if (this.state === "evade") steeringTarget = { x: this.target.x + this.side * 320, y: surfaceY + 200 };
-    else if (this.state === "recover" || this.state === "roam") steeringTarget = { x: this.target.x - this.side * 360, y: surfaceY + 1200 };
-    else steeringTarget = { x: this.target.x - this.side * 260, y: surfaceY + 960 };
+    else if (this.state === "recover" || this.state === "roam") steeringTarget = { x: this.target.x - this.side * 360, y: surfaceY + this.approachDepth + 240 };
+    else steeringTarget = { x: this.target.x - this.side * 260, y: surfaceY + this.approachDepth };
     const bounds = this.movement.worldBounds;
     if (bounds && this.state !== "accelerate" && this.state !== "breach") steeringTarget = { ...steeringTarget, x: Math.max(bounds.left + 200, Math.min(bounds.right - 200, steeringTarget.x)) };
     const dx = steeringTarget.x - head.x, dy = steeringTarget.y - head.y, length = Math.hypot(dx, dy) || 1;

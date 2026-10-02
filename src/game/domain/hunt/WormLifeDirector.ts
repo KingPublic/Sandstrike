@@ -37,19 +37,19 @@ export class WormLifeDirector {
 
   step(tick: number, input: WormLifeInput): WormLifeSnapshot {
     if (!Number.isSafeInteger(tick) || tick < 0) throw new RangeError("Worm life tick must be a non-negative safe integer.");
-    if (input.summitReached || input.ended) this.arrived = this.arrived || input.summitReached;
-    if (!input.ended) {
-      if (input.summitReached) {
-        this.phase = "boss";
-      } else if (this.phase === "alive" && input.wormDead) {
-        this.phase = "absent";
-        this.kills += 1;
-        this.returnTick = tick + WORM_RETURN_TICKS;
-      } else if (this.phase === "absent" && tick >= this.returnTick) {
-        this.phase = "alive";
-        this.generation = Math.min(WORM_GENERATION_CAP, this.generation + 1);
-        this.spawnRequested = true;
-      }
+    if (input.ended) return this.snapshot(tick);
+    if (this.phase === "alive" && input.wormDead) {
+      this.phase = "absent";
+      this.kills += 1;
+      this.returnTick = tick + WORM_RETURN_TICKS;
+    }
+    // Summit entry replaces the worm with the boss and cancels any pending return.
+    if (input.summitReached) {
+      this.phase = "boss";
+    } else if (this.phase === "absent" && tick >= this.returnTick) {
+      this.phase = "alive";
+      this.generation = Math.min(WORM_GENERATION_CAP, this.generation + 1);
+      this.spawnRequested = true;
     }
     return this.snapshot(tick);
   }

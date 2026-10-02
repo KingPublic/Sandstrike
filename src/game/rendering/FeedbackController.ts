@@ -47,6 +47,8 @@ function cueFor(event: DomainEvent): Pick<FeedbackCommand, "label" | "shape" | "
     case "worm-reentered": return { label: "Burrow", shape: "ring", color: 0xc98961, tone: 130 };
     case "response-warning": return { label: `Response ${String(event.band)} incoming`, shape: "diamond", color: 0xffbd78, tone: 330 };
     case "response-band-changed": return { label: `Response ${String(event.band)} active`, shape: "shield", color: 0xffbd78, tone: 390 };
+    case "rpg-fired": return { label: "RPG", shape: "diamond", color: 0xffc46b, tone: 300 };
+    case "boss-entrance": return { label: "Boss incoming", shape: "shield", color: 0xff9d6b, tone: 160 };
     case "worm-defeated": return { label: "Defeated", shape: "cross", color: 0xff756b, tone: 80 };
     case "low-health-warning": return { label: "Low health · consume prey", shape: "cross", color: 0xff756b, tone: 120 };
     default: return undefined;

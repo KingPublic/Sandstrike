@@ -2,6 +2,7 @@ import { GameSession } from "../domain/session/GameSession";
 import { arcadeMovementBalance } from "../data/arcadeMovementBalance";
 import { movementBalance } from "../data/movementBalance";
 import { FlatTerrainProfile } from "../domain/terrain/FlatTerrainProfile";
+import { ascentArena } from "../data/ascentArena";
 import { spawnActor } from "../data/actors";
 import type { ThemeId } from "../data/themes";
 
@@ -18,7 +19,10 @@ export class RunFactory {
       const fixture = configuration.fixtureId;
       const legacyRelay = fixture !== undefined && LEGACY_RELAY_FIXTURES.has(fixture);
       if (configuration.ascent ?? !legacyRelay) {
-        const hunter = spawnActor("hunter", "actor.hunter", { x: -180, y: -16 });
+        // "ascent-boss" starts the Hunter on the summit so the boss stage and the
+        // objective crate are reachable in deterministic runs and browser checks.
+        const atSummit = fixture === "ascent-boss";
+        const hunter = spawnActor("hunter", "actor.hunter", atSummit ? { x: 0, y: ascentArena.summitY - 16 } : { x: -180, y: -16 });
         // "ascent-buried" starts the hazard at the base so burial damage is deterministic.
         // "ascent-kill" starts the worm at 1 HP with a lethal fixture shot so the
         // remove/return cycle is reachable in deterministic runs and browser checks.

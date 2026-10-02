@@ -789,3 +789,20 @@ sector through TrackingSystem. It does not drive or replace live movement.
 Preparation/recovery routes leave room for the cruise-speed turn radius; a locked
 upward approach and 60-tick boost deadline keep each natural crossing announced.
 Exogenous snare lift may invalidate the original route, as an intentional interrupt.
+
+## Survival ascent implementation (2026-10-02)
+
+Status: implemented; human feel and the roster remain open.
+
+The survival revision adds focused modules rather than new scenes: `AscentWorld`
+(world clock, rising hazard, platforms, summit bounds), `PlatformContacts`
+(swept one-way landings, drop-through ignore, grapple blocking), vertical
+`HunterLocomotion`, `WormLifeDirector` (alive/absent/boss with capped escalation),
+`AlliedHunterController` and `SupportHelicopterController` (bounded support),
+`HuntStageDirector` (single summit transition), `BossSkillController` (windup /
+immunity / cooldown) and `RpgSystem` (objective weapon with crate restock).
+`HuntSystems` composes hunter, worm AI, allies, stage and the objective weapon;
+`GameSession` owns the world clock, burial damage, worm lives and the boss spawn.
+Snapshots expose `world`, `wormLife`, `hunt.boss`, `hunt.rpg` and `hunt.allies`,
+and rendering owns no timers. Relay-defense compositions remain available through
+the legacy fixtures.
