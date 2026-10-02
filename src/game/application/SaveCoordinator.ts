@@ -40,21 +40,25 @@ export class SaveCoordinator {
     } catch { this.data = loaded ?? defaultSaveData(); this.diagnostics.push("Saving unavailable. Changes are kept for this session."); this.fallback(); }
     return Object.freeze({ ...this.status(), data: this.data });
   }
+  updateSelection(patch: Partial<SaveData["selection"]>): void { this.persist(validateSave({ ...this.data, selection: { ...this.data.selection, ...patch } })); }
   updateSettings(patch: Partial<PresentationSettings>): void { this.persist(validateSave({ ...this.data, settings: { ...this.data.settings, ...patch } })); }
   acceptRunResult(value: RunResult): Readonly<{ accepted: boolean; newRecord: boolean }> {
     const result = validateRunResult(value);
     if (this.accepted.has(result.sessionId)) return Object.freeze({ accepted: false, newRecord: false });
     this.accepted.add(result.sessionId);
+    const legacy = result.gameplayVersion !== 3;
+    const records = legacy ? this.data.legacyRecords : this.data;
+    const persistRecords = (patch: Partial<Pick<SaveData, "rampage" | "hunt">>, mode: "rampage" | "hunt") => { this.persist(validateSave({ ...this.data, ...(legacy ? { legacyRecords: { ...this.data.legacyRecords, ...patch } } : patch), onboarding: { ...this.data.onboarding, [`${mode}Seen`]: true } })); };
     if (result.mode === "hunt") {
       if (!result.eligibleForRecords) return Object.freeze({ accepted: true, newRecord: false });
-      const newRecord = result.score > this.data.hunt.bestScore;
-      const previousVictory = this.data.hunt.bestVictory;
+      const newRecord = result.score > records.hunt.bestScore;
+      const previousVictory = records.hunt.bestVictory;
       const victory = result.reason === "victory" && (!previousVictory || result.score > previousVictory.score || result.score === previousVictory.score && result.durationSeconds < previousVictory.durationSeconds) ? result : previousVictory;
-      this.persist(validateSave({ ...this.data, hunt: { bestScore: newRecord ? result.score : this.data.hunt.bestScore, bestRun: newRecord ? result : this.data.hunt.bestRun, bestVictory: victory }, onboarding: { ...this.data.onboarding, huntSeen: true } }));
+      persistRecords({ hunt: { bestScore: newRecord ? result.score : records.hunt.bestScore, bestRun: newRecord ? result : records.hunt.bestRun, bestVictory: victory } }, "hunt");
       return Object.freeze({ accepted: true, newRecord });
     }
-    const newRecord = result.score > this.data.rampage.bestScore;
-    this.persist(validateSave({ ...this.data, rampage: newRecord ? { bestScore: result.score, bestRun: result } : this.data.rampage, onboarding: { ...this.data.onboarding, rampageSeen: true } }));
+    const newRecord = result.score > records.rampage.bestScore;
+    persistRecords({ rampage: newRecord ? { bestScore: result.score, bestRun: result } : records.rampage }, "rampage");
     return Object.freeze({ accepted: true, newRecord });
   }
   resetConfirmed(confirmed = false): boolean { if (!confirmed) return false; this.accepted.clear(); this.diagnostics.length = 0; this.repository = this.persistentRepository; this.memoryOnly = false; this.persist(defaultSaveData(), true); return true; }
@@ -74,4 +78,4 @@ export class SaveCoordinator {
   }
   private fallback(): void { this.memoryOnly = true; const memory = new MemorySaveRepository(); memory.replace(this.keys.primary, JSON.stringify(this.data)); this.repository = memory; }
 }
-function isFuture(value: unknown): boolean { return value !== null && typeof value === "object" && "schemaVersion" in value && typeof value.schemaVersion === "number" && value.schemaVersion > 2; }
+function isFuture(value: unknown): boolean { return value !== null && typeof value === "object" && "schemaVersion" in value && typeof value.schemaVersion === "number" && value.schemaVersion > 3; }

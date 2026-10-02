@@ -2,7 +2,7 @@ import Phaser from "phaser";
 
 import type { WormMovementConfig } from "../domain/movement/WormMovementTypes";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
-import { computeCameraFraming } from "./CameraFraming";
+import { computeCameraFraming, cameraWorldBounds } from "./CameraFraming";
 import { huntCameraTarget } from "./HuntPresentation";
 
 export interface CameraDebugBounds {
@@ -28,6 +28,8 @@ export class CameraController {
   }
 
   snap(snapshot: SessionSnapshot): void {
+    const bounds = cameraWorldBounds(snapshot.world?.bounds);
+    this.camera.setBounds(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
     const target = this.targetFor(snapshot);
     this.centerX = target.centerX;
     this.centerY = target.centerY;

@@ -51,6 +51,7 @@ export class TouchControls {
     private readonly role: "worm" | "hunter" = "worm",
     arcade = false,
     ascent = false,
+    skillName = "Sandguard",
   ) {
     this.root = document.createElement("div");
     this.root.className = "touch-controls";
@@ -67,8 +68,8 @@ export class TouchControls {
     this.joystick.append(this.joystickKnob);
 
     this.boostButton = this.createButton("boost", role === "hunter" ? "Dodge" : "Burst");
-    this.primaryButton = this.createButton("primary", role === "hunter" ? "Fire / Aim" : arcade ? "Sandguard" : "Bite");
-    this.abilityButton = this.createButton("ability", ascent ? "Skill" : "Snare"); this.abilityButton.hidden = role !== "hunter";
+    this.primaryButton = this.createButton("primary", role === "hunter" ? "Fire / Aim" : arcade ? skillName : "Bite");
+    this.abilityButton = this.createButton("ability", ascent ? skillName : "Snare"); this.abilityButton.hidden = role !== "hunter";
     this.jumpButton = this.createButton("jump", "Jump"); this.jumpButton.hidden = role !== "hunter" || !ascent;
     this.root.append(this.joystick, this.boostButton, this.primaryButton, this.abilityButton, this.jumpButton);
     container.append(this.root);

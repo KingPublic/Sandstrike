@@ -24,13 +24,13 @@ it("jumps, lands one-way on a ledge and drops through on demand", () => {
   const beforeJump = run.snapshot().hunt?.hunter.position.x ?? 0;
   expect(beforeJump).toBeGreaterThan(-100);
   run.step(hold(41, { jump: { held: true, pressed: true, released: false } }));
-  for (let tick = 42; tick <= 200; tick++) run.step(neutralActionFrame(tick));
+  for (let tick = 42; tick <= 100; tick++) run.step(neutralActionFrame(tick));
   const landed = run.snapshot().hunt?.hunter;
   expect(landed?.grounded).toBe(true);
   expect(landed?.platformId).toBe("ledge.0");
   expect(landed?.position.y).toBe(-90 - ascentHunterBalance.halfHeight);
-  run.step(hold(201, { drop: { held: true, pressed: true, released: false } }));
-  for (let tick = 202; tick <= 320; tick++) run.step(neutralActionFrame(tick));
+  run.step(hold(101, { drop: { held: true, pressed: true, released: false } }));
+  for (let tick = 102; tick <= 140; tick++) run.step(neutralActionFrame(tick));
   const dropped = run.snapshot().hunt?.hunter;
   expect(dropped?.platformId).toBe("base");
   expect(dropped?.position.y).toBe(-ascentHunterBalance.halfHeight);

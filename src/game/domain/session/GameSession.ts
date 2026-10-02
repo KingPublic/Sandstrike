@@ -9,7 +9,9 @@ import { ComboSystem } from "../scoring/ComboSystem";
 import { SpawnDirector } from "../spawning/SpawnDirector";
 import { ThreatDirector } from "../spawning/ThreatDirector";
 import { abilities } from "../../data/abilities";
-import { TimedSkill } from "../abilities/TimedSkill";
+import { characterForRole, type CharacterId, type CharacterDefinition } from "../../data/characters";
+import { CharacterSkills } from "../abilities/CharacterSkills";
+import { applySkillEffects } from "../abilities/ApplySkillEffects";
 import { automaticMouthCommands } from "../combat/AutomaticFeeding";
 import { AbilitySystem } from "../abilities/AbilitySystem";
 import { CombatSystem } from "../combat/CombatSystem";
@@ -52,6 +54,7 @@ import type { ModeRules } from "../modes/ModeRules";
 import type { ResponseBand } from "../spawning/ThreatDirector";
 
 export interface GameSessionOptions {
+  readonly characterId?: CharacterId;
   readonly themeId?: ThemeId;
   readonly arcade?: boolean;
   readonly sessionId?: string;
@@ -79,7 +82,8 @@ export class GameSession {
   private readonly collisions = new CollisionWorld();
   private readonly events = new EventQueue();
   private readonly bite = new AbilitySystem(abilities.bite, ["worm"]);
-  private readonly sandguard = new TimedSkill("skill.sandguard", 180, 1200);
+  private readonly character: CharacterDefinition | undefined;
+  private readonly wormSkill: CharacterSkills | undefined;
   private readonly combat = new CombatSystem();
   private readonly random: RandomSource;
   private readonly infantry = new Map<string, InfantryController | VehicleController | AerialController>();
@@ -109,6 +113,9 @@ export class GameSession {
       throw new RangeError("Session step must be finite and positive.");
     }
     this.stepSeconds = stepSeconds;
+    this.character = options.arcade || options.ascent ? characterForRole(options.mode ?? "rampage", options.characterId) : undefined;
+    if ((options.arcade || options.ascent) && !this.character) throw new RangeError("Invalid character role.");
+    this.wormSkill = options.arcade && this.character ? new CharacterSkills(this.character) : undefined;
     this.rules = options.mode === "hunt" ? new HuntRules() : new RampageRules(stepSeconds);
     this.threat = new ThreatDirector(options.initialBand ?? 0);
     if (options.mode === "rampage") validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.rampage });
@@ -124,11 +131,11 @@ export class GameSession {
     this.locomotion = new WormLocomotion(movement);
     const worm = this.locomotion.snapshot();
     this.actors = new ActorRegistry([
-      createActor({ ...spawnActor("worm", "actor.worm", worm.head.position), direction: worm.head.tangent, velocity: worm.head.velocity, health: options.playerHealth ?? spawnActor("worm", "actor.worm", worm.head.position).health }),
+      createActor({ ...spawnActor("worm", "actor.worm", worm.head.position), direction: worm.head.tangent, velocity: worm.head.velocity, ...(this.world ? { hitInvulnerabilityTicks: 0 } : {}), health: options.playerHealth ?? (this.character?.role === "worm" ? this.character.health : 100), maxHealth: this.character?.role === "worm" ? this.character.health : 100, armor: this.character?.role === "worm" ? this.character.armor : 0 }),
       ...(options.actors ?? []),
     ]);
     this.random = new RandomSource(options.seed);
-    this.hunt = options.mode === "hunt" ? new HuntSystems(this.terrain, options.debugAI ?? false, movement, this.actors.get("hunter")?.position, options.aimAssist ?? .35, this.world) : undefined;
+    this.hunt = options.mode === "hunt" ? new HuntSystems(this.terrain, options.debugAI ?? false, movement, this.actors.get("hunter")?.position, options.aimAssist ?? .35, this.world, this.character) : undefined;
     this.projectiles = new ProjectileSystem(this.actors);
     for (const shot of options.initialProjectiles ?? []) this.projectiles.spawn("fixture", shot.position, shot.direction, 0);
     this.actors.commit();
@@ -155,28 +162,26 @@ export class GameSession {
     this.world?.step(this.currentTick, this.currentStage());
     const huntStep = this.hunt?.prepare(action, this.locomotion.snapshot(), this.actors, this.random.stream("ai.worm"), this.currentTick);
     for (const event of huntStep?.events ?? []) this.events.publish(event);
+    const skillOwner = this.actors.get("worm");
+    if (!skillOwner) throw new Error("Missing worm actor.");
+    const wormSkillFrame = this.wormSkill?.step({ tick: this.currentTick, pressed: action.ability.pressed, owner: skillOwner, actors: this.actors.snapshot(), direction: this.locomotion.snapshot().head.tangent, phase: this.locomotion.snapshot().phase, surfaceY: this.terrain.surfaceY(skillOwner.position.x), platforms: [] });
+    if (wormSkillFrame) {
+      applySkillEffects(this.actors, "worm", wormSkillFrame);
+      if (wormSkillFrame.activated) this.events.publish({ type: "ability-activated", tick: this.currentTick, actorId: "worm", abilityId: wormSkillFrame.ability.id, position: skillOwner.position });
+    }
     const movementEvents = this.wormIsAbsent()
       ? []
       : this.locomotion.step(
         huntStep?.action ?? action,
         this.stepSeconds,
         this.terrain,
-        huntStep?.effects,
+        wormSkillFrame?.motion ?? huntStep?.effects,
       );
     for (const event of movementEvents) this.events.publish(mapMovementEvent(event));
     const worm = this.locomotion.snapshot();
     const wormActor = this.actors.get("worm");
     if (!wormActor) throw new Error("Session has no player worm.");
     this.actors.update({ ...wormActor, position: worm.head.position, direction: worm.head.tangent, velocity: worm.head.velocity });
-    if (this.options.arcade && !this.hunt) {
-      const previousSkill = this.sandguard.snapshot(this.currentTick);
-      const skill = this.sandguard.step(this.currentTick, action.ability.pressed);
-      if (skill.activeUntilTick > previousSkill.activeUntilTick) {
-        const player = this.actors.get("worm");
-        if (player) this.actors.update({ ...player, invulnerableUntilTick: Math.max(player.invulnerableUntilTick ?? 0, skill.activeUntilTick) });
-        this.events.publish({ type: "ability-activated", tick: this.currentTick, actorId: "worm", abilityId: skill.id, position: worm.head.position });
-      }
-    }
     for (const event of this.applyBurialDamage()) this.events.publish(event);
     this.stepInfantry();
     const projectileFrame = this.projectiles.step(this.stepSeconds, this.collisions, this.currentTick, previousActors);
@@ -184,7 +189,7 @@ export class GameSession {
     const ability = this.bite.step(this.currentTick, this.hunt || this.options.arcade ? false : action.primary.pressed);
     if (ability.activated) this.events.publish({ type: "ability-activated", tick: this.currentTick, actorId: "worm", abilityId: abilities.bite.id, position: worm.head.position });
     const currentActors = this.actors.snapshot();
-    const commands: DamageCommand[] = [...projectileFrame.commands];
+    const commands: DamageCommand[] = [...projectileFrame.commands, ...(wormSkillFrame?.damage ?? []), ...(huntStep?.damage ?? [])];
     if (this.options.arcade && !this.hunt) commands.push(...automaticMouthCommands(previousActors, currentActors, this.currentTick));
     const rifle = this.hunt?.fire(action, worm, this.currentTick);
     commands.push(...(rifle?.commands ?? []));
@@ -207,7 +212,7 @@ export class GameSession {
         commands.push({ sourceId: "worm", targetId: contact.targetId, tick: this.currentTick, abilityId: abilities.bite.id, amount: abilities.bite.damage, tags: abilities.bite.debugTags, priority: 1 });
       }
     }
-    for (const event of this.combat.resolve(this.actors, commands)) this.events.publish(event);
+    for (const event of this.combat.resolve(this.actors, commands, this.hunt !== undefined)) this.events.publish(event);
     const healthAfterCombat = this.actors.get("worm")?.health ?? 0;
     if (wormActor.health > 25 && healthAfterCombat <= 25) this.events.publish({ type: "low-health-warning", tick: this.currentTick, position: worm.head.position });
     if (wormActor.health > 0 && healthAfterCombat <= 0) this.events.publish({ type: "worm-defeated", tick: this.currentTick, position: worm.head.position });
@@ -245,8 +250,9 @@ export class GameSession {
     const lifeEvents = this.applyWormLife();
     const snapshot = this.snapshot();
     const update = this.rules.observe(snapshot, [...events, ...lifeEvents], this.commands.splice(0));
-    this.ended ??= update.result;
-    return Object.freeze({ snapshot, events: Object.freeze([...events, ...lifeEvents, ...update.events]), result: update.result });
+    const result = update.result && this.character ? Object.freeze({ ...update.result, gameplayVersion: 3 as const, characterId: this.character.id, themeId: this.options.themeId ?? "desert" }) : update.result;
+    this.ended ??= result;
+    return Object.freeze({ snapshot, events: Object.freeze([...events, ...lifeEvents, ...update.events.map(e => e.type === "run-ended" && result ? { ...e, result } : e)]), result });
   }
 
   private wormIsAbsent(): boolean {
@@ -322,8 +328,11 @@ export class GameSession {
   }
 
   snapshot(): SessionSnapshot {
+    const skill = this.wormSkill?.snapshot(this.currentTick) ?? this.hunt?.skillSnapshot(this.currentTick);
     return Object.freeze({
       themeId: this.options.themeId ?? "desert",
+      ...(this.character ? { characterId: this.character.id } : {}),
+      ...(skill ? { skill } : {}),
       arcade: this.options.arcade ?? false,
       ...(this.world ? { world: this.world.snapshot() } : {}),
       ...(this.wormLife ? { wormLife: this.wormLife.snapshot(this.currentTick) } : {}),
@@ -338,7 +347,7 @@ export class GameSession {
       threat: this.threat.snapshot(),
       worm: this.locomotion.snapshot(),
       actors: this.actors.snapshot(),
-      abilities: Object.freeze([this.options.arcade && !this.hunt ? this.sandguard.snapshot(this.currentTick) : this.bite.snapshot(this.currentTick)]),
+      abilities: Object.freeze([this.wormSkill?.snapshot(this.currentTick).ability ?? this.hunt?.skillSnapshot(this.currentTick)?.ability ?? this.bite.snapshot(this.currentTick)]),
       ai: Object.freeze([...this.infantry].sort(([a], [b]) => a.localeCompare(b)).map(([actorId, controller]) => Object.freeze({ actorId, decision: controller.snapshot() }))),
       diagnostics: Object.freeze({ eventOverflowCount: this.events.overflowCount, projectileCount: this.projectiles.activeCount }),
     });

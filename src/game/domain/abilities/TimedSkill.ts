@@ -14,4 +14,5 @@ export class TimedSkill {
   snapshot(tick: number): AbilityState {
     return Object.freeze({ id: this.id, active: tick < this.activeUntil, activeUntilTick: this.activeUntil, cooldownUntilTick: this.cooldownUntil, cooldownTicksRemaining: Math.max(0, this.cooldownUntil - tick) });
   }
+  cancel(): void { this.activeUntil = 0; }
 }

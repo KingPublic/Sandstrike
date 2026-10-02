@@ -21,7 +21,7 @@ export class WormController {
   private breachBoost = false;
   private approachDepth = 960;
   private depthRequirement = 760;
-  constructor(private readonly movement: WormMovementConfig, private readonly terrain: TerrainProfile, private readonly surfaceRisePerSecond = 0) {}
+  constructor(private readonly movement: WormMovementConfig, private readonly terrain: TerrainProfile, private readonly surfaceRisePerSecond = 0, private readonly relayObjective = true) {}
 
   /** Escalation from the life director: shorter recovery and cadence, capped. */
   setAggression(generation: number, tuning: Readonly<{ approachDepth?: number; depthRequirement?: number }> = {}): void {
@@ -45,6 +45,7 @@ export class WormController {
   step(p: WormPerceptionSnapshot, tick: number, random: RandomStream): WormDecision {
     const head = p.self.head.position;
     const surfaceY = p.surfaceY;
+    const relayUtility = this.relayObjective ? (tick >= 3600 ? 1 : .65) : 0;
     const airborne = p.self.phase === "airborne" || p.self.phase === "breaching";
     if (tick % this.decisionTicks === 1 && tick - this.enteredTick >= this.decisionTicks) {
       if (airborne && this.state !== "evade") this.transition("evade", tick);
@@ -52,7 +53,7 @@ export class WormController {
       else if (this.state === "roam" || this.state === "recover" && tick - this.enteredTick >= this.recoverTicks) this.transition("acquire", tick);
       else if (this.state === "acquire") {
         const hunterUtility = p.hunter ? .9 : 0;
-        this.target = hunterUtility > (tick >= 3600 ? 1 : .65) ? (p.hunter?.position ?? p.relay) : p.relay;
+        this.target = hunterUtility > relayUtility ? (p.hunter?.position ?? p.relay) : p.relay;
         this.side = random.float() < .5 ? -1 : 1;
         const bounds = this.movement.worldBounds;
         if (bounds && this.target.x > bounds.right - 600) this.side = 1;
@@ -79,7 +80,7 @@ export class WormController {
     const dx = steeringTarget.x - head.x, dy = steeringTarget.y - head.y, length = Math.hypot(dx, dy) || 1;
     const boost = this.state === "breach" && (tick === this.enteredTick || (this.breachBoost && tick === this.enteredTick + 12));
     const action = { ...neutralActionFrame(tick), moveX: dx / length, moveY: dy / length, boost: { held: boost, pressed: boost, released: false } };
-    this.decision = freezeRecord({ action, state: this.state, target: this.target, steeringTarget, utility: { hunter: p.hunter ? .9 : 0, relay: tick >= 3600 ? 1 : .65 }, reason: `${this.state}: ${p.hunter ? "observed hunter" : "relay pressure"}`, route: [steeringTarget, this.target], breachPrediction: this.warning });
+    this.decision = freezeRecord({ action, state: this.state, target: this.target, steeringTarget, utility: { hunter: p.hunter ? .9 : 0, relay: relayUtility }, reason: `${this.state}: ${p.hunter ? "observed hunter" : "relay pressure"}`, route: [steeringTarget, this.target], breachPrediction: this.warning });
     return this.decision;
   }
   snapshot(): WormDecision | undefined { return this.decision; }

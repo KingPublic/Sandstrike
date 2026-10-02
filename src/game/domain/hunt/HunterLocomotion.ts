@@ -78,6 +78,12 @@ export class HunterLocomotion {
   }
 
   snapshot(): HunterState { return this.state; }
+  grappleTo(position: Vec2): void {
+    const platform = supportPlatform({ position, halfWidth: b.bodyRadius, halfHeight: ascent.halfHeight }, this.platforms);
+    if (!platform) return;
+    this.state = freezeRecord({ ...this.state, position: { ...position }, velocity: { x: 0, y: 0 }, grounded: true, platformId: platform.id });
+    this.jumpBufferedUntilTick = 0;
+  }
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {

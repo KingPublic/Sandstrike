@@ -14,7 +14,8 @@ ascent with a rising hazard and platforms, 10-second escalating worm returns, tw
 allied survivors plus a support helicopter, and the summit boss fight with the
 objective RPG. Sections of this document describing relay defense as Hunt's main
 objective are now historical fixture behaviour, not the default mode. The ten-kit
-roster, selection UI and revised record migration are still pending.
+roster, character selection and save v3 record migration are implemented. Latest
+evidence and remaining human/device gates are in SURVIVAL_VERIFICATION.md.
 
 Project Sandstrike is a working title.
 
@@ -32,11 +33,11 @@ roles:
 - **Worm:** shape a high-momentum path underground, breach through targets,
   sustain through aggressive play, chain varied destruction, and survive an
   escalating response.
-- **Hunter:** interpret uncertain underground signals, anticipate the AI worm's
-  route, protect a surface objective, create exposure windows with a trap, and
-  finish the worm with a ranged weapon.
+- **Hunter:** climb above the rising hazard with allied support, survive escalating
+  worm returns, acquire the summit RPG and defeat the boss.
 
-The MVP contains one arena, one balanced worm, one agile human hunter, and two modes:
+The revised playable prototype contains one shared route, three themes, five worms,
+five Hunters with unique skills, and two modes:
 **Rampage** and **Hunt**. It is complete only when both roles are playable. The
 worm-only vertical slice is an earlier validation milestone, not the finished
 MVP.
@@ -66,8 +67,7 @@ characters, abilities, and balance values.
 
 The following are outside the two-role MVP:
 
-- the complete five-character roster;
-- a campaign, multiple biomes, bosses, or a large mission catalogue;
+- a campaign or large mission catalogue (the approved roster/themes/boss are in scope);
 - permanent power upgrades, currencies, battle passes, or a broad achievement
   system;
 - online accounts, cloud saves, global leaderboards, telemetry services, or a

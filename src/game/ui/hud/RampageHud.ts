@@ -13,7 +13,7 @@ export class RampageHud {
   }
   update(snapshot: SessionSnapshot, reducedMotion = false): void {
     const model = RampageHudModel.fromSnapshot(snapshot, reducedMotion);
-    this.text("health", `${model.health <= 25 ? "Low health" : "Health"} ${String(model.health)} / 100`); this.text("score", `Score ${model.score.toLocaleString("en-US")}`);
+    this.text("health", `${model.health <= 25 ? "Low health" : "Health"} ${String(model.health)} / ${String(snapshot.actors.find(a => a.id === "worm")?.maxHealth ?? 100)}`); this.text("score", `Score ${model.score.toLocaleString("en-US")}`);
     this.text("combo", model.comboLabel); this.text("threat", model.threatLabel); this.text("bite", model.biteLabel); this.text("burst", model.burstLabel);
     this.root.dataset.lowHealth = String(model.health <= 25);
     this.root.dataset.decay = String(snapshot.combo.phase === "decay");

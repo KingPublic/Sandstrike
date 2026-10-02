@@ -331,3 +331,20 @@ Latest user playtest supersedes the original500-700px player jump proposal.
 Rampage uses a compact ballistic arc; Hunt tower AI uses its own profile so the
 existing rooftop fight stays reachable. No new approval pause: user requested
 immediate continuation of the existing plan.
+
+## D-022 - Roster, revised records and final review rulings (2026-10-02)
+Ten immediately selectable original kits implement the approved roster, with
+shared simulation/input and bounded strategies. Save3 isolates historical scores
+in legacyRecords and persists selection; revised results freeze role-compatible
+character/theme/version ownership. No new approval gate, worktree or remote action.
+RPG loaded priority plus firearm fallback during reload preserves starter usability
+without spending two weapons per trigger. Enemy post-hit recovery no longer cancels
+actual weapon cadence; explicit shields still block.
+One fresh read-only whole-range Superpowers review found four Important issues,
+all reproduced RED then corrected: moving-surface presentation/contact, fatal
+simultaneous boss impact, buried ground support and post-minute decoy targeting.
+Resolve-start committed impact applies only in Hunt, preserving Rampage death rules.
+Ascent fallback uses fixed arena coordinates, not hidden live Hunter coordinates.
+Minor crate marker and clipped boss shield feedback were also implemented.
+Natural5-6min pacing, physical-device controls and production art remain playtest
+and polish work; procedural animated graphics are not claimed as GOTY realism.

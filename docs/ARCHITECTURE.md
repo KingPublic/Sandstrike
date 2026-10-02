@@ -813,3 +813,22 @@ arcadeMovementBalance owns compact player breach tuning; huntMovementBalance own
 tower pursuit. WormLocomotion ballisticAirControl preserves vertical velocity
 through steering before applying gravity. Historical fixtures keep their explicit
 legacy profile.
+
+## Survival roster and persistence v3 (2026-10-02)
+characters.ts owns ten immutable definitions, visual identity and five weapons.
+RunFactory validates role-compatible characterId; the session freezes the selected
+character/theme and emits gameplayVersion3 result metadata. CharacterSkills owns
+bounded timers, projectiles, venom, mark/decoy and typed damage/heal/knockback/motion;
+renderers read snapshots. A focused dispatcher selects the ten current strategies.
+HunterCharacterView owns original limb/aim/reload animation; CharacterSkillView
+owns transient feedback; logical collision dimensions do not follow artwork.
+SaveValidation validates genuine v1/v2 before migration to schema3. legacyRecords
+preserves old mode records; current buckets only accept revised result envelopes.
+Selection persists independently of records; original backup bytes and future-schema
+memory fallback remain protected. No dependency/server was added.
+Moving surfaceY now flows through clipping, cues, tracking, aim, ray contacts and
+feedback filtering. Hunt committed impacts preserve resolve-start source liveness
+so a simultaneous lethal shot cannot cancel lethal contact; Rampage death blocks
+subsequent feeding/healing as before. Ascent AI uses sensed targets rather than the
+legacy relay utility. Ground support spawns on safe ledges, retires deep burial and
+prunes dead controller entries.

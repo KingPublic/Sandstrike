@@ -7,13 +7,14 @@ import { healHealth } from "./Health";
 export class CombatSystem {
   private readonly resolver = new DamageResolver();
 
-  resolve(registry: ActorRegistry, commands: readonly DamageCommand[]): readonly DomainEvent[] {
+  resolve(registry: ActorRegistry, commands: readonly DamageCommand[], preserveCommittedImpacts = false): readonly DomainEvent[] {
     const events: DomainEvent[] = [];
+    const committedSources = new Set(preserveCommittedImpacts ? registry.snapshot().filter(a => a.lifecycle === "active" && a.health > 0).map(a => a.id) : []);
     const sorted = [...commands].sort((a, b) => a.priority - b.priority || a.targetId.localeCompare(b.targetId) || a.sourceId.localeCompare(b.sourceId));
     for (const command of sorted) {
       const target = registry.get(command.targetId);
       const source = registry.get(command.sourceId);
-      if (target?.lifecycle !== "active" || (!command.tags.includes("projectile") && (source?.lifecycle !== "active" || source.health <= 0)) || target.health <= 0 || command.amount <= 0) continue;
+      if (target?.lifecycle !== "active" || (!command.tags.includes("projectile") && !(command.tags.includes("impact") && committedSources.has(command.sourceId)) && (source?.lifecycle !== "active" || source.health <= 0)) || target.health <= 0 || command.amount <= 0) continue;
       const result = this.resolver.resolve(target, command);
       registry.update(result.actor);
       events.push({ type: "damage-applied", tick: command.tick, sourceId: command.sourceId, targetId: target.id, abilityId: command.abilityId, amount: result.applied, ...(result.blocked ? { blocked: result.blocked } : {}), tags: command.tags, position: target.position });

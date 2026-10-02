@@ -11,8 +11,12 @@ import type { AscentWorldSnapshot } from "../world/AscentWorld";
 import type { WormLifeSnapshot } from "../hunt/WormLifeDirector";
 
 import type { ThemeId } from "../../data/themes";
+import type { CharacterId } from "../../data/characters";
+import type { SkillSnapshot } from "../abilities/CharacterSkills";
 
 export interface SessionSnapshot {
+  readonly characterId?: CharacterId;
+  readonly skill?: SkillSnapshot;
   readonly themeId?: ThemeId;
   readonly arcade?: boolean;
   readonly world?: AscentWorldSnapshot;

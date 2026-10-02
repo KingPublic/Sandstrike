@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Ten original playable characters with distinct silhouettes, active skills and five
+  Hunter weapons; animated jaws, armor/fins, articulated walk/jump/aim/reload and
+  visible skill effects. Character/environment selections persist through retry/reload.
+- Save schema3 preserves historical scores in legacyRecords and separates revised
+  records with immutable character/theme/version ownership; old/future protections remain.
+- Player worm breaches now follow ballistic gravity even while holding upward steer;
+  compact building-height arcs replace the floaty oversized jumps. Hunt tower AI
+  has its own movement profile.
+- Corrected rising-surface clipping/tracking/shot contacts, lethal same-tick boss
+  collisions, buried allied support and Engineer decoy targeting after the first minute.
+  RPG takes priority while loaded; starting firearm can fire during its reload.
+  Objective HUD separates summit/boss cues, and the rooftop RPG crate is marked.
+
+
 - Summit boss fight: reaching the summit freezes the rising hazard, cancels any
   pending worm return and introduces one warned 600 HP armored boss (visual
   presence enlarged, logical hitboxes unchanged) with a windup/3s-immunity

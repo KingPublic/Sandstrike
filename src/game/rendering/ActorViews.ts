@@ -1,4 +1,5 @@
 import type Phaser from "phaser";
+import { drawHunterCharacter } from "./HunterCharacterView";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
 import type { ActorState } from "../domain/actors/Actor";
 import type { AllyState } from "../domain/hunt/HuntTypes";
@@ -22,6 +23,7 @@ export class ActorViews {
       view.setVisible(true).setPosition(previous.position.x + (actor.position.x - previous.position.x) * blend, previous.position.y + (actor.position.y - previous.position.y) * blend).clear();
       const decision = snapshot.ai.find((item) => item.actorId === actor.id)?.decision;
       const ally = snapshot.hunt?.allies.find((item) => item.id === actor.id);
+      if (actor.id === "hunter" && snapshot.characterId) { drawHunterCharacter(view, actor, snapshot, snapshot.tick - 1 + blend); continue; }
       this.draw(view, actor, snapshot.tick - 1 + blend, highContrast, decision?.state === "telegraph", decision?.aimPoint?.x, ally);
     }
   }

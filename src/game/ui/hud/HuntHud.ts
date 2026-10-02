@@ -15,6 +15,7 @@ export class HuntHud implements HudPort {
       const key = element.dataset.huntField ?? "";
       const value = model[key];
       element.hidden = value === undefined;
+      if (element.parentElement?.classList.contains("hud-stat")) element.parentElement.hidden = value === undefined;
       const text = value === undefined ? "" : key === "score" ? `Score ${String(value)}` : String(value);
       if (element.textContent !== text) element.textContent = text;
     }

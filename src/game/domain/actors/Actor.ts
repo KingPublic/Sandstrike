@@ -18,6 +18,7 @@ export interface ActorState {
   readonly collision: CollisionProfile;
   readonly lifecycle: "active" | "pending-removal";
   readonly invulnerableUntilTick?: number;
+  readonly hitInvulnerabilityTicks?: number;
 }
 
 export function createActor(state: ActorState): ActorState {
@@ -25,7 +26,8 @@ export function createActor(state: ActorState): ActorState {
       !isFiniteVec2(state.velocity) || !isFiniteVec2(state.direction) ||
       !Number.isFinite(state.health) || !Number.isFinite(state.maxHealth) ||
       state.health < 0 || state.maxHealth <= 0 || state.health > state.maxHealth ||
-      !Number.isFinite(state.armor) || state.armor < 0) {
+      !Number.isFinite(state.armor) || state.armor < 0 ||
+      state.hitInvulnerabilityTicks !== undefined && (!Number.isSafeInteger(state.hitInvulnerabilityTicks) || state.hitInvulnerabilityTicks < 0)) {
     throw new RangeError("Invalid actor state.");
   }
   return Object.freeze({

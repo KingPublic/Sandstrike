@@ -1,9 +1,11 @@
+import type { CharacterId } from "../data/characters";
 import type { ThemeId } from "../data/themes";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
 import type { ActionFrame } from "../input/ActionFrame";
 import type { PresentationMetrics } from "./PresentationMetrics";
 
 export interface NextRunConfiguration {
+  readonly characterId?: CharacterId;
   readonly themeId?: ThemeId;
   readonly mode?: "rampage" | "hunt";
   readonly ascent?: boolean;

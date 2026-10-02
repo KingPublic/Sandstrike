@@ -1,4 +1,7 @@
-export interface RampageRunResult {
+import type { CharacterId } from "../../data/characters";
+import type { ThemeId } from "../../data/themes";
+interface RunOwnership { readonly gameplayVersion?: 3; readonly characterId?: CharacterId; readonly themeId?: ThemeId }
+export interface RampageRunResult extends RunOwnership {
   readonly sessionId: string; readonly seed: number; readonly mode: "rampage";
   readonly reason: "defeated" | "player-ended"; readonly score: number;
   readonly durationSeconds: number; readonly maximumCombo: number;
@@ -6,7 +9,7 @@ export interface RampageRunResult {
   readonly vehiclesDestroyed?: number; readonly aerialDestroyed?: number;
   readonly highestBand: number; readonly healthRecovered: number;
 }
-export interface HuntRunResult {
+export interface HuntRunResult extends RunOwnership {
   readonly sessionId: string; readonly seed: number; readonly mode: "hunt";
   readonly reason: "victory" | "hunter-defeated" | "hunter-buried" | "relay-destroyed" | "player-ended";
   readonly score: number; readonly durationSeconds: number; readonly maximumCombo: number;

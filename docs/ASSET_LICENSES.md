@@ -15,3 +15,10 @@ verification captures are original project procedural TypeScript/Phaser work
 - Do not add ripped Death Worm assets.
 - Generated assets should record the generating tool and date.
 - External packs must have compatible terms for the intended deployment.
+
+## Survival roster presentation (2026-10-02)
+All ten character silhouettes, plates/fins/horns/fangs, articulated Hunter limbs,
+weapon poses, skill projectiles/trails/shields/heal crosses, summit crate and UI
+are original project TypeScript/Phaser geometry in src/game/rendering/. No external
+image/audio, generated bitmap, reference-game sprite or additional asset pack.
+Browser captures document this original prototype, not production art.

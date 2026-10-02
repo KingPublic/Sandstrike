@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-02",
+  "environment": "Headless Chromium host sample; not physical device evidence",
+  "boss": {
+    "samples": 241,
+    "frameMedian": 20,
+    "frameP95": 24.989999999999963,
+    "simulationMax": 1.5,
+    "maxActors": 3,
+    "maxParticles": 16,
+    "maxProjectiles": 0,
+    "allies": 1
+  }
+}

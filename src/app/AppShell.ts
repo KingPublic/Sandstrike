@@ -29,6 +29,8 @@ import {
   type PauseReason,
 } from "./PauseCoordinator";
 
+import { characterForRole, type HunterId, type WormId } from "../game/data/characters";
+
 export class AppShell {
   private root: HTMLElement | undefined;
   private host: HTMLElement | undefined;
@@ -45,6 +47,8 @@ export class AppShell {
   private hud: HudPort | undefined;
   private selectedMode: "rampage" | "hunt" = "rampage";
   private selectedTheme: ThemeId = "desert";
+  private selectedWorm: WormId = "dune-maw";
+  private selectedHunter: HunterId = "ranger";
   private settingsPanel: SettingsPanel | undefined;
   private settings: PresentationSettings = defaultPresentationSettings;
   private readonly audio = new PhaserAudioAdapter();
@@ -91,7 +95,8 @@ export class AppShell {
 
   mount(root: HTMLElement): void {
     this.destroy();
-    const loaded = this.saves.load(); this.settings = loaded.data.settings; this.onboardingShown = loaded.data.onboarding.rampageSeen;
+    const loaded = this.saves.load();
+    this.selectedTheme = loaded.data.selection.themeId; this.selectedWorm = loaded.data.selection.wormId; this.selectedHunter = loaded.data.selection.hunterId; this.settings = loaded.data.settings; this.onboardingShown = loaded.data.onboarding.rampageSeen;
     this.root = root;
     root.innerHTML = `
       <main class="sandstrike-shell">
@@ -238,7 +243,7 @@ export class AppShell {
     this.status.textContent = "Preparing the arena...";
     if (this.startButton) this.startButton.disabled = true;
     this.audio.unlock();
-    const configuration = this.nextConfiguration ?? { ...this.lastConfiguration, themeId: this.selectedTheme, mode: this.selectedMode, aimAssist: this.settings.aimAssist, debugAI: this.root?.querySelector<HTMLInputElement>("[data-ai-debug]")?.checked ?? this.lastConfiguration.debugAI ?? false, seed: this.lastConfiguration.seed + 7919 };
+    const configuration = this.nextConfiguration ?? { ...this.lastConfiguration, themeId: this.selectedTheme, mode: this.selectedMode, characterId: this.selectedMode === "hunt" ? this.selectedHunter : this.selectedWorm, aimAssist: this.settings.aimAssist, debugAI: this.root?.querySelector<HTMLInputElement>("[data-ai-debug]")?.checked ?? this.lastConfiguration.debugAI ?? false, seed: this.lastConfiguration.seed + 7919 };
     this.selectedMode = configuration.mode ?? "rampage"; this.selectedTheme = configuration.themeId ?? "desert";
     this.nextConfiguration = undefined; this.lastConfiguration = configuration;
     this.controller.start(configuration);
@@ -288,7 +293,7 @@ export class AppShell {
     this.game.scale.refresh();
     this.refreshLayout();
     this.focusCanvas();
-    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt";     prompt.textContent = this.selectedMode === "hunt" ? (this.controller.snapshot().world ? "Climb above the sand · Space Jump · Click Fire · Q Skill · Shift Dodge" : "Read tremors · Q Snare · Click Fire · Shift Dodge") : this.controller.snapshot().arcade ? "Feed by contact · Space Sandguard · Shift Burst" : "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
+    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt";     prompt.textContent = this.selectedMode === "hunt" ? (this.controller.snapshot().world ? "Climb above the sand · Space Jump · Click Fire · Q Skill · Shift Dodge" : "Read tremors · Q Snare · Click Fire · Shift Dodge") : this.controller.snapshot().arcade ? `Feed by contact · Space ${characterForRole("rampage", this.controller.snapshot().characterId)?.skill.name ?? "Skill"} · Shift Burst` : "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
   }
 
   private handleFatalError(): void {
@@ -337,6 +342,7 @@ export class AppShell {
       this.selectedMode === "hunt" ? "hunter" : "worm",
       this.controller.snapshot().arcade,
       this.controller.snapshot().world !== undefined,
+      characterForRole(this.selectedMode, this.controller.snapshot().characterId)?.skill.name,
     );
     this.refreshLayout();
   }
@@ -461,11 +467,19 @@ export class AppShell {
     this.refreshLayout();
   }
 
-  private renderMenu(): void { this.menu?.render(this.navigation.state, this.selectedMode, this.selectedTheme); }
+  private renderMenu(): void { this.menu?.render(this.navigation.state, this.selectedMode, this.selectedTheme, this.selectedMode === "hunt" ? this.selectedHunter : this.selectedWorm); }
   private handleMenuAction(action: string): void {
+    if (action.startsWith("character:")) {
+      const character = characterForRole(this.selectedMode, action.slice(10));
+      if (!character) return;
+      if (character.role === "worm") this.selectedWorm = character.id as WormId; else this.selectedHunter = character.id as HunterId;
+      this.saves.updateSelection({ wormId: this.selectedWorm, hunterId: this.selectedHunter });
+      this.renderMenu(); queueMicrotask(() => this.root?.querySelector<HTMLSelectElement>("[data-character-select]")?.focus());
+      return;
+    }
     if (action.startsWith("theme:")) {
       const themeId = action.slice(6);
-      if (isThemeId(themeId)) { this.selectedTheme = themeId; this.root?.setAttribute("data-theme", themeId); }
+      if (isThemeId(themeId)) { this.selectedTheme = themeId; this.saves.updateSelection({ themeId }); this.root?.setAttribute("data-theme", themeId); }
       return;
     }
     switch (action) {
@@ -494,9 +508,9 @@ export class AppShell {
     if (this.navigation.state !== "results") this.navigation.go("results");
     this.controller.pause(); this.controls?.clear(); this.touchControls?.clearPointers(); this.game?.scene.pause("Gameplay");
     if (this.pauseOverlay) this.pauseOverlay.hidden = true;
-    const practice = this.controller.snapshot().arcade === true;
-    const acceptance = practice ? { newRecord: false } : this.saves.acceptRunResult(result); this.refreshSaveNotice();
-    const record = practice ? "Practice run · records unchanged" : result.mode === "hunt" && !result.eligibleForRecords ? "Practice run · AI inspection · no record" : acceptance.newRecord ? "New local record" : `Local best · ${this.saves.snapshot()[result.mode].bestScore.toLocaleString("en-US")}`;
+    const practice = result.mode === "hunt" && !result.eligibleForRecords;
+    const acceptance = this.saves.acceptRunResult(result); this.refreshSaveNotice();
+    const record = practice ? "Practice run · records unchanged" : result.mode === "hunt" && !result.eligibleForRecords ? "Practice run · AI inspection · no record" : acceptance.newRecord ? "New local record" : `Local best · ${(result.gameplayVersion === 3 ? this.saves.snapshot() : this.saves.snapshot().legacyRecords)[result.mode].bestScore.toLocaleString("en-US")}`;
     this.results = new ResultsView(this.gameFrame, result, { retry: () => { this.retryRun(); }, changeMode: () => { this.returnToMenu(true); }, menu: () => { this.returnToMenu(false); } }, record);
   }
   private refreshSaveNotice(): void { const notice = this.root?.querySelector<HTMLElement>("[data-save-notice]"); if (!notice) return; const status = this.saves.status(); notice.hidden = status.diagnostics.length === 0; notice.textContent = status.memoryOnly ? "Saving unavailable. Progress and settings are kept for this session." : status.diagnostics.at(-1) ?? ""; }

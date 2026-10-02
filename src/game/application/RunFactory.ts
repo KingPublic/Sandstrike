@@ -1,3 +1,4 @@
+import { characterForRole, type CharacterId } from "../data/characters";
 import { GameSession } from "../domain/session/GameSession";
 import { arcadeMovementBalance } from "../data/arcadeMovementBalance";
 import { huntMovementBalance } from "../data/huntMovementBalance";
@@ -10,11 +11,13 @@ import type { ThemeId } from "../data/themes";
 /** Historical relay objectives kept as regression fixtures; every other Hunt run is the ascent. */
 const LEGACY_RELAY_FIXTURES = new Set(["hunt-relay", "hunt-victory", "hunt-trap", "hunter-defeat", "relay-defeat"]);
 
-export interface RunConfiguration { readonly seed: number; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly ascent?: boolean; readonly debugAI?: boolean; readonly aimAssist?: number; readonly themeId?: ThemeId }
+export interface RunConfiguration { readonly seed: number; readonly characterId?: CharacterId; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly ascent?: boolean; readonly debugAI?: boolean; readonly aimAssist?: number; readonly themeId?: ThemeId }
 export class RunFactory {
   private sequence = 0;
   constructor(private readonly namespace = Date.now().toString(36)) {}
   create(configuration: RunConfiguration): GameSession {
+    const character = characterForRole(configuration.mode ?? "rampage", configuration.characterId);
+    if (!character) throw new RangeError("Character does not match the selected role.");
     this.sequence += 1;
     if (configuration.mode === "hunt") {
       const fixture = configuration.fixtureId;
@@ -28,7 +31,7 @@ export class RunFactory {
         // "ascent-kill" starts the worm at 1 HP with a lethal fixture shot so the
         // remove/return cycle is reachable in deterministic runs and browser checks.
         const kill = fixture === "ascent-kill";
-        return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", ascent: true, ...(fixture === "ascent-buried" ? { ascentSurface: 0 } : {}), seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement: huntMovementBalance, terrain: new FlatTerrainProfile(0), actors: [hunter], ...(kill ? { playerHealth: 1, initialProjectiles: [{ position: { x: 0, y: 900 }, direction: { x: 1, y: 0 } }] } : {}) });
+        return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", ascent: true, ...(fixture === "ascent-buried" ? { ascentSurface: 0 } : {}), seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement: huntMovementBalance, terrain: new FlatTerrainProfile(0), characterId: character.id, actors: [{ ...hunter, armor: character.armor }], ...(kill ? { playerHealth: 1, initialProjectiles: [{ position: { x: 0, y: 900 }, direction: { x: 1, y: 0 } }] } : {}) });
       }
       const hunter = spawnActor("hunter", "actor.hunter", { x: -180, y: -16 }), relay = spawnActor("relay", "actor.relay", { x: 0, y: -30 });
       const defeat = fixture === "hunter-defeat" || fixture === "relay-defeat";
@@ -44,13 +47,13 @@ export class RunFactory {
     const laboratory = configuration.fixtureId === "surface-breach";
     const advancedBand = configuration.fixtureId === "rampage-band-3" ? 3 : configuration.fixtureId === "rampage-band-2" ? 2 : undefined;
     const arcade = configuration.mode === "rampage" && configuration.fixtureId === undefined;
-    const movement = arcade ? arcadeMovementBalance : breach ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: movementBalance.cruiseSpeed } : movementBalance;
+    const movement = arcade ? { ...arcadeMovementBalance, initialSpeed: arcadeMovementBalance.initialSpeed * character.speed, cruiseSpeed: arcadeMovementBalance.cruiseSpeed * character.speed, burstSpeedCap: arcadeMovementBalance.burstSpeedCap * character.speed, burstSpeedGain: arcadeMovementBalance.burstSpeedGain * character.speed, gravity: arcadeMovementBalance.gravity * character.speed ** 2 } : breach ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: movementBalance.cruiseSpeed } : movementBalance;
     const actors = stress ? [
       ...Array.from({ length: 3 }, (_, index) => spawnActor(`smoke.prey.${String(index + 1)}`, "actor.prey", { x: 0, y: -10 })),
       ...Array.from({ length: 4 }, (_, index) => spawnActor(`smoke.infantry.${String(index + 1)}`, "actor.infantry", { x: 0, y: -16 })),
     ] : laboratory ? [] : [spawnActor("opening.prey.1", "actor.prey", { x: 260, y: -10 }), spawnActor("opening.prey.2", "actor.prey", { x: 440, y: -10 }), spawnActor("opening.prey.3", "actor.prey", { x: -320, y: -10 }), ...(configuration.fixtureId === "combat-breach" ? [spawnActor("opening.infantry", "actor.infantry", { x: 180, y: -16 })] : [])];
     const shots = stress ? [{ position: { x: -26, y: 22 }, direction: { x: 1, y: 0 } }, { position: { x: -26, y: 22 }, direction: { x: 1, y: 0 } }] : defeat ? [{ position: { x: -26, y: 180 }, direction: { x: 1, y: 0 } }] : [];
     const advancedActors = advancedBand ? [...actors, spawnActor("opening.vehicle", "actor.vehicle", { x: 300, y: -18 }), ...(advancedBand === 3 ? [spawnActor("opening.aerial", "actor.aerial", { x: 300, y: -220 })] : [])] : actors;
-    return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, seed: configuration.seed, arcade, movement: advancedBand ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 360 } : movement, terrain: new FlatTerrainProfile(0), actors: advancedActors, ...(advancedBand ? { initialBand: advancedBand } : {}), ...(laboratory ? {} : { mode: "rampage" }), ...(stress || defeat ? { playerHealth: stress ? 30 : 10, initialProjectiles: shots } : {}) });
+    return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, seed: configuration.seed, arcade, ...(arcade ? { characterId: character.id } : {}), movement: advancedBand ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 360 } : movement, terrain: new FlatTerrainProfile(0), actors: advancedActors, ...(advancedBand ? { initialBand: advancedBand } : {}), ...(laboratory ? {} : { mode: "rampage" }), ...(stress || defeat ? { playerHealth: stress ? 30 : 10, initialProjectiles: shots } : {}) });
   }
 }

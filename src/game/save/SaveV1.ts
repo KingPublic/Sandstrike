@@ -1,8 +1,8 @@
 import { defaultPresentationSettings } from "../rendering/FeedbackController";
-import { defaultSaveData, type SaveData } from "./SaveData";
+import { defaultSaveData, type SaveDataV2 } from "./SaveData";
 import { record, keys, nonnegative } from "./SaveFields";
 import { validateRunResult } from "./RunResultValidation";
-export function upgradeV1(value: unknown): SaveData {
+export function upgradeV1(value: unknown): SaveDataV2 {
   const data = record(value); keys(data, ["schemaVersion", "appVersion", "rampage", "settings", "onboarding"]);
   if (data.schemaVersion !== 1 || typeof data.appVersion !== "string" || !data.appVersion || data.appVersion.length > 64) throw new Error("Invalid v1 envelope.");
   const defaults = defaultSaveData();
@@ -18,5 +18,5 @@ export function upgradeV1(value: unknown): SaveData {
   if (!Number.isSafeInteger(bestScore) || bestRun && bestRun.mode !== "rampage" || (bestRun?.score ?? 0) !== bestScore) throw new Error("Invalid v1 record.");
   const onboarding = data.onboarding === undefined ? { rampageSeen: false } : record(data.onboarding); keys(onboarding, ["rampageSeen"]);
   if (typeof onboarding.rampageSeen !== "boolean") throw new Error("Invalid v1 onboarding.");
-  return { ...defaults, appVersion: data.appVersion, rampage: { bestScore, bestRun: bestRun }, settings: { ...defaults.settings, ...settings }, onboarding: { rampageSeen: onboarding.rampageSeen, huntSeen: false } };
+  return { schemaVersion: 2, appVersion: data.appVersion, rampage: { bestScore, bestRun: bestRun }, hunt: defaults.hunt, settings: { ...defaults.settings, ...settings }, onboarding: { rampageSeen: onboarding.rampageSeen, huntSeen: false } };
 }

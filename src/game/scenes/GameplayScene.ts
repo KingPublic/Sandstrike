@@ -17,6 +17,7 @@ import { TouchInput } from "../input/TouchInput";
 import type { ActionFrame } from "../input/ActionFrame";
 import { CameraController } from "../rendering/CameraController";
 import { WorldRenderer } from "../rendering/WorldRenderer";
+import { CharacterSkillView } from "../rendering/CharacterSkillView";
 import { WormView } from "../rendering/WormView";
 import { ActorViews } from "../rendering/ActorViews";
 import { EffectsRenderer } from "../rendering/EffectsRenderer";
@@ -35,6 +36,7 @@ export class GameplayScene extends Phaser.Scene {
   private inputRouter: InputRouter | undefined;
   private controller: SessionController | undefined;
   private wormView: WormView | undefined;
+  private skillView: CharacterSkillView | undefined;
   private worldView: WorldRenderer | undefined;
   private cameraController: CameraController | undefined;
   private debugOverlay: DebugOverlay | undefined;
@@ -74,7 +76,8 @@ export class GameplayScene extends Phaser.Scene {
       this.scripted,
       ...(this.pointer ? [this.pointer] : []),
     ]);
-    this.wormView = new WormView(this, debug);
+    this.wormView = new WormView(this, debug, initial.mode === "rampage" ? initial.characterId : undefined);
+    this.skillView = new CharacterSkillView(this);
     this.actorViews = new ActorViews(this);
     this.effects = new EffectsRenderer(this);
     this.debugOverlay = new DebugOverlay(this, debug);
@@ -132,17 +135,18 @@ export class GameplayScene extends Phaser.Scene {
     }
 
     if (frame.snapshot.world) this.worldView?.updateWorld(frame.snapshot.world);
-    this.wormView.render(frame.snapshot.worm, frame.report.alpha, frame.snapshot.mode === "hunt" && frame.snapshot.hunt?.tracking.exactTrace === undefined, (frame.snapshot.arcade === true && frame.snapshot.abilities.some(skill => skill.active)) || frame.snapshot.hunt?.boss.shieldActive === true, frame.snapshot.wormLife?.phase !== "absent", frame.snapshot.hunt?.boss.stage === "boss");
+    this.wormView.render(frame.snapshot.worm, frame.report.alpha, frame.snapshot.mode === "hunt" && frame.snapshot.hunt?.tracking.exactTrace === undefined, (frame.snapshot.arcade === true && frame.snapshot.abilities.some(skill => skill.id === "skill.sandguard" && skill.active)) || frame.snapshot.hunt?.boss.shieldActive === true, frame.snapshot.wormLife?.phase !== "absent", frame.snapshot.hunt?.boss.stage === "boss", frame.snapshot.world?.surfaceY ?? 0);
     this.huntCues?.render(frame.snapshot);
+    this.skillView?.render(frame.snapshot);
     this.cameraController.update(frame.snapshot, deltaMs / 1000);
     const lifecycle = this.lifecycle();
     const settings = lifecycle.settings?.() ?? defaultPresentationSettings;
-    const visibleEvents = frame.snapshot.mode === "hunt" && !frame.snapshot.hunt?.tracking.exactTrace ? frame.events.filter(e => !("position" in e) || e.position.y <= 0 || e.type === "snare-triggered") : frame.events;
+    const visibleEvents = frame.snapshot.mode === "hunt" && !frame.snapshot.hunt?.tracking.exactTrace ? frame.events.filter(e => !("position" in e) || e.position.y <= (frame.snapshot.world?.surfaceY ?? 0) || e.type === "snare-triggered") : frame.events;
     const commands = this.feedback.consume(visibleEvents, settings, lifecycle.audio?.ready ?? false);
     this.actorViews?.sync(frame.snapshot, frame.report.alpha, settings.highContrast);
     this.effects?.consume(commands);
     this.effects?.update(deltaMs / 1000, settings.reducedMotion);
-    this.metrics = Object.freeze({ fps: this.game.loop.actualFps, frameMs: deltaMs, simulationMsPerTick: frame.report.steps > 0 ? simulationMs / frame.report.steps : 0, steps: frame.report.steps, totalDroppedMs: this.totalDroppedMs, actors: frame.snapshot.actors.length, shapes: frame.snapshot.actors.length, projectiles: frame.snapshot.diagnostics.projectileCount, particles: this.effects?.particleCount() ?? 0 });
+    this.metrics = Object.freeze({ camera: this.cameraController.debugBounds(), fps: this.game.loop.actualFps, frameMs: deltaMs, simulationMsPerTick: frame.report.steps > 0 ? simulationMs / frame.report.steps : 0, steps: frame.report.steps, totalDroppedMs: this.totalDroppedMs, actors: frame.snapshot.actors.length, shapes: frame.snapshot.actors.length, projectiles: frame.snapshot.diagnostics.projectileCount, particles: this.effects?.particleCount() ?? 0 });
     if (settings.shake === 0 || settings.reducedMotion) this.cameras.main.shakeEffect.reset();
     for (const command of commands) {
       if (command.shake > 0) this.cameras.main.shake(90, command.shake);
@@ -179,6 +183,7 @@ export class GameplayScene extends Phaser.Scene {
     this.huntCues?.destroy(); this.huntCues = undefined;
     this.inputRouter?.clear();
     this.wormView?.destroy();
+    this.skillView?.destroy(); this.skillView = undefined;
     this.actorViews?.destroy();
     this.effects?.destroy();
     this.debugOverlay?.destroy();

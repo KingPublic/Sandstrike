@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: ["static-hosting.spec.ts", "rampage-flow.spec.ts", "phase-b-smoke.spec.ts", "hunt-flow.spec.ts", "two-role-mvp.spec.ts", "ascent-boss.spec.ts"],
+  testMatch: ["static-hosting.spec.ts", "rampage-flow.spec.ts", "phase-b-smoke.spec.ts", "hunt-flow.spec.ts", "two-role-mvp.spec.ts", "ascent-boss.spec.ts", "survival-game.spec.ts", "survival-selection.spec.ts"],
   timeout: 30_000,
   fullyParallel: false,
   workers: 1,

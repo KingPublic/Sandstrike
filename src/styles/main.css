@@ -607,3 +607,8 @@ h1 {
   .sandstrike-shell:not(:has(.game-frame--paused)) .preview .game-frame { display: none; }
   .sandstrike-playing .preview .game-frame { display: block; }
 }
+
+.loadout-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.character-description { padding: .6rem .8rem; border-left: 3px solid var(--ember); background: #ffffff06; font-size: .8rem; }
+.hunt-hud .hud-threat { display: flex; flex-direction: column; align-items: center; gap: .35rem; max-width: calc(100% - 24px); text-align: center; }
+.hunt-hud .hud-stat[hidden] { display: none; }

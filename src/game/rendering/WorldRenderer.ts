@@ -16,7 +16,7 @@ export class WorldRenderer {
 
   /** Survival rendering: skyline plus authored platforms and a moving hazard band. */
   createAscent(world: AscentWorldSnapshot): void {
-    this.draw(false);
+    this.draw(false, world.bounds.top);
     const g = this.scene.add.graphics().setDepth(-60);
     for (const platform of world.platforms) this.platform(g, platform);
     const theme = themes[this.themeId];
@@ -42,12 +42,12 @@ export class WorldRenderer {
     g.lineStyle(2, theme.light, .35); g.strokeRect(platform.left, platform.y, platform.right - platform.left, height);
   }
 
-  private draw(withGround: boolean): void {
+  private draw(withGround: boolean, top = TOP): void {
     this.backdrop?.destroy();
     this.hazard?.destroy(); this.hazard = undefined; this.hazardY = Number.NaN;
     const g = this.scene.add.graphics().setDepth(-100); this.backdrop = g;
-    const theme = themes[this.themeId], skyHeight = -TOP / theme.sky.length;
-    theme.sky.forEach((color, i) => { g.fillStyle(color); g.fillRect(LEFT, TOP + i * skyHeight, RIGHT - LEFT, skyHeight + 2); });
+    const theme = themes[this.themeId], skyHeight = -top / theme.sky.length;
+    theme.sky.forEach((color, i) => { g.fillStyle(color); g.fillRect(LEFT, top + i * skyHeight, RIGHT - LEFT, skyHeight + 2); });
     for (let radius = 150; radius >= 38; radius -= 16) { g.fillStyle(theme.light, .025 + (150 - radius) / 900); g.fillCircle(620, -610, radius); }
     g.fillStyle(theme.light, .72); g.fillCircle(620, -610, 38);
     theme.skyline.forEach((color, layer) => {

@@ -18,7 +18,7 @@ export interface RpgState {
 export class RpgSystem {
   private state: RpgState = Object.freeze({ owned: false, rockets: 0, reloadUntilTick: 0, readyTick: 0, crateReadyTick: 0 });
 
-  step(action: ActionFrame, context: Readonly<{ position: Vec2; regions: readonly ExposedRegion[] }>, tick: number): Readonly<{ state: RpgState; commands: readonly DamageCommand[]; shot?: Readonly<{ from: Vec2; to: Vec2 }> | undefined }> {
+  step(action: ActionFrame, context: Readonly<{ position: Vec2; regions: readonly ExposedRegion[]; surfaceY?: number }>, tick: number): Readonly<{ state: RpgState; commands: readonly DamageCommand[]; shot?: Readonly<{ from: Vec2; to: Vec2 }> | undefined }> {
     const { owned, crateReadyTick } = this.state;
     let { rockets, reloadUntilTick, readyTick } = this.state;
     if (reloadUntilTick > 0 && tick >= reloadUntilTick) { rockets = b.rpgMagazine; reloadUntilTick = 0; }
@@ -30,7 +30,7 @@ export class RpgSystem {
     const length = Math.hypot(x, y);
     if (owned && action.primary.held && reloadUntilTick === 0 && tick >= readyTick && rockets > 0 && Number.isFinite(length) && length > 0.001) {
       const to = { x: context.position.x + x / length * b.rpgRange, y: context.position.y + y / length * b.rpgRange };
-      const hit = rayContacts(context.position, to, context.regions)[0];
+      const hit = rayContacts(context.position, to, context.regions, context.surfaceY ?? 0)[0];
       shot = freezeRecord({ from: context.position, to: hit?.position ?? to });
       rockets -= 1;
       readyTick = tick + b.rpgCadenceTicks;

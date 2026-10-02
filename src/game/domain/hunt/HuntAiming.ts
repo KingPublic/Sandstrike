@@ -1,13 +1,13 @@
 import type { Vec2 } from "../math/Vector2";
 import type { WormMotionSnapshot } from "../movement/WormMovementTypes";
 import { exposedWormRegions } from "./ExposedWormContacts";
-export function assistExposedAim(from: Vec2, aim: Vec2, worm: WormMotionSnapshot, strength: number): Vec2 {
+export function assistExposedAim(from: Vec2, aim: Vec2, worm: WormMotionSnapshot, strength: number, surfaceY = 0): Vec2 {
   const length = Math.hypot(aim.x, aim.y);
   if (length === 0 || !Number.isFinite(length) || strength <= 0) return aim;
   const normal = { x: aim.x / length, y: aim.y / length };
   let best: Vec2 | undefined, closest = Math.cos(Math.PI / 10);
-  for (const region of exposedWormRegions(worm, 0)) {
-    if (region.position.y > 0) continue;
+  for (const region of exposedWormRegions(worm, surfaceY)) {
+    if (region.position.y > surfaceY) continue;
     const dx = region.position.x - from.x, dy = region.position.y - from.y, distance = Math.hypot(dx, dy);
     if (distance < .001 || distance > 1200) continue;
     const dot = (dx * normal.x + dy * normal.y) / distance;

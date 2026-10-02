@@ -347,3 +347,23 @@ verify peaks between70-210px, falling/re-entry with held up and no steering lift
 Hunt tower AI keeps800/950/640 in huntMovementBalance with the same ballistic rule.
 Old laboratory fixtures keep their profile.19 focused tests and3 browser cases pass;
 physical feel remains a user playtest, not an asserted acceptance.
+
+## Ten-kit tuning and weapon ownership (2026-10-02)
+All values are provisional; 60 ticks equal one second. characters.ts is authoritative.
+Worm HP/armor/speed: Dune100/0/1; Cinder85/0/1.05; Iron140/3/.9;
+Storm90/0/1.12; Rift95/1/1. Player gravity scales with speed squared to retain
+building-height arcs. Storm thrust1300 ends above150px; gravity always continues.
+Fire fan3 shots at18damage; venom3 at8 with4damage each second for3s after hit;
+projectiles speed620,90tick lifetime,12cap. Shock30damage/radius220/90px knockback.
+Hunter HP100; Siege armor2, Engineer1, others0. Shield3s; mark4s increases only
+existing exposed allied fire damage1.35x/cadence1.5x; grapple260px with solid checks;
+decoy5s obeys surface/range sensing; heal30 to living friendly actors within300px.
+Weapon damage/cadence/magazine/reload: rifle8/30/6/90; carbine14/42/6/108;
+SMG5/9/18/96; burst6/48/12/102 (three shots6ticks apart); sidearm12/36/8/78.
+Cooldowns and active durations are data-driven in characters.ts and shown in menus.
+RPG takes firing priority while loaded; starting firearm is available while RPG
+reloads, pending firearm bursts cancel before RPG firing. One trigger never fires
+both weapons. Enemy per-hit recovery is0; explicit boss shield remains180ticks.
+This supersedes the earlier known limitation of hit recovery swallowing rockets.
+Safe support replacements use the lowest ledge at least60px above the hazard;
+allies over120px buried are retired. No natural run-duration acceptance is claimed.

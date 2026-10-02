@@ -29,7 +29,7 @@ export class DamageResolver {
     const applied = target.health - health;
     const actor = createActor({ ...target, health,
       invulnerableUntilTick: applied > 0 && target.tags.includes("worm")
-        ? command.tick + combatBalance.wormInvulnerabilityTicks : (target.invulnerableUntilTick ?? 0),
+        ? command.tick + (target.hitInvulnerabilityTicks ?? combatBalance.wormInvulnerabilityTicks) : (target.invulnerableUntilTick ?? 0),
     });
     return Object.freeze({ actor, command: freezeRecord(command), applied, blocked: blocked ?? (damage === 0 && command.amount > 0 ? "armor" : undefined) });
   }

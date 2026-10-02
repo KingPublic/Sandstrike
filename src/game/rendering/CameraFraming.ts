@@ -77,3 +77,7 @@ function lerp(start: number, end: number, amount: number): number {
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
 }
+
+export function cameraWorldBounds(world?: Readonly<{ left: number; right: number; top: number; bottom: number }>) {
+  return world ?? Object.freeze({ left: -20000, right: 20000, top: -1200, bottom: 3200 });
+}

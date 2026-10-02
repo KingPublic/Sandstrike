@@ -1,3 +1,4 @@
+import { characterForRole, weaponById } from "../../data/characters";
 import type { SessionSnapshot } from "../../domain/session/SessionSnapshot";
 export type HuntHudFields = Readonly<Record<string, string | number | undefined>>;
 
@@ -11,7 +12,10 @@ export const HuntHudModel = {
   fromSnapshot(snapshot: SessionSnapshot): HuntHudFields {
     const h = snapshot.hunt; if (!h) throw new Error("Hunt HUD requires Hunt snapshot.");
     const remaining = (tick: number) => `${Math.max(0, (tick - snapshot.tick) / 60).toFixed(1)}s`;
-    const ammo = h.rifle.reloadUntilTick > snapshot.tick ? `Reload ${remaining(h.rifle.reloadUntilTick)}` : `Ammo ${String(h.rifle.ammo)} / 6`;
+    const character = characterForRole("hunt", snapshot.characterId);
+    const skill = snapshot.skill?.ability;
+    const skillLabel = skill ? `${character?.skill.name ?? "Skill"} · ${skill.active ? "active" : skill.cooldownTicksRemaining > 0 ? `${(skill.cooldownTicksRemaining / 60).toFixed(1)}s` : "ready · Q"}` : "Skill ready · Q";
+    const ammo = h.rifle.reloadUntilTick > snapshot.tick ? `Reload ${remaining(h.rifle.reloadUntilTick)}` : `Ammo ${String(h.rifle.ammo)} / ${String(weaponById(h.rifle.weaponId).magazine)}`;
     const dodge = h.hunter.dodgeReadyTick > snapshot.tick ? `Dodge ${remaining(h.hunter.dodgeReadyTick)}` : "Dodge ready · Shift";
     const world = snapshot.world;
     if (world) {
@@ -21,15 +25,15 @@ export const HuntHudModel = {
       height: `Height ${String(Math.max(0, Math.round(-h.hunter.position.y)))}`,
       stage: world.stage === "boss" ? "Boss stage" : "Ascent stage",
       danger: gap >= 0 ? `Sand gap ${String(gap)}` : `BURIED ${String(-gap)}`,
-      ammo,
+      ammo: h.rpg.owned && !h.rpg.reloading ? undefined : ammo,
       worm: wormLifeText(snapshot),
       boss: h.boss.stage === "boss"
         ? `Boss ${String(Math.max(0, Math.ceil(h.boss.health)))} / ${String(h.boss.maxHealth)}${h.boss.shieldActive ? " · SHIELD" : h.boss.shieldPhase === "windup" ? " · shield charging" : ""}`
-        : `Summit ${String(Math.max(0, 1600 - Math.round(-world.surfaceY)))} away`,
+        : `Summit ${String(Math.max(0, Math.round(h.hunter.position.y + 16 - world.summit.y)))}px above`,
       rpg: h.rpg.owned
-        ? h.rpg.reloading ? "RPG reloading" : `RPG ${String(h.rpg.rockets)} / 2 · LMB fire`
-        : h.rpg.inCrateZone ? "RPG crate · picking up" : h.rpg.crateReady ? "RPG crate ready · reach the summit" : "RPG crate spent",
-      skill: "Skill ready · Q",
+        ? h.rpg.reloading ? "RPG reloading · firearm ready" : `RPG ${String(h.rpg.rockets)} / 2 · LMB fire`
+        : world.stage === "ascent" ? "RPG at rooftop" : h.rpg.inCrateZone ? "RPG crate · picking up" : h.rpg.crateReady ? "RPG crate ready · reach the summit" : "RPG crate restocking",
+      skill: skillLabel,
       dodge,
       tracking: h.tracking.text,
       score: h.score,

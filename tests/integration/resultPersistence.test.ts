@@ -21,8 +21,9 @@ describe("authoritative result persistence", () => {
     expect(repo.primaryWrites).toBe(1);
     expect(save.acceptRunResult({ ...result, sessionId: "next", score: 500 }).newRecord).toBe(true);
     expect(save.acceptRunResult({ ...result, sessionId: "lower", score: 100 }).newRecord).toBe(false);
-    expect(save.snapshot().rampage.bestScore).toBe(500);
+    expect(save.snapshot().legacyRecords.rampage.bestScore).toBe(500);
+    expect(save.snapshot().rampage.bestScore).toBe(0);
     expect(save.acceptRunResult({ ...result, sessionId: "higher", score: 1000 }).newRecord).toBe(true);
-    expect(new SaveCoordinator(repo, "test").load().data.rampage.bestScore).toBe(1000);
+    expect(new SaveCoordinator(repo, "test").load().data.legacyRecords.rampage.bestScore).toBe(1000);
   });
 });

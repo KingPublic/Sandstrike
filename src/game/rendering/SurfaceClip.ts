@@ -9,7 +9,7 @@ export function clipAboveSurface(points: readonly Vec2[], surface = 0): readonly
   }
   return Object.freeze(output);
 }
-export function clippedCircle(center: Vec2, radius: number): readonly Vec2[] {
-  if (center.y - radius >= 0) return [];
-  return clipAboveSurface(Array.from({ length: 24 }, (_, i) => { const angle = i * Math.PI * 2 / 24; return { x: center.x + Math.cos(angle) * radius, y: center.y + Math.sin(angle) * radius }; }));
+export function clippedCircle(center: Vec2, radius: number, surface = 0): readonly Vec2[] {
+  if (center.y - radius >= surface) return [];
+  return clipAboveSurface(Array.from({ length: 24 }, (_, i) => { const angle = i * Math.PI * 2 / 24; return { x: center.x + Math.cos(angle) * radius, y: center.y + Math.sin(angle) * radius }; }), surface);
 }

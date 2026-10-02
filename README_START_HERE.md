@@ -17,18 +17,25 @@ Read in this order, then check `git status`, recent commits and the actual sourc
    `docs/DECISIONS.md`, `docs/BALANCE.md`, `docs/ASSET_LICENSES.md`, and
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
 
-Current checkpoint (2026-10-02, later session): **Survival Foundation and the whole
-Survival Ascent batch are implemented and committed** in the root. Commits:
-`287afc2` compact themes/arcade feeding/Sandguard, `ef34688` vertical ascent,
-`ee44d17` escalating worm returns, `59e9589` Hunt squad and helicopter, plus the
-rooftop RPG boss fight. Evidence: 197 unit/integration tests pass, lint/typecheck
-green, browser cases pass for menus, controls at four viewports, kill/return,
-warning and the summit boss (`docs/verification/survival-boss.png`).
-Latest playtest correction: building-height Rampage breaches with ballistic gravity,
-including upward held input; keyboard/touch and the rooftop boss were rechecked.
-The pause for playtest was revoked by the user asking to continue.
-Exact next action: execute **Survival Roster** (ten kits,
-selection + save v3 records, final verification). Do not replay old Phase A/B/C plans.
+Current checkpoint (2026-10-02, resumed session): **Foundation, Ascent and
+Survival Roster code are implemented** directly in root. The latest committed
+physics correction is b1bac82 (ballistic building-height player breaches).
+The local final checkpoint is `feat: complete survival roster and revised saves`;
+consult git log for its SHA. All work stays on phase-b-ready.
+Five worms and five Hunters have real distinct skills, original animated silhouettes
+and five starting firearms. Character/theme selections survive retry/reload.
+Save3 preserves genuine v1/v2 records under legacyRecords, with separate revised
+record envelopes. Rooftop RPG has firing priority while loaded; the starting
+firearm can fire during RPG reload. The ten-kit browser selection/retry cases pass.
+One final review identified four Important defects, reproduced and corrected:
+moving-surface presentation/contacts, fatal same-tick boss impact, buried support,
+and post-minute decoy targeting. Visual inspection additionally found the legacy
+camera top clipping the rooftop; camera/sky now use ascent bounds.
+Final evidence:222tests/lint/typecheck/productionbuild pass;12focused root browser
+cases,5Pages cases and normal root/Pages smoke pass. See SURVIVAL_VERIFICATION.md.
+Exact next action: natural pacing/control playtest and focused tuning, then visual
+polish. The5-6min target and physical hardware remain unverified. Do not replay old
+Phase A/B/C or the completed redesign.
 
 Required target: 5 worms + 5 Hunters, unique active skills, automatic mouth feeding,
 responsive building-height breaches, compact desktop menu, allied Hunt NPCs/helicopters, climbable
@@ -46,28 +53,27 @@ User reported18% account quota and wants a handoff at1%; the agent cannot observ
 that percentage. Save progress continuously and checkpoint promptly if the user
 reports the remaining quota. Do not invent an account-usage reading.
 
-## Current game (before the approved revision)
+## Current playable prototype
 
 Sandstrike is an original browser-first 2D action game with two asymmetric roles:
 an underground monster and a human hunter. The project targets desktop and
-landscape-first mobile play from one shared simulation. Phase C adds playable
-Ranger Hunt and completes Rampage response bands 0-3.
+landscape-first mobile play from one shared simulation. The approved survival revision adds ten kits, three themes and a rooftop boss.
 
 ## Play the current slice
 
 From the project root, run `npm ci` once, then `npm run dev` and open the local
-URL printed by Vite. Choose Enter desert → Play → Rampage or Hunt → Start. The
+URL printed by Vite. Choose Enter desert → Play → Rampage or Hunt → Start. The character selector offers five role-compatible kits. The
 environment selector (desert outpost / urban ruins / frozen facility) is on the
 mode screen and is frozen for the run.
 
-- Rampage: WASD or arrow keys steer, Space activates Sandguard (3s immunity), Shift
+- Rampage: WASD or arrow keys steer, Space activates the selected worm skill (Dune Maw: Sandguard, 3s immunity), Shift
   bursts, Escape pauses. Food is eaten automatically through the mouth.
 - Hunt (survival ascent): A/D move, Space or W jump, S drops through a platform,
   mouse aims and fires, Q uses the character skill, Shift dodges, R reloads.
   Climb the outpost route above the rising sand, survive the worms (each ordinary
   kill buys 10 seconds before a stronger worm returns), reach the rooftop crate for
   the RPG and finish the boss at the summit.
-- Touch: joystick plus Jump, Fire/Aim drag, Skill and Dodge (Rampage: Sandguard and
+- Touch: joystick plus Jump, Fire/Aim drag, Skill and Dodge (Rampage: selected skill and
   Burst). Landscape is required during play; portrait safely pauses the run.
 - Gamepad: left stick steers/moves, right stick aims, RT fires, LT reloads, RB
   boost/dodge, LB skill, A jumps and B drops through. The shared action adapter is
@@ -80,9 +86,9 @@ mode screen and is frozen for the run.
 Burrow, turn upward to breach, strike prey for healing and chain varied targets.
 Infantry, armored vehicles and aerial threats lock aim before firing. Each new
 response band has its own warning and bounded population. Hunt uses a seeded AI
-worm, broad tracking, temporary snare reveal and explicit victory/defeat outcomes.
+worm, broad tracking, rising-hazard ascent, allied support and summit boss victory.
 Both modes' records, Hunt victories, onboarding and settings save locally.
-Save v2 migrates v1 records. If storage is unavailable,
+Save v3 migrates v1/v2 records into legacyRecords without mixing revised scores. If storage is unavailable,
 play continues with memory-only progress for that session.
 
 ## Files
@@ -97,6 +103,7 @@ play continues with memory-only progress for that session.
 - `docs/BALANCE.md` — tuning record.
 - `docs/CHANGELOG.md` — meaningful changes.
 - `docs/SESSION_HANDOFF.md` — latest verified checkpoint and exact resume action.
+- `docs/SURVIVAL_VERIFICATION.md` ? latest redesign evidence and release limits.
 - `docs/PHASE_C_VERIFICATION.md` — actual two-role evidence and release limits.
 
 ## Start development

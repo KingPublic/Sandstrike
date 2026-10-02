@@ -9,7 +9,7 @@ export interface HunterState {
   readonly dodgeUntilTick: number;
   readonly dodgeReadyTick: number;
 }
-export interface RifleState { readonly ammo: number; readonly reloadUntilTick: number; readonly readyTick: number }
+export interface RifleState { readonly ammo: number; readonly reloadUntilTick: number; readonly readyTick: number; readonly weaponId?: string }
 export interface SnareState { readonly phase: "none" | "arming" | "armed" | "triggered"; readonly position?: Vec2 | undefined; readonly placedTick: number; readonly triggeredTick: number; readonly readyTick: number; readonly revealUntilTick: number }
 export interface SnareEvent { readonly type: "snare-triggered"; readonly tick: number; readonly position: Vec2 }
 export interface SnareStep { readonly state: SnareState; readonly events: readonly SnareEvent[]; readonly effects?: WormMotionEffects }

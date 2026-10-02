@@ -49,7 +49,8 @@ describe("summit boss stage", () => {
     const snapshot = session.snapshot();
     expect(snapshot.wormLife).toMatchObject({ phase: "boss", generation: 0, kills: 1 });
     expect(snapshot.actors.filter(actor => actor.id === "worm")).toHaveLength(1);
-    expect(snapshot.actors.find(actor => actor.id === "worm")?.health).toBe(bossBalance.bossHealth);
+    expect(snapshot.actors.find(actor => actor.id === "worm")?.maxHealth).toBe(bossBalance.bossHealth);
+    expect(snapshot.actors.find(actor => actor.id === "worm")?.health).toBeGreaterThan(0);
     expect(snapshot.hunt?.boss.stage).toBe("boss");
   });
 

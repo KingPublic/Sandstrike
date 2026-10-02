@@ -7,11 +7,11 @@ import { RunFactory } from "../../src/game/application/RunFactory";
 it("migrates genuine v1 and retains original bytes as the first backup", () => {
   const raw = JSON.stringify(valid), repo = new MemorySaveRepository(), keys = saveKeys("test");
   repo.replace(keys.primary, raw); const saves = new SaveCoordinator(repo, "test");
-  expect(saves.load().data.schemaVersion).toBe(2);
+  expect(saves.load().data.schemaVersion).toBe(3);
   expect(migrateSave(valid).settings.aimAssist).toBe(.35);
   saves.updateSettings({ shake: .5 });
   expect(repo.load(keys.backup)).toBe(raw);
-  expect(migrateSave(JSON.parse(repo.load(keys.primary) ?? "null") as unknown).schemaVersion).toBe(2);
+  expect(migrateSave(JSON.parse(repo.load(keys.primary) ?? "null") as unknown).schemaVersion).toBe(3);
 });
 it("excludes debug results from records, onboarding and writes", () => {
   const run = new RunFactory().create({ seed: 1, mode: "hunt", debugAI: true });
