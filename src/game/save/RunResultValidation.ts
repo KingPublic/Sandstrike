@@ -1,10 +1,11 @@
 import { freezeRecord } from "../domain/actors/Actor";
 import type { RunResult } from "../domain/modes/RunResult";
 import { record, keys, nonnegative } from "./SaveFields";
-export function validateRunResult(value: unknown, maximumBand = 1): RunResult {
-  const result = record(value);
+export function validateRunResult(value: unknown, maximumBand = 3): RunResult {
+  const source = record(value);
+  const result = source.mode === "rampage" ? { vehiclesDestroyed: 0, aerialDestroyed: 0, ...source } : source;
   const common = ["sessionId", "seed", "mode", "reason", "score", "durationSeconds", "maximumCombo"];
-  const rampage = ["preyConsumed", "infantryDestroyed", "highestBand", "healthRecovered"];
+  const rampage = ["preyConsumed", "infantryDestroyed", "highestBand", "healthRecovered", "vehiclesDestroyed", "aerialDestroyed"];
   const hunt = ["trapTriggers", "breachInterruptions", "shotsFired", "shotsHit", "exposureWindowsUsed", "hunterHealth", "relayIntegrity", "eligibleForRecords"];
   if (typeof result.sessionId !== "string" || !result.sessionId || result.sessionId.length > 128 || !Number.isSafeInteger(result.seed)) throw new Error("Invalid run envelope.");
   if (result.mode !== "rampage" && result.mode !== "hunt") throw new Error("Invalid run mode.");

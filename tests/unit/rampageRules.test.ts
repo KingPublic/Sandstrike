@@ -8,7 +8,7 @@ function snapshot(health = 100) { return new GameSession({ seed: 1, movement: mo
 describe("one authoritative Rampage result", () => {
   it("prioritizes defeat over same-boundary exit and never emits a second result", () => {
     const rules = new RampageRules();
-    const frame = { ...snapshot(0), tick: 120, score: { points: 500, basePoints: 350, preyConsumed: 1, infantryDestroyed: 1 } };
+    const frame = { ...snapshot(0), tick: 120, score: { ...snapshot().score, points: 500, basePoints: 350, preyConsumed: 1, infantryDestroyed: 1 } };
     const request = { type: "RequestEnd" as const, reason: "player-ended" as const, requestedTick: 120 };
     const first = rules.observe(frame, [{ type: "actor-healed", tick: 10, actorId: "worm", amount: 8, position: { x: 0, y: 0 } }], [request]);
     expect(first.result).toMatchObject({ reason: "defeated", score: 500, durationSeconds: 2, preyConsumed: 1, infantryDestroyed: 1, healthRecovered: 8 });
@@ -22,3 +22,4 @@ describe("one authoritative Rampage result", () => {
     expect(rules.observe(snapshot(), [], [{ type: "RequestEnd", reason: "player-ended", requestedTick: 0 }]).result?.reason).toBe("player-ended");
   });
 });
+

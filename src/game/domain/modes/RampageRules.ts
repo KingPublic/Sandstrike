@@ -17,7 +17,7 @@ export class RampageRules implements ModeRules {
     const defeated = (snapshot.actors.find((actor) => actor.id === "worm")?.health ?? 0) <= 0;
     if (!defeated && commands.length === 0) return Object.freeze({ result: undefined, events: Object.freeze([]) });
     this.ended = true;
-    const result: RunResult = freezeRecord({ sessionId: snapshot.sessionId, seed: snapshot.seed, mode: "rampage", reason: defeated ? "defeated" : "player-ended", score: snapshot.score.points, durationSeconds: snapshot.tick * this.stepSeconds, maximumCombo: snapshot.combo.maximumChain, preyConsumed: snapshot.score.preyConsumed, infantryDestroyed: snapshot.score.infantryDestroyed, highestBand: this.highestBand, healthRecovered: this.healed });
+    const result: RunResult = freezeRecord({ sessionId: snapshot.sessionId, seed: snapshot.seed, mode: "rampage", reason: defeated ? "defeated" : "player-ended", score: snapshot.score.points, durationSeconds: snapshot.tick * this.stepSeconds, maximumCombo: snapshot.combo.maximumChain, preyConsumed: snapshot.score.preyConsumed, infantryDestroyed: snapshot.score.infantryDestroyed, vehiclesDestroyed: snapshot.score.vehiclesDestroyed, aerialDestroyed: snapshot.score.aerialDestroyed, highestBand: this.highestBand, healthRecovered: this.healed });
     return freezeRecord({ result, events: [{ type: "run-ended", tick: snapshot.tick, result }] });
   }
 }

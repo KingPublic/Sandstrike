@@ -21,12 +21,14 @@ export class RunFactory {
     const defeat = configuration.fixtureId === "rampage-defeat";
     const breach = stress || configuration.fixtureId === "surface-breach" || configuration.fixtureId === "combat-breach" || configuration.fixtureId === "rampage-short";
     const laboratory = configuration.fixtureId === "surface-breach";
+    const advancedBand = configuration.fixtureId === "rampage-band-3" ? 3 : configuration.fixtureId === "rampage-band-2" ? 2 : undefined;
     const movement = breach ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: movementBalance.cruiseSpeed } : movementBalance;
     const actors = stress ? [
       ...Array.from({ length: 3 }, (_, index) => spawnActor(`smoke.prey.${String(index + 1)}`, "actor.prey", { x: 0, y: -10 })),
       ...Array.from({ length: 4 }, (_, index) => spawnActor(`smoke.infantry.${String(index + 1)}`, "actor.infantry", { x: 0, y: -16 })),
     ] : laboratory ? [] : [spawnActor("opening.prey.1", "actor.prey", { x: 260, y: -10 }), spawnActor("opening.prey.2", "actor.prey", { x: 440, y: -10 }), spawnActor("opening.prey.3", "actor.prey", { x: -320, y: -10 }), ...(configuration.fixtureId === "combat-breach" ? [spawnActor("opening.infantry", "actor.infantry", { x: 180, y: -16 })] : [])];
     const shots = stress ? [{ position: { x: -26, y: 22 }, direction: { x: 1, y: 0 } }, { position: { x: -26, y: 22 }, direction: { x: 1, y: 0 } }] : defeat ? [{ position: { x: -26, y: 180 }, direction: { x: 1, y: 0 } }] : [];
-    return new GameSession({ sessionId: `${this.namespace}.${String(this.sequence)}`, seed: configuration.seed, movement, terrain: new FlatTerrainProfile(0), actors, ...(laboratory ? {} : { mode: "rampage" }), ...(stress || defeat ? { playerHealth: stress ? 30 : 10, initialProjectiles: shots } : {}) });
+    const advancedActors = advancedBand ? [...actors, spawnActor("opening.vehicle", "actor.vehicle", { x: 300, y: -18 }), ...(advancedBand === 3 ? [spawnActor("opening.aerial", "actor.aerial", { x: 300, y: -220 })] : [])] : actors;
+    return new GameSession({ sessionId: `${this.namespace}.${String(this.sequence)}`, seed: configuration.seed, movement: advancedBand ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 360 } : movement, terrain: new FlatTerrainProfile(0), actors: advancedActors, ...(advancedBand ? { initialBand: advancedBand } : {}), ...(laboratory ? {} : { mode: "rampage" }), ...(stress || defeat ? { playerHealth: stress ? 30 : 10, initialProjectiles: shots } : {}) });
   }
 }

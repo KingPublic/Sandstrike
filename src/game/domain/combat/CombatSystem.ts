@@ -26,7 +26,7 @@ export class CombatSystem {
         registry.update({ ...source, health: healing.health });
         events.push({ type: "actor-healed", tick: command.tick, actorId: source.id, amount: healing.recovered, position: source.position });
       } else {
-        events.push({ type: "actor-destroyed", tick: command.tick, sourceId: command.sourceId, targetId: target.id, definitionId: target.definitionId, category: target.tags.includes("infantry") ? "infantry" : "other", abilityId: command.abilityId, tags: command.tags, position: target.position });
+        events.push({ type: "actor-destroyed", tick: command.tick, sourceId: command.sourceId, targetId: target.id, definitionId: target.definitionId, category: target.tags.includes("infantry") ? "infantry" : target.tags.includes("vehicle") ? "vehicle" : target.tags.includes("aerial") ? "aerial" : "other", abilityId: command.abilityId, tags: command.tags, position: target.position });
       }
     }
     return Object.freeze(events);

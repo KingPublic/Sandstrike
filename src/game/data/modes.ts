@@ -18,5 +18,7 @@ export const modes = freezeRecord({ rampage: {
   spawnRules: [
     { definitionId: "actor.prey", weight: 1, cap: rampageBalance.preyCap },
     { definitionId: "actor.infantry", weight: 1, cap: rampageBalance.infantryCap },
+    { definitionId: "actor.vehicle", weight: 1, cap: rampageBalance.vehicleCap },
+    { definitionId: "actor.aerial", weight: 1, cap: rampageBalance.aerialCap },
   ], warningTicks: rampageBalance.warningTicks,
 } satisfies ModeDefinition });

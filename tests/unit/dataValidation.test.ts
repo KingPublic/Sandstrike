@@ -21,7 +21,7 @@ describe("run definition validation", () => {
   it("rejects unsafe geometry, masks, health, weights, caps and timing", () => {
     const first = actorDefinitions[0];
     if (!first) throw new Error("Fixture missing actor.");
-    for (const invalid of [{ ...first, health: -1 }, { ...first, collision: { ...first.collision, mask: 32 } }, { ...first, collision: { ...first.collision, shape: { kind: "circle" as const, radius: -1 } } }]) expect(() => validateDefinitions({ ...valid(), actors: [invalid, ...actorDefinitions.slice(1)] })).toThrow();
+    for (const invalid of [{ ...first, health: -1 }, { ...first, collision: { ...first.collision, mask: 64 } }, { ...first, collision: { ...first.collision, shape: { kind: "circle" as const, radius: -1 } } }]) expect(() => validateDefinitions({ ...valid(), actors: [invalid, ...actorDefinitions.slice(1)] })).toThrow();
     const rule = modes.rampage.spawnRules[0];
     if (!rule) throw new Error("Fixture missing spawn.");
     for (const patch of [{ weight: 0 }, { cap: -1 }, { definitionId: "absent" }]) expect(() => validateDefinitions({ ...valid(), mode: { ...modes.rampage, spawnRules: [{ ...rule, ...patch }] } })).toThrow();

@@ -17,6 +17,8 @@ export interface ActorDefinition {
 
 export const actorDefinitions: readonly ActorDefinition[] = Object.freeze([
   Object.freeze({ id: "actor.hunter", faction: "hunter", health: huntBalance.hunterHealth, armor: 0, tags: Object.freeze(["hunter"]), collision: collisionProfiles.hunter }),
+  Object.freeze({ id: "actor.vehicle", faction: "military", health: enemies.vehicleHealth, armor: enemies.vehicleArmor, tags: Object.freeze(["vehicle"]), collision: collisionProfiles.vehicle }),
+  Object.freeze({ id: "actor.aerial", faction: "military", health: enemies.aerialHealth, armor: 0, tags: Object.freeze(["aerial"]), collision: collisionProfiles.aerial }),
   Object.freeze({ id: "actor.relay", faction: "hunter", health: huntBalance.relayHealth, armor: 0, tags: Object.freeze(["relay"]), collision: collisionProfiles.relay }),
   Object.freeze({ id: "actor.worm", faction: "worm", health: combatBalance.wormHealth, armor: 0, tags: Object.freeze(["worm"]), collision: collisionProfiles.worm }),
   Object.freeze({ id: "actor.prey", faction: "world", health: combatBalance.preyHealth, armor: 0, tags: Object.freeze(["prey", "consumable"]), collision: collisionProfiles.prey }),

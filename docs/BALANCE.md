@@ -233,3 +233,15 @@ remain untriggered and can be recovered. AI locks a sector with 60-tick warning;
 12-tick decisions and expired 120-tick Hunter sightings. These are provisional.
 Evidence: 5 kit/contact tests and 8 AI/tracking/locomotion tests passed; two
 5400-tick replays identical, repeated warned breaches, finite bounded poses.
+
+## Phase C advanced response hypotheses (2026-10-02)
+Vehicle: 80 HP, armor 4, lateral speed 75 px/s, shell damage 15.
+Aerial: 50 HP, altitude -220px, lateral speed 96px/s, round damage 10.
+Both use a 60-tick locked aim warning and 180-tick firing cadence; no firing
+without an allowed current sighting. Population caps: prey 8, infantry 4,
+vehicles 2, aerial 1, projectiles 24. Bands 2/3 activate at 7200/12600 ticks
+or 3000/6000 base score, each after a separate 120-tick warning. New rewards
+500/750 base points retain existing variety/repetition and breach modifiers.
+Evidence: advanced kit/contact checks passed; two 18000-tick replays identical
+with all bands, finite bounded motion, caps and zero event overflow. Replay
+runtime on this host ~13 seconds, so this test uses a specific 30-second limit.

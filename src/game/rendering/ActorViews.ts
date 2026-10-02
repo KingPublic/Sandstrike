@@ -38,6 +38,16 @@ export class ActorViews {
       view.lineStyle(3, 0xffe5a4, 0.9).lineBetween(-actor.direction.x * 14, -actor.direction.y * 14, 0, 0);
       view.fillStyle(0xffffff).fillCircle(0, 0, 3); return;
     }
+    if (actor.tags.includes("vehicle") || actor.tags.includes("aerial")) {
+      const air = actor.tags.includes("aerial");
+      view.fillStyle(0x24313c).fillRoundedRect(-31, -13, 62, 27, 6);
+      view.fillStyle(contrast ? 0xfff4ca : air ? 0xc38c68 : 0x91a3a0).fillRoundedRect(-26, -18, 43, 25, 5);
+      view.lineStyle(5, 0x263947).lineBetween(0, -14, actor.direction.x * 42, -14);
+      if (air) { view.lineStyle(3, 0xf3d2a7).lineBetween(-46, -28, 46, -28); view.lineStyle(3, 0x293d4b).lineBetween(0, -18, 0, -30); view.lineBetween(-24, 18, 24, 18); }
+      else for (const x of [-21, 20]) { view.fillStyle(0x18212c).fillCircle(x, 14, 11); view.fillStyle(0x8c9d9c).fillCircle(x, 14, 5); }
+      if (telegraph) { view.lineStyle(3, 0xffc273).strokeCircle(0, -12, 43); view.lineBetween(0, -71, 0, -52); }
+      return;
+    }
     const stride = Math.sin(tick * 0.19) * (Math.abs(actor.velocity.x) > 0 ? 4 : 0.6);
     const hunter = actor.tags.includes("hunter");
     const soldier = actor.tags.includes("infantry") || hunter;

@@ -13,6 +13,7 @@ export function upgradeV1(value: unknown): SaveData {
     if (typeof standard === "boolean" ? typeof setting !== "boolean" : typeof setting !== "number" || !Number.isFinite(setting) || setting < (key === "touchOpacity" ? .25 : 0) || setting > 1) throw new Error("Invalid v1 preference.");
   }
   const rampage = data.rampage === undefined ? defaults.rampage : record(data.rampage); keys(rampage, ["bestScore", "bestRun"]);
+  if (rampage.bestRun !== null && rampage.bestRun !== undefined) keys(record(rampage.bestRun), ["sessionId", "seed", "mode", "reason", "score", "durationSeconds", "maximumCombo", "preyConsumed", "infantryDestroyed", "highestBand", "healthRecovered"]);
   const bestScore = nonnegative(rampage.bestScore), bestRun = rampage.bestRun === null ? null : validateRunResult(rampage.bestRun, 1);
   if (!Number.isSafeInteger(bestScore) || bestRun && bestRun.mode !== "rampage" || (bestRun?.score ?? 0) !== bestScore) throw new Error("Invalid v1 record.");
   const onboarding = data.onboarding === undefined ? { rampageSeen: false } : record(data.onboarding); keys(onboarding, ["rampageSeen"]);

@@ -1,4 +1,4 @@
-import { enemies } from "../../../data/enemies";
+import { enemies, projectiles, type ProjectileDefinition } from "../../../data/enemies";
 import { collisionProfiles } from "../../../data/collisionProfiles";
 import { createActor, type ActorState } from "../Actor";
 import type { ActorRegistry } from "../ActorRegistry";
@@ -7,7 +7,7 @@ import type { DamageCommand } from "../../combat/DamageResolver";
 import type { DomainEvent } from "../../events/DomainEvent";
 import { isFiniteVec2, type Vec2 } from "../../math/Vector2";
 
-interface ProjectileSlot { id: string | undefined; remainingSeconds: number }
+interface ProjectileSlot { id: string | undefined; remainingSeconds: number; definition: ProjectileDefinition; ownerId: string }
 
 export class ProjectileSystem {
   private readonly slots: ProjectileSlot[];
@@ -15,20 +15,21 @@ export class ProjectileSystem {
 
   constructor(private readonly registry: ActorRegistry, capacity: number = enemies.projectileCapacity) {
     if (!Number.isSafeInteger(capacity) || capacity <= 0) throw new RangeError("Invalid projectile capacity.");
-    this.slots = Array.from({ length: capacity }, () => ({ id: undefined, remainingSeconds: 0 }));
+    this.slots = Array.from({ length: capacity }, () => ({ id: undefined, remainingSeconds: 0, definition: projectiles.infantry, ownerId: "" }));
   }
 
   get activeCount(): number { return this.slots.filter((slot) => slot.id !== undefined).length; }
 
-  spawn(ownerId: string, position: Vec2, direction: Vec2, tick: number): string | undefined {
+  spawn(ownerId: string, position: Vec2, direction: Vec2, tick: number, definition: ProjectileDefinition = projectiles.infantry): string | undefined {
+    if (!definition.id || [definition.damage, definition.speed, definition.lifetimeSeconds].some(v => !Number.isFinite(v) || v <= 0)) throw new RangeError("Invalid projectile definition.");
     if (!isFiniteVec2(position) || !isFiniteVec2(direction) || Math.hypot(direction.x, direction.y) === 0) throw new RangeError("Invalid projectile pose.");
     const slot = this.slots.find((value) => value.id === undefined);
     if (!slot) return undefined;
     const magnitude = Math.hypot(direction.x, direction.y);
     const id = `projectile.${String(++this.sequence)}`;
-    this.registry.deferSpawn(createActor({ id, definitionId: "actor.projectile", faction: "military", position, velocity: { x: direction.x / magnitude * enemies.projectileSpeed, y: direction.y / magnitude * enemies.projectileSpeed }, direction: { x: direction.x / magnitude, y: direction.y / magnitude }, health: 1, maxHealth: 1, armor: 0, tags: ["projectile", `owner:${ownerId}`, `fired:${String(tick)}`], collision: collisionProfiles.projectile, lifecycle: "active" }));
+    this.registry.deferSpawn(createActor({ id, definitionId: definition.id, faction: "military", position, velocity: { x: direction.x / magnitude * definition.speed, y: direction.y / magnitude * definition.speed }, direction: { x: direction.x / magnitude, y: direction.y / magnitude }, health: 1, maxHealth: 1, armor: 0, tags: ["projectile", `owner:${ownerId}`, `fired:${String(tick)}`], collision: collisionProfiles.projectile, lifecycle: "active" }));
     slot.id = id;
-    slot.remainingSeconds = enemies.projectileLifetimeSeconds;
+    slot.remainingSeconds = definition.lifetimeSeconds; slot.definition = Object.freeze({ ...definition }); slot.ownerId = ownerId;
     return id;
   }
 
@@ -53,7 +54,7 @@ export class ProjectileSystem {
       if (contact.kind !== "projectile") continue;
       const slot = this.slots.find((value) => value.id === contact.sourceId);
       if (!slot) continue;
-      commands.push({ sourceId: contact.sourceId, targetId: contact.targetId, tick, abilityId: "ability.rifle", amount: enemies.projectileDamage, tags: ["projectile"], priority: 0 });
+      commands.push({ sourceId: contact.sourceId, targetId: contact.targetId, tick, abilityId: slot.definition.id, amount: slot.definition.damage, tags: ["projectile"], priority: 0 });
       events.push({ type: "contact", tick, contact });
       this.retire(slot, "destroyed");
     }
@@ -64,5 +65,6 @@ export class ProjectileSystem {
     if (slot.id) this.registry.markForRemoval(slot.id, cause);
     slot.id = undefined;
     slot.remainingSeconds = 0;
+    slot.definition = projectiles.infantry; slot.ownerId = "";
   }
 }

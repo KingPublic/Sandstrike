@@ -3,6 +3,7 @@ export interface RampageRunResult {
   readonly reason: "defeated" | "player-ended"; readonly score: number;
   readonly durationSeconds: number; readonly maximumCombo: number;
   readonly preyConsumed: number; readonly infantryDestroyed: number;
+  readonly vehiclesDestroyed?: number; readonly aerialDestroyed?: number;
   readonly highestBand: number; readonly healthRecovered: number;
 }
 export interface HuntRunResult {

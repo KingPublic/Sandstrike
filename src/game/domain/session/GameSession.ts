@@ -16,6 +16,9 @@ import { ActorRegistry } from "../actors/ActorRegistry";
 import { CollisionWorld } from "../collision/CollisionWorld";
 import { EventQueue } from "../events/EventQueue";
 import { RandomSource } from "../random/RandomSource";
+import { VehicleController } from "../ai/VehicleController";
+import { AerialController } from "../ai/AerialController";
+import { enemies, projectiles } from "../../data/enemies";
 import { InfantryController } from "../ai/InfantryController";
 import type { PerceptionSnapshot } from "../ai/PerceptionSnapshot";
 import { ProjectileSystem } from "../actors/enemies/ProjectileSystem";
@@ -37,12 +40,14 @@ import type { SessionCommand } from "./SessionCommand";
 import { HuntSystems } from "../hunt/HuntSystems";
 import { HuntRules } from "../modes/HuntRules";
 import type { ModeRules } from "../modes/ModeRules";
+import type { ResponseBand } from "../spawning/ThreatDirector";
 
 export interface GameSessionOptions {
   readonly sessionId?: string;
   readonly mode?: "rampage" | "hunt";
   readonly debugAI?: boolean;
   readonly aimAssist?: number;
+  readonly initialBand?: ResponseBand;
   readonly seed: number;
   readonly movement: WormMovementConfig;
   readonly terrain: TerrainProfile;
@@ -62,13 +67,13 @@ export class GameSession {
   private readonly bite = new AbilitySystem(abilities.bite, ["worm"]);
   private readonly combat = new CombatSystem();
   private readonly random: RandomSource;
-  private readonly infantry = new Map<string, InfantryController>();
+  private readonly infantry = new Map<string, InfantryController | VehicleController | AerialController>();
   private readonly perceived = new Map<string, Readonly<{ position: Vec2; observedTick: number }>>();
   private readonly projectiles: ProjectileSystem;
   private readonly score = new ScoreSystem();
   private readonly combo = new ComboSystem();
   private readonly spawning = new SpawnDirector();
-  private readonly threat = new ThreatDirector();
+  private readonly threat: ThreatDirector;
   private readonly rules: ModeRules;
   private readonly hunt: HuntSystems | undefined;
   private readonly commands: SessionCommand[] = [];
@@ -84,6 +89,7 @@ export class GameSession {
     }
     this.stepSeconds = stepSeconds;
     this.rules = options.mode === "hunt" ? new HuntRules() : new RampageRules(stepSeconds);
+    this.threat = new ThreatDirector(options.initialBand ?? 0);
     if (options.mode === "rampage") validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.rampage });
     const bounds = rampageBalance.arena;
     this.locomotion = new WormLocomotion(options.mode ? { ...options.movement, worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } } : options.movement);
@@ -165,8 +171,8 @@ export class GameSession {
     if (this.options.mode === "rampage") {
       const previousThreat = this.threat.snapshot();
       const threat = this.threat.step({ tick: this.currentTick, basePoints: this.score.snapshot().basePoints }, combatEvents);
-      if (previousThreat.warningStartedTick === undefined && threat.warningStartedTick !== undefined) this.events.publish({ type: "response-warning", tick: this.currentTick, band: 1 });
-      if (previousThreat.band !== threat.band) this.events.publish({ type: "response-band-changed", tick: this.currentTick, band: 1 });
+      if (previousThreat.warningStartedTick === undefined && threat.warningStartedTick !== undefined) this.events.publish({ type: "response-warning", tick: this.currentTick, band: (threat.band + 1) as 1 | 2 | 3 });
+      if (previousThreat.band !== threat.band) this.events.publish({ type: "response-band-changed", tick: this.currentTick, band: threat.band as 1 | 2 | 3 });
       const player = this.actors.get("worm");
       if (player) for (const command of this.spawning.step({ tick: this.currentTick, actors: this.actors.snapshot(), playerPosition: player.position, playerHealth: player.health, band: threat.band, cameraHalfWidth: 600, surfaceY: this.options.terrain.surfaceY(player.position.x) }, this.random.stream("spawn"))) this.actors.deferSpawn(spawnActor(command.id, command.definitionId, command.position));
     }
@@ -215,21 +221,22 @@ export class GameSession {
   private stepInfantry(): void {
     const worm = this.locomotion.snapshot();
     for (const actor of this.actors.snapshot()) {
-      if (!actor.tags.includes("infantry") || actor.lifecycle !== "active") continue;
+      if (!actor.tags.some(tag => ["infantry", "vehicle", "aerial"].includes(tag)) || actor.lifecycle !== "active") continue;
       let controller = this.infantry.get(actor.id);
-      if (!controller) { controller = new InfantryController(); this.infantry.set(actor.id, controller); }
+      if (!controller) { controller = actor.tags.includes("vehicle") ? new VehicleController() : actor.tags.includes("aerial") ? new AerialController() : new InfantryController(); this.infantry.set(actor.id, controller); }
       const visible = worm.head.position.y <= this.options.terrain.surfaceY(worm.head.position.x) + aiBalance.surfaceVisibilityMargin && Math.hypot(worm.head.position.x - actor.position.x, worm.head.position.y - actor.position.y) <= aiBalance.perceptionRange;
       if (visible) this.perceived.set(actor.id, { position: worm.head.position, observedTick: this.currentTick });
       const perception: PerceptionSnapshot = Object.freeze({ selfId: actor.id, selfPosition: actor.position, tick: this.currentTick, visibleTarget: visible ? Object.freeze({ id: "worm", position: worm.head.position }) : undefined, recentTarget: this.perceived.get(actor.id) });
       const previousState = controller.snapshot().state;
       const decision = controller.step(perception, this.currentTick, this.random.stream(`ai.${actor.id}`));
-      const position = { x: actor.position.x + decision.moveX * aiBalance.repositionSpeed * this.stepSeconds, y: actor.position.y };
-      this.actors.update({ ...actor, position, velocity: { x: decision.moveX * aiBalance.repositionSpeed, y: 0 } });
+      const speed = actor.tags.includes("vehicle") ? enemies.vehicleSpeed : actor.tags.includes("aerial") ? enemies.aerialSpeed : aiBalance.repositionSpeed;
+      const position = { x: Math.max(-2350, Math.min(2350, actor.position.x + decision.moveX * speed * this.stepSeconds)), y: actor.position.y };
+      this.actors.update({ ...actor, position, velocity: { x: decision.moveX * speed, y: 0 } });
       if (decision.state === "telegraph" && previousState !== "telegraph" && decision.aimPoint) this.events.publish({ type: "infantry-telegraph", tick: this.currentTick, actorId: actor.id, aimPoint: decision.aimPoint, position });
       if (decision.fire && decision.aimPoint) {
         const direction = { x: decision.aimPoint.x - position.x, y: decision.aimPoint.y - position.y };
         if (Math.hypot(direction.x, direction.y) === 0) direction.x = 1;
-        const projectileId = this.projectiles.spawn(actor.id, position, direction, this.currentTick);
+        const projectileId = this.projectiles.spawn(actor.id, position, direction, this.currentTick, actor.tags.includes("vehicle") ? projectiles.vehicle : actor.tags.includes("aerial") ? projectiles.aerial : projectiles.infantry);
         if (projectileId) this.events.publish({ type: "projectile-fired", tick: this.currentTick, actorId: actor.id, projectileId, position });
       }
     }
