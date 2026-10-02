@@ -34,10 +34,14 @@ import type { SessionStepResult } from "./SessionStepResult";
 import { RampageRules } from "../modes/RampageRules";
 import type { RunResult } from "../modes/RunResult";
 import type { SessionCommand } from "./SessionCommand";
+import { HuntSystems } from "../hunt/HuntSystems";
+import { HuntRules } from "../modes/HuntRules";
+import type { ModeRules } from "../modes/ModeRules";
 
 export interface GameSessionOptions {
   readonly sessionId?: string;
-  readonly mode?: "rampage";
+  readonly mode?: "rampage" | "hunt";
+  readonly debugAI?: boolean;
   readonly seed: number;
   readonly movement: WormMovementConfig;
   readonly terrain: TerrainProfile;
@@ -64,7 +68,8 @@ export class GameSession {
   private readonly combo = new ComboSystem();
   private readonly spawning = new SpawnDirector();
   private readonly threat = new ThreatDirector();
-  private readonly rules: RampageRules;
+  private readonly rules: ModeRules;
+  private readonly hunt: HuntSystems | undefined;
   private readonly commands: SessionCommand[] = [];
   private ended: RunResult | undefined;
 
@@ -77,16 +82,17 @@ export class GameSession {
       throw new RangeError("Session step must be finite and positive.");
     }
     this.stepSeconds = stepSeconds;
-    this.rules = new RampageRules(stepSeconds);
+    this.rules = options.mode === "hunt" ? new HuntRules() : new RampageRules(stepSeconds);
     if (options.mode === "rampage") validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.rampage });
     const bounds = rampageBalance.arena;
-    this.locomotion = new WormLocomotion(options.mode === "rampage" ? { ...options.movement, worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } } : options.movement);
+    this.locomotion = new WormLocomotion(options.mode ? { ...options.movement, worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } } : options.movement);
     const worm = this.locomotion.snapshot();
     this.actors = new ActorRegistry([
       createActor({ ...spawnActor("worm", "actor.worm", worm.head.position), direction: worm.head.tangent, velocity: worm.head.velocity, health: options.playerHealth ?? spawnActor("worm", "actor.worm", worm.head.position).health }),
       ...(options.actors ?? []),
     ]);
     this.random = new RandomSource(options.seed);
+    this.hunt = options.mode === "hunt" ? new HuntSystems(options.terrain, options.debugAI ?? false, this.actors.get("hunter")?.position) : undefined;
     this.projectiles = new ProjectileSystem(this.actors);
     for (const shot of options.initialProjectiles ?? []) this.projectiles.spawn("fixture", shot.position, shot.direction, 0);
     this.actors.commit();
@@ -110,10 +116,13 @@ export class GameSession {
 
     const previousActors = this.actors.snapshot();
     this.currentTick = action.tick;
+    const huntStep = this.hunt?.prepare(action, this.locomotion.snapshot(), this.actors, this.random.stream("ai.worm"), this.currentTick);
+    for (const event of huntStep?.events ?? []) this.events.publish(event);
     const movementEvents = this.locomotion.step(
-      action,
+      huntStep?.action ?? action,
       this.stepSeconds,
       this.options.terrain,
+      huntStep?.effects,
     );
     for (const event of movementEvents) this.events.publish(mapMovementEvent(event));
     const worm = this.locomotion.snapshot();
@@ -123,10 +132,13 @@ export class GameSession {
     this.stepInfantry();
     const projectileFrame = this.projectiles.step(this.stepSeconds, this.collisions, this.currentTick, previousActors);
     for (const event of projectileFrame.events) this.events.publish(event);
-    const ability = this.bite.step(this.currentTick, action.primary.pressed);
+    const ability = this.bite.step(this.currentTick, this.hunt ? false : action.primary.pressed);
     if (ability.activated) this.events.publish({ type: "ability-activated", tick: this.currentTick, actorId: "worm", abilityId: abilities.bite.id, position: worm.head.position });
     const currentActors = this.actors.snapshot();
     const commands: DamageCommand[] = [...projectileFrame.commands];
+    const rifle = this.hunt?.fire(action, worm, this.currentTick);
+    commands.push(...(rifle?.commands ?? []));
+    for (const event of rifle?.events ?? []) this.events.publish(event);
     for (const contact of this.collisions.query(previousActors, currentActors)) {
       if (contact.kind === "projectile") continue;
       this.events.publish({ type: "contact", tick: this.currentTick, contact });
@@ -144,6 +156,7 @@ export class GameSession {
     if (wormActor.health > 25 && healthAfterCombat <= 25) this.events.publish({ type: "low-health-warning", tick: this.currentTick, position: worm.head.position });
     if (wormActor.health > 0 && healthAfterCombat <= 0) this.events.publish({ type: "worm-defeated", tick: this.currentTick, position: worm.head.position });
     const combatEvents = this.events.drain();
+    this.hunt?.observe(combatEvents);
     const combo = this.combo.step(combatEvents, this.currentTick);
     const award = this.score.consume(combatEvents, combo);
     for (const event of combatEvents) this.events.publish(event);
@@ -182,6 +195,9 @@ export class GameSession {
   snapshot(): SessionSnapshot {
     return Object.freeze({
       sessionId: this.options.sessionId ?? `seed.${String(this.options.seed)}`,
+      mode: this.options.mode ?? "rampage",
+      playerActorId: this.hunt ? "hunter" : "worm",
+      ...(this.hunt ? { hunt: this.hunt.snapshot(this.locomotion.snapshot(), this.actors, this.currentTick) } : {}),
       tick: this.currentTick,
       seed: this.options.seed,
       score: this.score.snapshot(),

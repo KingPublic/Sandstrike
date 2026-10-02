@@ -1,0 +1,3 @@
+export function record(value: unknown): Record<string, unknown> { if (value === null || typeof value !== "object" || Array.isArray(value)) throw new Error("Expected save object."); return value as Record<string, unknown>; }
+export function keys(value: object, allowed: readonly string[]): void { if (Object.keys(value).some(key => !allowed.includes(key))) throw new Error("Unknown save field."); }
+export function nonnegative(value: unknown): number { if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > Number.MAX_SAFE_INTEGER) throw new Error("Invalid save number."); return value; }

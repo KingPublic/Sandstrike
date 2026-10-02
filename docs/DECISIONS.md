@@ -257,3 +257,10 @@ Consequences: Inspect the existing root branch and dirty state before switching.
 Keep the Phase B branch/history intact; do not overwrite unrelated edits.
 
 Status: explicitly authorized by the user on 2026-10-01.
+
+### D-011 — Hunt integration and save v2 (2026-10-02)
+Approved Phase C implementation now uses the existing GameSession boundary and
+CombatSystem for both roles. Hunt disables Rampage spawn/rewards and keeps one
+result owner; defeat precedes victory. AI diagnostics are opt-in before the run
+and invalidate records. Save v2 migrates genuine v1 settings and Rampage records;
+historical storage keys remain stable and original valid bytes become backup.

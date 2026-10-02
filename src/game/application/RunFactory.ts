@@ -3,12 +3,13 @@ import { movementBalance } from "../data/movementBalance";
 import { FlatTerrainProfile } from "../domain/terrain/FlatTerrainProfile";
 import { spawnActor } from "../data/actors";
 
-export interface RunConfiguration { readonly seed: number; readonly fixtureId?: string }
+export interface RunConfiguration { readonly seed: number; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly debugAI?: boolean }
 export class RunFactory {
   private sequence = 0;
   constructor(private readonly namespace = Date.now().toString(36)) {}
   create(configuration: RunConfiguration): GameSession {
     this.sequence += 1;
+    if (configuration.mode === "hunt") return new GameSession({ sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", seed: configuration.seed, debugAI: configuration.debugAI ?? false, movement: movementBalance, terrain: new FlatTerrainProfile(0), actors: [spawnActor("hunter", "actor.hunter", { x: -180, y: -16 }), spawnActor("relay", "actor.relay", { x: 0, y: -30 })] });
     const stress = configuration.fixtureId === "phase-b-smoke";
     const defeat = configuration.fixtureId === "rampage-defeat";
     const breach = stress || configuration.fixtureId === "surface-breach" || configuration.fixtureId === "combat-breach" || configuration.fixtureId === "rampage-short";

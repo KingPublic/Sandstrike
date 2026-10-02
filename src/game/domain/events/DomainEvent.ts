@@ -9,6 +9,8 @@ interface WormEventBase {
 }
 
 export type DomainEvent =
+  | Readonly<WormEventBase & { type: "snare-triggered" }>
+  | Readonly<WormEventBase & { type: "rifle-fired"; to: Vec2 }>
   | Readonly<{ type: "run-ended"; tick: number; result: RunResult }>
   | Readonly<WormEventBase & { type: "worm-defeated" }>
   | Readonly<WormEventBase & { type: "low-health-warning" }>

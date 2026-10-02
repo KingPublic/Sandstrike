@@ -772,3 +772,10 @@ answer yes to all of the following:
 Implementation completion later requires actual test, build, browser, console,
 desktop-input, touch-input, viewport, and gameplay evidence. This document alone
 does not satisfy those runtime gates.
+
+## Phase C implementation: Hunt composition
+HuntSystems composes surface locomotion, hitscan rifle, shallow snare, seeded
+WormController, allowed perception and quantized tracking. GameSession supplies
+motion and registry boundaries; HuntRules owns terminal priority. Normal Hunt
+snapshots omit AI decisions; presentation must filter exact underground state.
+SaveV1 validates legacy fields before SaveValidation constructs schema v2.

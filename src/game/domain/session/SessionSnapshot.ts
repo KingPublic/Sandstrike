@@ -7,6 +7,9 @@ import type { ScoreState } from "../scoring/ScoreSystem";
 import type { ThreatState } from "../spawning/ThreatDirector";
 
 export interface SessionSnapshot {
+  readonly mode: "rampage" | "hunt";
+  readonly playerActorId: "worm" | "hunter";
+  readonly hunt?: import("../hunt/HuntSystems").HuntSnapshot;
   readonly sessionId: string;
   readonly tick: number;
   readonly seed: number;

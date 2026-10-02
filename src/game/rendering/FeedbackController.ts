@@ -2,11 +2,12 @@ import type { DomainEvent } from "../domain/events/DomainEvent";
 import type { Vec2 } from "../domain/math/Vector2";
 
 export interface PresentationSettings {
+  readonly aimAssist: number;
   readonly masterVolume: number; readonly musicVolume: number; readonly effectsVolume: number;
   readonly shake: number; readonly reducedMotion: boolean; readonly reducedFlashes: boolean;
   readonly highContrast: boolean; readonly leftHanded: boolean; readonly touchOpacity: number; readonly haptics: boolean;
 }
-export const defaultPresentationSettings: PresentationSettings = Object.freeze({ masterVolume: 0.7, musicVolume: 0.5, effectsVolume: 0.7, shake: 0.5, reducedMotion: false, reducedFlashes: false, highContrast: false, leftHanded: false, touchOpacity: 0.85, haptics: false });
+export const defaultPresentationSettings: PresentationSettings = Object.freeze({ aimAssist: 0.35, masterVolume: 0.7, musicVolume: 0.5, effectsVolume: 0.7, shake: 0.5, reducedMotion: false, reducedFlashes: false, highContrast: false, leftHanded: false, touchOpacity: 0.85, haptics: false });
 export interface FeedbackCommand {
   readonly label: string; readonly shape: "ring" | "cross" | "shield" | "diamond";
   readonly position: Vec2 | undefined; readonly color: number;

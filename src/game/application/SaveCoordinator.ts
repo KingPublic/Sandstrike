@@ -23,18 +23,19 @@ export class SaveCoordinator {
   load(): LoadResult {
     let protectFuture = false;
     let loaded: SaveData | undefined;
+    let validRaw: string | undefined;
     try {
       const primary = this.repository.load(this.keys.primary);
       if (primary !== null) {
-        try { const parsed: unknown = JSON.parse(primary); protectFuture = isFuture(parsed); loaded = migrateSave(parsed); }
+        try { const parsed: unknown = JSON.parse(primary); protectFuture = isFuture(parsed); loaded = migrateSave(parsed); validRaw = primary; }
         catch { this.diagnostics.push(protectFuture ? "Newer save kept intact; this session uses temporary data." : "Primary save could not be read."); }
       }
       if (!loaded) {
         const backup = this.repository.load(this.keys.backup);
-        if (backup !== null) { try { loaded = migrateSave(JSON.parse(backup) as unknown); this.diagnostics.push("Save recovered from backup."); } catch { this.diagnostics.push("Backup unavailable; default settings loaded."); } }
+        if (backup !== null) { try { loaded = migrateSave(JSON.parse(backup) as unknown); validRaw = backup; this.diagnostics.push("Save recovered from backup."); } catch { this.diagnostics.push("Backup unavailable; default settings loaded."); } }
       }
       this.data = loaded ?? defaultSaveData();
-      this.previousValid = loaded ? JSON.stringify(loaded) : undefined;
+      this.previousValid = validRaw;
       if (protectFuture) this.fallback();
     } catch { this.data = loaded ?? defaultSaveData(); this.diagnostics.push("Saving unavailable. Changes are kept for this session."); this.fallback(); }
     return Object.freeze({ ...this.status(), data: this.data });
@@ -44,8 +45,16 @@ export class SaveCoordinator {
     const result = validateRunResult(value);
     if (this.accepted.has(result.sessionId)) return Object.freeze({ accepted: false, newRecord: false });
     this.accepted.add(result.sessionId);
+    if (result.mode === "hunt") {
+      if (!result.eligibleForRecords) return Object.freeze({ accepted: true, newRecord: false });
+      const newRecord = result.score > this.data.hunt.bestScore;
+      const previousVictory = this.data.hunt.bestVictory;
+      const victory = result.reason === "victory" && (!previousVictory || result.score > previousVictory.score || result.score === previousVictory.score && result.durationSeconds < previousVictory.durationSeconds) ? result : previousVictory;
+      this.persist(validateSave({ ...this.data, hunt: { bestScore: newRecord ? result.score : this.data.hunt.bestScore, bestRun: newRecord ? result : this.data.hunt.bestRun, bestVictory: victory }, onboarding: { ...this.data.onboarding, huntSeen: true } }));
+      return Object.freeze({ accepted: true, newRecord });
+    }
     const newRecord = result.score > this.data.rampage.bestScore;
-    this.persist(validateSave({ ...this.data, rampage: newRecord ? { bestScore: result.score, bestRun: result } : this.data.rampage, onboarding: { rampageSeen: true } }));
+    this.persist(validateSave({ ...this.data, rampage: newRecord ? { bestScore: result.score, bestRun: result } : this.data.rampage, onboarding: { ...this.data.onboarding, rampageSeen: true } }));
     return Object.freeze({ accepted: true, newRecord });
   }
   resetConfirmed(confirmed = false): boolean { if (!confirmed) return false; this.accepted.clear(); this.diagnostics.length = 0; this.repository = this.persistentRepository; this.memoryOnly = false; this.persist(defaultSaveData(), true); return true; }
@@ -65,4 +74,4 @@ export class SaveCoordinator {
   }
   private fallback(): void { this.memoryOnly = true; const memory = new MemorySaveRepository(); memory.replace(this.keys.primary, JSON.stringify(this.data)); this.repository = memory; }
 }
-function isFuture(value: unknown): boolean { return value !== null && typeof value === "object" && "schemaVersion" in value && typeof value.schemaVersion === "number" && value.schemaVersion > 1; }
+function isFuture(value: unknown): boolean { return value !== null && typeof value === "object" && "schemaVersion" in value && typeof value.schemaVersion === "number" && value.schemaVersion > 2; }

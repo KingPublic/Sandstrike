@@ -19,7 +19,7 @@ export function validateDefinitions(data: RunDefinitions): RunDefinitions {
     positive(actor.health);
     if (!Number.isFinite(actor.armor) || actor.armor < 0 || actor.armor > actor.health) throw new RangeError("Invalid armor.");
     const { layer, mask, shape } = actor.collision;
-    if (!Number.isInteger(layer) || layer <= 0 || layer > 8 || (layer & (layer - 1)) !== 0 || !Number.isInteger(mask) || mask <= 0 || (mask & ~15) !== 0 || (mask & layer) !== 0) throw new RangeError("Impossible collision mask.");
+    if (!Number.isInteger(layer) || layer <= 0 || layer > 32 || (layer & (layer - 1)) !== 0 || !Number.isInteger(mask) || mask <= 0 || (mask & ~63) !== 0 || (mask & layer) !== 0) throw new RangeError("Impossible collision mask.");
     if (shape.kind === "circle" || shape.kind === "capsule") positive(shape.radius);
     if (shape.kind === "box") { positive(shape.halfWidth); positive(shape.halfHeight); }
     if (shape.kind === "capsule" && [shape.from.x, shape.from.y, shape.to.x, shape.to.y].some((n) => !Number.isFinite(n))) throw new RangeError("Invalid capsule.");
