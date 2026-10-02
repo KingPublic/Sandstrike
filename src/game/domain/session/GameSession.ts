@@ -40,6 +40,9 @@ import type { SessionStepResult } from "./SessionStepResult";
 import { RampageRules } from "../modes/RampageRules";
 import type { RunResult } from "../modes/RunResult";
 import type { SessionCommand } from "./SessionCommand";
+import { ascentArena, ascentHunterBalance, type AscentStage } from "../../data/ascentArena";
+import { AscentWorld } from "../world/AscentWorld";
+import { clampHealth } from "../combat/Health";
 import { HuntSystems } from "../hunt/HuntSystems";
 import { HuntRules } from "../modes/HuntRules";
 import type { ModeRules } from "../modes/ModeRules";
@@ -50,6 +53,9 @@ export interface GameSessionOptions {
   readonly arcade?: boolean;
   readonly sessionId?: string;
   readonly mode?: "rampage" | "hunt";
+  readonly ascent?: boolean;
+  /** Scenario override for the initial hazard surface; defaults to the arena value. */
+  readonly ascentSurface?: number;
   readonly debugAI?: boolean;
   readonly aimAssist?: number;
   readonly initialBand?: ResponseBand;
@@ -82,7 +88,10 @@ export class GameSession {
   private readonly threat: ThreatDirector;
   private readonly rules: ModeRules;
   private readonly hunt: HuntSystems | undefined;
+  private readonly world: AscentWorld | undefined;
   private readonly commands: SessionCommand[] = [];
+  private burialTicks = 0;
+  private burialDamage = 0;
   private ended: RunResult | undefined;
 
   constructor(private readonly options: GameSessionOptions) {
@@ -98,8 +107,13 @@ export class GameSession {
     this.rules = options.mode === "hunt" ? new HuntRules() : new RampageRules(stepSeconds);
     this.threat = new ThreatDirector(options.initialBand ?? 0);
     if (options.mode === "rampage") validateDefinitions({ actors: actorDefinitions, abilities: [abilities.bite], mode: modes.rampage });
-    const bounds = rampageBalance.arena;
-    const movement = options.mode ? { ...options.movement, worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } } : options.movement;
+    this.world = options.ascent === true
+      ? new AscentWorld(options.ascentSurface === undefined ? ascentArena : { ...ascentArena, initialSurface: options.ascentSurface })
+      : undefined;
+    const bounds = this.world ? ascentArena.bounds : rampageBalance.arena;
+    const movement = options.mode
+      ? { ...options.movement, ...(this.world ? { initialPosition: { x: 0, y: 900 }, initialDirection: { x: 1, y: 0 } } : {}), worldBounds: { left: bounds.left + 18, right: bounds.right - 18, top: bounds.top + 18, bottom: bounds.bottom - 18 } }
+      : options.movement;
     this.locomotion = new WormLocomotion(movement);
     const worm = this.locomotion.snapshot();
     this.actors = new ActorRegistry([
@@ -107,7 +121,7 @@ export class GameSession {
       ...(options.actors ?? []),
     ]);
     this.random = new RandomSource(options.seed);
-    this.hunt = options.mode === "hunt" ? new HuntSystems(options.terrain, options.debugAI ?? false, movement, this.actors.get("hunter")?.position, options.aimAssist ?? .35) : undefined;
+    this.hunt = options.mode === "hunt" ? new HuntSystems(this.terrain, options.debugAI ?? false, movement, this.actors.get("hunter")?.position, options.aimAssist ?? .35, this.world) : undefined;
     this.projectiles = new ProjectileSystem(this.actors);
     for (const shot of options.initialProjectiles ?? []) this.projectiles.spawn("fixture", shot.position, shot.direction, 0);
     this.actors.commit();
@@ -131,12 +145,13 @@ export class GameSession {
 
     const previousActors = this.actors.snapshot();
     this.currentTick = action.tick;
+    this.world?.step(this.currentTick, this.currentStage());
     const huntStep = this.hunt?.prepare(action, this.locomotion.snapshot(), this.actors, this.random.stream("ai.worm"), this.currentTick);
     for (const event of huntStep?.events ?? []) this.events.publish(event);
     const movementEvents = this.locomotion.step(
       huntStep?.action ?? action,
       this.stepSeconds,
-      this.options.terrain,
+      this.terrain,
       huntStep?.effects,
     );
     for (const event of movementEvents) this.events.publish(mapMovementEvent(event));
@@ -153,6 +168,7 @@ export class GameSession {
         this.events.publish({ type: "ability-activated", tick: this.currentTick, actorId: "worm", abilityId: skill.id, position: worm.head.position });
       }
     }
+    for (const event of this.applyBurialDamage()) this.events.publish(event);
     this.stepInfantry();
     const projectileFrame = this.projectiles.step(this.stepSeconds, this.collisions, this.currentTick, previousActors);
     for (const event of projectileFrame.events) this.events.publish(event);
@@ -217,10 +233,38 @@ export class GameSession {
     return Object.freeze({ snapshot, events: Object.freeze([...events, ...update.events]), result: update.result });
   }
 
+  private currentStage(): AscentStage {
+    return "ascent";
+  }
+
+  /** Terrain every actor follows: the rising hazard surface in ascent runs. */
+  private get terrain(): TerrainProfile {
+    return this.world ?? this.options.terrain;
+  }
+
+  /** Buried Hunters take escalating damage after a visible grace period. */
+  private applyBurialDamage(): readonly DomainEvent[] {
+    if (!this.world) return [];
+    const hunter = this.actors.get("hunter");
+    if (hunter?.lifecycle !== "active" || hunter.health <= 0) { this.burialTicks = 0; return []; }
+    const feet = hunter.position.y + ascentHunterBalance.halfHeight;
+    if (feet <= this.world.surfaceY() + 1) { this.burialTicks = 0; return []; }
+    this.burialTicks += 1;
+    if (this.burialTicks <= ascentArena.burialGraceTicks) return [];
+    this.burialDamage += ascentArena.burialDamagePerTick;
+    const amount = Math.floor(this.burialDamage);
+    if (amount <= 0) return [];
+    this.burialDamage -= amount;
+    const health = clampHealth(hunter.health - amount, hunter.maxHealth);
+    this.actors.update({ ...hunter, health });
+    return [Object.freeze({ type: "damage-applied" as const, tick: this.currentTick, sourceId: "hazard", targetId: "hunter", abilityId: "hazard.burial", amount: hunter.health - health, tags: Object.freeze(["hazard"]), position: hunter.position })];
+  }
+
   snapshot(): SessionSnapshot {
     return Object.freeze({
       themeId: this.options.themeId ?? "desert",
       arcade: this.options.arcade ?? false,
+      ...(this.world ? { world: this.world.snapshot() } : {}),
       sessionId: this.options.sessionId ?? `seed.${String(this.options.seed)}`,
       mode: this.options.mode ?? "rampage",
       playerActorId: this.hunt ? "hunter" : "worm",

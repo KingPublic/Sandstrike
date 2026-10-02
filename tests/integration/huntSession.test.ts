@@ -3,7 +3,7 @@ import { RunFactory } from "../../src/game/application/RunFactory";
 import { neutralActionFrame } from "../../src/game/input/ActionFrame";
 it("uses fresh Hunt actors, seeded AI and one zero-time exit result", () => {
   const factory = new RunFactory("hunt");
-  const run = factory.create({ seed: 88, mode: "hunt" });
+  const run = factory.create({ seed: 88, mode: "hunt", fixtureId: "hunt-relay" });
   expect(run.snapshot().mode).toBe("hunt");
   expect(run.snapshot().actors.map(a => a.id)).toEqual(["hunter", "relay", "worm"]);
   expect(run.snapshot().hunt).toBeDefined();
@@ -15,7 +15,7 @@ it("uses fresh Hunt actors, seeded AI and one zero-time exit result", () => {
   expect(end.result?.mode).toBe("hunt"); expect(end.result?.reason).toBe("player-ended");
   expect(end.snapshot.tick).toBe(120); expect(end.events.filter(e => e.type === "run-ended")).toHaveLength(1);
   expect(run.flushControlCommands().result).toBeUndefined();
-  const retry = factory.create({ seed: 88, mode: "hunt" });
+  const retry = factory.create({ seed: 88, mode: "hunt", fixtureId: "hunt-relay" });
   expect(retry.snapshot().sessionId).not.toBe(end.snapshot.sessionId);
   expect(retry.snapshot().hunt?.snare.phase).toBe("none");
 });
@@ -28,7 +28,7 @@ it("keeps Hunt debug runs ineligible and decisions opt-in", () => {
   expect(debug.snapshot().hunt?.eligibleForRecords).toBe(false);
 });
 it("normal start seed marks every natural breach with a full warning and reachable sector", () => {
-  const run = new RunFactory("warning").create({ seed: 376940, mode: "hunt" });
+  const run = new RunFactory("warning").create({ seed: 376940, mode: "hunt", fixtureId: "hunt-relay" });
   let crossings = 0;
   for (let tick = 1; tick <= 5400; tick++) {
     const frame = run.step(neutralActionFrame(tick));

@@ -1,6 +1,14 @@
 import type { Vec2 } from "../math/Vector2";
 import type { WormMotionEffects } from "../movement/WormMovementTypes";
-export interface HunterState { readonly position: Vec2; readonly direction: Vec2; readonly dodgeUntilTick: number; readonly dodgeReadyTick: number }
+export interface HunterState {
+  readonly position: Vec2;
+  readonly direction: Vec2;
+  readonly velocity?: Vec2;
+  readonly grounded?: boolean;
+  readonly platformId?: string | undefined;
+  readonly dodgeUntilTick: number;
+  readonly dodgeReadyTick: number;
+}
 export interface RifleState { readonly ammo: number; readonly reloadUntilTick: number; readonly readyTick: number }
 export interface SnareState { readonly phase: "none" | "arming" | "armed" | "triggered"; readonly position?: Vec2 | undefined; readonly placedTick: number; readonly triggeredTick: number; readonly readyTick: number; readonly revealUntilTick: number }
 export interface SnareEvent { readonly type: "snare-triggered"; readonly tick: number; readonly position: Vec2 }

@@ -7,15 +7,25 @@ import {
 
 export type GamepadProvider = () => ArrayLike<Gamepad | null>;
 
+export interface GamepadInputOptions {
+  readonly skillOnTrigger?: boolean;
+  readonly hunter?: boolean;
+}
+
 export class GamepadInput implements InputSource {
   readonly id = "gamepad";
   private analogSequence = 0;
   private previousAxes = "";
+  private readonly skillOnTrigger: boolean;
+  private readonly hunter: boolean;
 
   constructor(
     private readonly getGamepads: GamepadProvider = () => navigator.getGamepads(),
-    private readonly skillOnTrigger = false,
-  ) {}
+    options: GamepadInputOptions = {},
+  ) {
+    this.skillOnTrigger = options.skillOnTrigger ?? false;
+    this.hunter = options.hunter ?? false;
+  }
 
   sample(): PartialActionFrame {
     const gamepad = Array.from(this.getGamepads()).find(
@@ -35,7 +45,16 @@ export class GamepadInput implements InputSource {
       this.analogSequence = nextInputActivitySequence();
     }
 
-    const buttons: Partial<Record<ActionButton, boolean>> = {
+    const buttons: Partial<Record<ActionButton, boolean>> = this.hunter ? {
+      primary: buttonPressed(gamepad, 7),
+      secondary: buttonPressed(gamepad, 6),
+      ability: buttonPressed(gamepad, 4),
+      boost: buttonPressed(gamepad, 5),
+      jump: buttonPressed(gamepad, 0),
+      drop: buttonPressed(gamepad, 1),
+      interact: buttonPressed(gamepad, 2),
+      pause: buttonPressed(gamepad, 9),
+    } : {
       primary: !this.skillOnTrigger && buttonPressed(gamepad, 7),
       secondary: buttonPressed(gamepad, 6),
       ability: buttonPressed(gamepad, 4) || (this.skillOnTrigger && buttonPressed(gamepad, 7)),

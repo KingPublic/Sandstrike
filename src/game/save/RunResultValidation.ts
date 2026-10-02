@@ -10,7 +10,7 @@ export function validateRunResult(value: unknown, maximumBand = 3): RunResult {
   if (typeof result.sessionId !== "string" || !result.sessionId || result.sessionId.length > 128 || !Number.isSafeInteger(result.seed)) throw new Error("Invalid run envelope.");
   if (result.mode !== "rampage" && result.mode !== "hunt") throw new Error("Invalid run mode.");
   keys(result, [...common, ...(result.mode === "rampage" ? rampage : hunt)]);
-  const reasons = result.mode === "rampage" ? ["defeated", "player-ended"] : ["victory", "hunter-defeated", "relay-destroyed", "player-ended"];
+  const reasons = result.mode === "rampage" ? ["defeated", "player-ended"] : ["victory", "hunter-defeated", "hunter-buried", "relay-destroyed", "player-ended"];
   if (!reasons.includes(String(result.reason))) throw new Error("Invalid run reason.");
   for (const key of ["score", "durationSeconds", "maximumCombo", ...(result.mode === "rampage" ? rampage : hunt.filter(key => key !== "eligibleForRecords"))]) nonnegative(result[key]);
   for (const key of ["score", ...(result.mode === "rampage" ? rampage : hunt.filter(key => !["hunterHealth", "relayIntegrity", "eligibleForRecords"].includes(key)))]) if (!Number.isSafeInteger(result[key])) throw new Error("Invalid run count.");

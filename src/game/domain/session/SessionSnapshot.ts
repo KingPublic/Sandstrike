@@ -7,12 +7,14 @@ import type { ScoreState } from "../scoring/ScoreSystem";
 import type { ThreatState } from "../spawning/ThreatDirector";
 
 import type { HuntSnapshot } from "../hunt/HuntSystems";
+import type { AscentWorldSnapshot } from "../world/AscentWorld";
 
 import type { ThemeId } from "../../data/themes";
 
 export interface SessionSnapshot {
   readonly themeId?: ThemeId;
   readonly arcade?: boolean;
+  readonly world?: AscentWorldSnapshot;
   readonly mode: "rampage" | "hunt";
   readonly playerActorId: "worm" | "hunter";
   readonly hunt?: HuntSnapshot;

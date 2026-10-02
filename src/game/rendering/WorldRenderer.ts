@@ -1,14 +1,50 @@
 import Phaser from "phaser";
 import { themes, type ThemeId } from "../data/themes";
+import type { AscentWorldSnapshot } from "../domain/world/AscentWorld";
+import type { Platform } from "../domain/world/PlatformContacts";
 
 const LEFT = -20_000, RIGHT = 20_000, TOP = -1_200, BOTTOM = 3_200;
+const HAZARD_BAND_DEPTH = 1_600;
 export class WorldRenderer {
   readonly bounds = Object.freeze({ left: LEFT, right: RIGHT, top: TOP, bottom: BOTTOM });
   private backdrop: Phaser.GameObjects.Graphics | undefined;
+  private hazard: Phaser.GameObjects.Graphics | undefined;
+  private hazardY = Number.NaN;
   constructor(private readonly scene: Phaser.Scene, private themeId: ThemeId = "desert") {}
   setTheme(themeId: ThemeId): void { this.themeId = themeId; this.create(); }
-  create(): void {
+  create(): void { this.draw(true); }
+
+  /** Survival rendering: skyline plus authored platforms and a moving hazard band. */
+  createAscent(world: AscentWorldSnapshot): void {
+    this.draw(false);
+    const g = this.scene.add.graphics().setDepth(-60);
+    for (const platform of world.platforms) this.platform(g, platform);
+    const theme = themes[this.themeId];
+    const hazard = this.scene.add.graphics().setDepth(-50);
+    theme.ground.forEach((color, index) => { hazard.fillStyle(color); hazard.fillRect(LEFT, index * HAZARD_BAND_DEPTH / theme.ground.length, RIGHT - LEFT, HAZARD_BAND_DEPTH / theme.ground.length + 2); });
+    hazard.lineStyle(6, theme.surface, .95); hazard.lineBetween(LEFT, 0, RIGHT, 0);
+    hazard.lineStyle(2, theme.light, .3); hazard.lineBetween(LEFT, 10, RIGHT, 10);
+    this.hazard = hazard;
+    this.updateWorld(world);
+  }
+
+  updateWorld(world: AscentWorldSnapshot): void {
+    if (!this.hazard || world.surfaceY === this.hazardY) return;
+    this.hazardY = world.surfaceY;
+    this.hazard.y = world.surfaceY;
+  }
+
+  private platform(g: Phaser.GameObjects.Graphics, platform: Platform): void {
+    const theme = themes[this.themeId];
+    const height = platform.id === "summit" ? 46 : 26;
+    g.fillStyle(theme.structure, .95); g.fillRect(platform.left, platform.y, platform.right - platform.left, height);
+    g.fillStyle(theme.surface, .85); g.fillRect(platform.left, platform.y - 5, platform.right - platform.left, 6);
+    g.lineStyle(2, theme.light, .35); g.strokeRect(platform.left, platform.y, platform.right - platform.left, height);
+  }
+
+  private draw(withGround: boolean): void {
     this.backdrop?.destroy();
+    this.hazard?.destroy(); this.hazard = undefined; this.hazardY = Number.NaN;
     const g = this.scene.add.graphics().setDepth(-100); this.backdrop = g;
     const theme = themes[this.themeId], skyHeight = -TOP / theme.sky.length;
     theme.sky.forEach((color, i) => { g.fillStyle(color); g.fillRect(LEFT, TOP + i * skyHeight, RIGHT - LEFT, skyHeight + 2); });
@@ -23,11 +59,13 @@ export class WorldRenderer {
       }
       points.push(new Phaser.Math.Vector2(RIGHT, 0)); g.fillStyle(color, .7 + layer * .1); g.fillPoints(points, true);
     });
-    const levels = [0, 170, 430, 820, BOTTOM];
-    theme.ground.forEach((color, i) => { g.fillStyle(color); g.fillRect(LEFT, levels[i] ?? 0, RIGHT - LEFT, (levels[i + 1] ?? BOTTOM) - (levels[i] ?? 0)); });
-    g.lineStyle(5, theme.surface, .9); g.lineBetween(LEFT, 0, RIGHT, 0);
-    g.lineStyle(2, theme.light, .26); g.lineBetween(LEFT, 8, RIGHT, 8);
-    for (let i = 0; i < 180; i++) { g.fillStyle(theme.surface, .18); g.fillCircle(LEFT + (i * 977) % (RIGHT - LEFT), 36 + (i * 193) % 3050, 1 + i % 4); }
+    if (withGround) {
+      const levels = [0, 170, 430, 820, BOTTOM];
+      theme.ground.forEach((color, i) => { g.fillStyle(color); g.fillRect(LEFT, levels[i] ?? 0, RIGHT - LEFT, (levels[i + 1] ?? BOTTOM) - (levels[i] ?? 0)); });
+      g.lineStyle(5, theme.surface, .9); g.lineBetween(LEFT, 0, RIGHT, 0);
+      g.lineStyle(2, theme.light, .26); g.lineBetween(LEFT, 8, RIGHT, 8);
+      for (let i = 0; i < 180; i++) { g.fillStyle(theme.surface, .18); g.fillCircle(LEFT + (i * 977) % (RIGHT - LEFT), 36 + (i * 193) % 3050, 1 + i % 4); }
+    }
     this.structures(g);
   }
   private structures(g: Phaser.GameObjects.Graphics): void {

@@ -6,6 +6,7 @@ import type { PresentationMetrics } from "./PresentationMetrics";
 export interface NextRunConfiguration {
   readonly themeId?: ThemeId;
   readonly mode?: "rampage" | "hunt";
+  readonly ascent?: boolean;
   readonly debugAI?: boolean;
   readonly aimAssist?: number;
   readonly seed: number;

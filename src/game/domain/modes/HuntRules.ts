@@ -4,6 +4,8 @@ import type { SessionCommand } from "../session/SessionCommand";
 import type { SessionSnapshot } from "../session/SessionSnapshot";
 import type { ModeRules, ModeUpdate } from "./ModeRules";
 import type { HuntRunResult } from "./RunResult";
+const BURIAL_DEATH_DEPTH = 1200;
+
 export class HuntRules implements ModeRules {
   private ended = false;
   observe(snapshot: SessionSnapshot, _events: readonly DomainEvent[], commands: readonly SessionCommand[]): ModeUpdate {
@@ -11,7 +13,12 @@ export class HuntRules implements ModeRules {
     if (!hunt) throw new Error("Hunt snapshot missing.");
     if (this.ended) return { result: undefined, events: [] };
     const hp = (id: string) => snapshot.actors.find(a => a.id === id)?.health ?? 0;
-    const reason = hp("hunter") <= 0 ? "hunter-defeated" : hp("relay") <= 0 ? "relay-destroyed" : hp("worm") <= 0 ? "victory" : commands.length ? "player-ended" : undefined;
+    const world = snapshot.world;
+    const hunter = snapshot.actors.find(a => a.id === "hunter");
+    const buried = world !== undefined && hunter !== undefined && hunter.position.y > world.surfaceY + BURIAL_DEATH_DEPTH;
+    const reason = hp("hunter") <= 0 ? "hunter-defeated"
+      : world ? (buried ? "hunter-buried" : commands.length ? "player-ended" : undefined)
+        : hp("relay") <= 0 ? "relay-destroyed" : hp("worm") <= 0 ? "victory" : commands.length ? "player-ended" : undefined;
     if (!reason) return { result: undefined, events: [] };
     this.ended = true;
     const durationSeconds = snapshot.tick / 60;

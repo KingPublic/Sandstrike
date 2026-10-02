@@ -246,6 +246,21 @@ Evidence: advanced kit/contact checks passed; two 18000-tick replays identical
 with all bands, finite bounded motion, caps and zero event overflow. Replay
 runtime on this host ~13 seconds, so this test uses a specific 30-second limit.
 
+## Phase D ascent hypotheses (2026-10-02)
+
+Status: **provisional, domain/browser evidence only**. Survival runs share one
+world clock: the hazard starts at y=200 (below the base outpost), rises 5px/s and
+freezes once the summit stage starts (at least 420px below the summit arena).
+Summit arena y=-1600, arena bounds -2400..2400 x -2800..3200. Buried Hunters get
+90 ticks of grace, then 20HP/s; a Hunter more than 1200px below the surface is
+lost immediately. Hunter vertical kit: run 180, jump 660, gravity 1800, max fall
+1200, coyote/buffer 6 ticks, half-height 16; 17 ledges 90px apart (jump apex
+121px) plus the 1400px-wide summit platform. Evidence: platform-contact and
+hunter-ascent tests (9) plus 181 total tests, lint/typecheck/build green; browser
+checks at 1440x900, 1024x768, 915x412, 844x390 (movement, jump, pause, rotate
+prompt) with no console errors. Human feel of the climb and the 3-4 minute target
+remain unverified.
+
 ## Phase D survival foundation hypotheses (2026-10-02)
 
 Status: **provisional, automated-domain and headless-browser evidence only**.

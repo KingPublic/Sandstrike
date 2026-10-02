@@ -5,7 +5,10 @@ import { FlatTerrainProfile } from "../domain/terrain/FlatTerrainProfile";
 import { spawnActor } from "../data/actors";
 import type { ThemeId } from "../data/themes";
 
-export interface RunConfiguration { readonly seed: number; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly debugAI?: boolean; readonly aimAssist?: number; readonly themeId?: ThemeId }
+/** Historical relay objectives kept as regression fixtures; every other Hunt run is the ascent. */
+const LEGACY_RELAY_FIXTURES = new Set(["hunt-relay", "hunt-victory", "hunt-trap", "hunter-defeat", "relay-defeat"]);
+
+export interface RunConfiguration { readonly seed: number; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly ascent?: boolean; readonly debugAI?: boolean; readonly aimAssist?: number; readonly themeId?: ThemeId }
 export class RunFactory {
   private sequence = 0;
   constructor(private readonly namespace = Date.now().toString(36)) {}
@@ -13,10 +16,18 @@ export class RunFactory {
     this.sequence += 1;
     if (configuration.mode === "hunt") {
       const fixture = configuration.fixtureId;
+      const legacyRelay = fixture !== undefined && LEGACY_RELAY_FIXTURES.has(fixture);
+      if (configuration.ascent ?? !legacyRelay) {
+        const hunter = spawnActor("hunter", "actor.hunter", { x: -180, y: -16 });
+        // "ascent-buried" starts the hazard at the base so burial damage is deterministic.
+        return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", ascent: true, ...(fixture === "ascent-buried" ? { ascentSurface: 0 } : {}), seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement: arcadeMovementBalance, terrain: new FlatTerrainProfile(0), actors: [hunter] });
+      }
       const hunter = spawnActor("hunter", "actor.hunter", { x: -180, y: -16 }), relay = spawnActor("relay", "actor.relay", { x: 0, y: -30 });
       const defeat = fixture === "hunter-defeat" || fixture === "relay-defeat";
       const trap = fixture === "hunt-trap";
-      const movement = fixture === "hunt-victory" ? { ...movementBalance, initialPosition: { x: 100, y: -80 } } : defeat ? { ...movementBalance, initialPosition: { x: fixture === "hunter-defeat" ? -180 : 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 360 } : trap ? { ...movementBalance, initialPosition: { x: -180, y: 100 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 90 } : movementBalance;
+      // Trap practice starts the worm deeper so the shallow crossing window is
+      // long enough for a human or test to arm the snare ahead of it.
+      const movement = fixture === "hunt-victory" ? { ...movementBalance, initialPosition: { x: 100, y: -80 } } : defeat ? { ...movementBalance, initialPosition: { x: fixture === "hunter-defeat" ? -180 : 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 360 } : trap ? { ...movementBalance, initialPosition: { x: -180, y: 200 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 90 } : movementBalance;
       return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement, terrain: new FlatTerrainProfile(0), ...(fixture === "hunt-victory" ? { playerHealth: 8 } : {}), actors: [{ ...hunter, health: fixture === "hunter-defeat" ? 10 : hunter.health }, { ...relay, health: fixture === "relay-defeat" ? 10 : relay.health }] });
     }
     const stress = configuration.fixtureId === "phase-b-smoke";

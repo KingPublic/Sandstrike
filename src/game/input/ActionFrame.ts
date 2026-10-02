@@ -5,6 +5,8 @@ export const ACTION_BUTTONS = Object.freeze([
   "secondary",
   "ability",
   "boost",
+  "jump",
+  "drop",
   "interact",
   "pause",
   "confirm",
@@ -30,6 +32,8 @@ export interface ActionFrame {
   readonly secondary: ActionButtonState;
   readonly ability: ActionButtonState;
   readonly boost: ActionButtonState;
+  readonly jump: ActionButtonState;
+  readonly drop: ActionButtonState;
   readonly interact: ActionButtonState;
   readonly pause: ActionButtonState;
   readonly confirm: ActionButtonState;
@@ -55,6 +59,8 @@ export function neutralActionFrame(tick: number): ActionFrame {
     secondary: neutralButtonState(),
     ability: neutralButtonState(),
     boost: neutralButtonState(),
+    jump: neutralButtonState(),
+    drop: neutralButtonState(),
     interact: neutralButtonState(),
     pause: neutralButtonState(),
     confirm: neutralButtonState(),

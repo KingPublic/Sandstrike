@@ -22,7 +22,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 844, height: 390 
       for (let tick = firstTick + 1; tick <= firstTick + 900; tick += 1) {
         const angle = -Math.PI / 4 + (tick - firstTick) * 0.003;
         const neutral = { held: false, pressed: false, released: false };
-        bridge.enqueueActions([{ tick, moveX: Math.cos(angle), moveY: Math.sin(angle), aimX: 1, aimY: 0, primary: { ...neutral, held: tick % 60 < 6, pressed: tick % 60 === 0 }, boost: { ...neutral, pressed: tick % 240 === 0 }, secondary: neutral, ability: neutral, interact: neutral, pause: neutral, confirm: neutral, back: neutral }]);
+        bridge.enqueueActions([{ tick, moveX: Math.cos(angle), moveY: Math.sin(angle), aimX: 1, aimY: 0, primary: { ...neutral, held: tick % 60 < 6, pressed: tick % 60 === 0 }, boost: { ...neutral, pressed: tick % 240 === 0 }, secondary: neutral, ability: neutral, jump: neutral, drop: neutral, interact: neutral, pause: neutral, confirm: neutral, back: neutral }]);
       }
       while (performance.now() - start < 12_000) {
         await new Promise<void>((resolve) => { requestAnimationFrame(() => { resolve(); }); });

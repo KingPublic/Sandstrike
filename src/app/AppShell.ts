@@ -242,6 +242,9 @@ export class AppShell {
     this.selectedMode = configuration.mode ?? "rampage"; this.selectedTheme = configuration.themeId ?? "desert";
     this.nextConfiguration = undefined; this.lastConfiguration = configuration;
     this.controller.start(configuration);
+    // Apply the full-viewport play layout before the game frame is measured so a
+    // landscape run is never mistaken for portrait during creation.
+    this.root?.classList.add("sandstrike-playing");
     if (this.navigation.state !== "run") this.navigation.go("run");
     history.pushState({ sandstrike: true }, "", location.href);
     if (this.gameFrame) {
@@ -281,12 +284,11 @@ export class AppShell {
 
     this.status.textContent = this.selectedMode === "hunt" ? "Hunt ready." : "Rampage ready.";
     if (this.startButton) this.startButton.disabled = false;
-    this.root?.classList.add("sandstrike-playing");
     this.game.scale.getParentBounds();
     this.game.scale.refresh();
     this.refreshLayout();
     this.focusCanvas();
-    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt"; prompt.textContent = this.selectedMode === "hunt" ? "Read tremors · Q Snare · Click Fire · Shift Dodge" : this.controller.snapshot().arcade ? "Feed by contact · Space Sandguard · Shift Burst" : "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
+    if (!this.onboardingShown && this.gameFrame) { this.onboardingShown = true; const prompt = document.createElement("p"); prompt.className = "context-prompt";     prompt.textContent = this.selectedMode === "hunt" ? (this.controller.snapshot().world ? "Climb above the sand · Space Jump · Click Fire · Q Skill · Shift Dodge" : "Read tremors · Q Snare · Click Fire · Shift Dodge") : this.controller.snapshot().arcade ? "Feed by contact · Space Sandguard · Shift Burst" : "Steer upward to breach · Space to Bite · Shift to Burst"; this.gameFrame.append(prompt); window.setTimeout(() => { prompt.remove(); }, 7000); }
   }
 
   private handleFatalError(): void {
@@ -334,6 +336,7 @@ export class AppShell {
       controls.touchInput,
       this.selectedMode === "hunt" ? "hunter" : "worm",
       this.controller.snapshot().arcade,
+      this.controller.snapshot().world !== undefined,
     );
     this.refreshLayout();
   }
@@ -343,7 +346,11 @@ export class AppShell {
       return;
     }
     const bounds = this.gameFrame.getBoundingClientRect();
-    if (bounds.width <= 0 || bounds.height <= 0) {
+    // A portrait portrait-prompt hides the playfield, so fall back to the viewport
+    // measurements to keep detecting the blocked orientation.
+    const width = bounds.width > 0 ? bounds.width : window.innerWidth;
+    const height = bounds.height > 0 ? bounds.height : window.innerHeight;
+    if (width <= 0 || height <= 0) {
       return;
     }
     const orientation =
@@ -351,8 +358,8 @@ export class AppShell {
     const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
     const touchCapable = navigator.maxTouchPoints > 0 || coarsePointer;
     const layout = computeViewportLayout({
-      cssWidth: bounds.width,
-      cssHeight: bounds.height,
+      cssWidth: width,
+      cssHeight: height,
       devicePixelRatio: window.devicePixelRatio,
       safeArea: this.readSafeArea(),
       orientation,

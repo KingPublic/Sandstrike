@@ -26,6 +26,8 @@ export class ScriptedInput implements InputSource {
       secondary: frame.secondary.held,
       ability: frame.ability.held,
       boost: frame.boost.held,
+      jump: frame.jump.held,
+      drop: frame.drop.held,
       interact: frame.interact.held,
       pause: frame.pause.held,
       confirm: frame.confirm.held,

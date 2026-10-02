@@ -8,7 +8,7 @@ export interface RampageRunResult {
 }
 export interface HuntRunResult {
   readonly sessionId: string; readonly seed: number; readonly mode: "hunt";
-  readonly reason: "victory" | "hunter-defeated" | "relay-destroyed" | "player-ended";
+  readonly reason: "victory" | "hunter-defeated" | "hunter-buried" | "relay-destroyed" | "player-ended";
   readonly score: number; readonly durationSeconds: number; readonly maximumCombo: number;
   readonly trapTriggers: number; readonly breachInterruptions: number;
   readonly shotsFired: number; readonly shotsHit: number; readonly exposureWindowsUsed: number;

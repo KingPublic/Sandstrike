@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Hunt is now the survival ascent: a vertical Hunter (run, jump, one-way ledge
+  landing, drop-through) climbs an authored outpost route while the hazard surface
+  rises from the base toward the summit. Sand does not lift a buried Hunter; after
+  a visible grace window burial deals escalating damage. Relay-defense Hunt stays
+  available only as historical fixtures (`hunt-relay`, `hunt-victory`, `hunt-trap`,
+  `hunter-defeat`, `relay-defeat`). Controls: A/D move, Space or W jump, S drop
+  through, mouse fire, Q skill, Shift dodge, R reload; touch gains a Jump button.
+
 - Survival revision foundation: viewport-bound compact menus with a real
   environment choice (desert outpost, urban ruins, frozen facility) that is frozen
   per run and retained on retry. Original per-theme palettes/structures render
