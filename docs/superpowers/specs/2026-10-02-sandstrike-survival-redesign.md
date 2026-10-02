@@ -1,6 +1,6 @@
 # Sandstrike Survival Redesign
 
-Status: proposed design for written review; no product implementation yet.
+Status: design approved by the user on 2026-10-02; implementation plan review next.
 Requested: 2026-10-02, following the user's desktop playtest of Phase C.
 Baseline: root checkout `phase-b-ready`, product `073b9d9`, handoff `a3a6cd7`.
 This revision takes priority over conflicting earlier gameplay targets once approved.
@@ -29,6 +29,14 @@ NPC hunters/helicopters being friendly in Hunt and hostile in Rampage remains a
 proposed faction interpretation.
 
 ## Approach and scope
+
+Approved addition: support environments beyond sand. Initial theme IDs are
+`desert`, `ruins`, and `frozen`: original desert outpost, ruined urban district,
+and frozen research facility. Reuse level/platform geometry, pursuit and boss
+rules. Their rising hazards are sand, dust/debris and snow respectively; all use
+the same rising-surface contract. Change palettes, scenery, structures, materials,
+ambient/effect colors and summit composition. Show a real theme choice before
+starting; freeze that choice for the run. No separate physics or new backend.
 
 Recommended: evolve the existing Hunt mode into this survival ascent. Keep the
 shared GameSession, input adapters, fixed ticks, head/path worm motion, collision,
@@ -249,5 +257,5 @@ not claim procedural prototypes are already realistic or award-quality.
 Self-review: ten unique kits are named; automatic eating and skills are separate;
 ordinary and boss kills differ; rising sand and high breaches share a world clock;
 the run has a reachable boss ending and a 5-6 minute tuning target. No product files changed.
-Next: user reviews this written design, then a native implementation plan maps
+Next: user reviews the native implementation plan, which maps
 the three increments to exact existing files and focused checks. No worktree/push/merge.

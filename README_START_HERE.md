@@ -1,5 +1,50 @@
 # Sandstrike
 
+## Read this first when continuing with AI
+
+Updated 2026-10-02. Work in this root on `phase-b-ready`; do not create worktrees,
+switch branches, push or merge. The user controls remote integration. Communicate
+in Bahasa Indonesia. A short "lanjutkan" means resume the exact next task below.
+
+Read in this order, then check `git status`, recent commits and the actual source:
+1. `AGENTS.md` for project rules.
+2. `docs/SESSION_HANDOFF.md` for the latest verified state, approvals and next action.
+3. `docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md` for the
+   **user-approved replacement direction**; it supersedes conflicting old gameplay.
+4. `docs/superpowers/plans/2026-10-02-survival-plan-set.md`, then the current child
+   plan. Do not execute all old Phase A/B/C plans again.
+5. Relevant sections of `docs/GAME_DESIGN.md`, `docs/ARCHITECTURE.md`,
+   `docs/DECISIONS.md`, `docs/BALANCE.md`, `docs/ASSET_LICENSES.md`, and
+   `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
+
+Current shipped checkpoint: Phase C two-role prototype, product `073b9d9`;
+final evidence `docs/PHASE_C_VERIFICATION.md`. **The revised game is not implemented
+yet.** The user approved the redesign and requested extra themes on 2026-10-02.
+New written implementation plans are ready; written-plan review was asked
+asynchronously and is pending until an explicit answer is recorded.
+Exact next action: after that review, execute **Survival Foundation Task 1**
+(`2026-10-02-survival-foundation.md`) inline, then continue the ordered child plans.
+Do not ask for the already-approved design again. If plan review arrives later,
+update this approval state and the handoff before coding.
+
+Required target: 5 worms + 5 Hunters, unique active skills, automatic mouth feeding,
+agile/high breaches, compact desktop menu, allied Hunt NPCs/helicopters, climbable
+platforms/buildings, rising hazard and normal worm return after10s with escalating
+pressure. At summit: hazard stops, RPG pickup, stronger/high-HP boss with3s immunity;
+boss defeat wins. Target whole successful run5-6min, not a forced timer. Themes:
+desert outpost, urban ruins, frozen facility; shared physics/world rules.
+
+Checkpoint after every playable task: list files, observed tests/build/browser
+results, known limits, commit/dirty state and exact next task here and in handoff.
+Keep plan ledgers under ignored `.superpowers/sdd/`. Never label plans as shipped
+features or report unrun tests as passing. Preserve v1/v2 saves and protect future
+schemas. Run focused tests; repeat a passed check only for a relevant change/failure.
+User reported18% account quota and wants a handoff at1%; the agent cannot observe
+that percentage. Save progress continuously and checkpoint promptly if the user
+reports the remaining quota. Do not invent an account-usage reading.
+
+## Current game (before the approved revision)
+
 Sandstrike is an original browser-first 2D action game with two asymmetric roles:
 an underground monster and a human hunter. The project targets desktop and
 landscape-first mobile play from one shared simulation. Phase C adds playable

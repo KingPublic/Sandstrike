@@ -75,16 +75,24 @@ sand, ordinary worm kills followed by fiercer respawn after 10s, and a summit RP
 objective with a 5-6 minute run. Preserve original assets and the shared simulation.
 This latest request supersedes the old five-total roster and relay-defense target.
 
-Written proposed design: docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md.
+Written design: docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md.
+The user explicitly approved it and continuation on 2026-10-02, then requested
+themes beyond sand and a quota-aware handoff in README_START_HERE. Proposed initial
+themes: desert outpost, urban ruins, frozen facility; one shared rising hazard model.
+Written plan set: docs/superpowers/plans/2026-10-02-survival-plan-set.md, with
+foundation/ascent/roster child plans. Native execution in root is preserved.
+Plan self-review is complete; explicit written-plan review was requested through
+request_user_input_async this turn and remains pending until a reply is received.
+Account quota percentages cannot be observed; do not pretend to detect1%.
 No product code has changed for this revision. The user clarified: summit arrival
 starts a boss fight, freezes sand, and provides a high-damage RPG (not a one-shot).
 The boss is more aggressive, has much thicker HP, and may use 3-second immunity.
 Successful boss defeat wins. Total climb plus boss is targeted at 5-6 minutes;
 no forced 300s RPG delivery or hard 360s boss timeout. The draft was updated with
 this clarification and a concrete visual/animation revision.
-Next action: obtain the written design review, incorporate corrections, then write
-the native plan and execute in root. Do not restart completed Phase C or treat its
-GO as approval of this new written spec. Current investigation read Menu CSS,
+Next action: incorporate written-plan review, then execute Survival Foundation
+Task1 in root and continue the ordered plans. Do not re-ask design approval or
+restart completed Phase C. Current investigation read Menu CSS,
 movementBalance, HunterLocomotion and existing ability/combat composition: the menu
 uses a long document layout, Hunters are surface-locked, and full-speed turn authority
 is about 1.08 radians/second. No browser reproduction/new test was run this revision.
