@@ -13,6 +13,12 @@ export class PreloadScene extends Phaser.Scene {
     super("Preload");
   }
 
+  preload(): void {
+    this.load.image("worm-head", `${import.meta.env.BASE_URL}art/worm-head.png`);
+    this.load.image("worm-segment", `${import.meta.env.BASE_URL}art/worm-segment.png`);
+    this.load.image("underground-rocks", `${import.meta.env.BASE_URL}art/underground-rocks.png`);
+  }
+
   create(): void {
     const lifecycle = this.registry.get(
       GAME_LIFECYCLE_REGISTRY_KEY,

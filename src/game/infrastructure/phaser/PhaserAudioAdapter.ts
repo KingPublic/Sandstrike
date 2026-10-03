@@ -1,112 +1,70 @@
 import type { FeedbackCommand, PresentationSettings, SoundVoice } from "../../rendering/FeedbackController";
+import type { SessionSnapshot } from "../../domain/session/SessionSnapshot";
+import { synthesizeSound } from "./SoundSynthesis";
 
-/**
- * Procedural WebAudio voices. Each weapon, skill and ally has its own timbre so
- * firing, impacts and abilities are audibly different instead of one shared beep.
- */
+/** Cached original samples, spatial attenuation and a bounded, compressed output. */
 export class PhaserAudioAdapter {
   private context: AudioContext | undefined;
-  private noiseBuffer: AudioBuffer | undefined;
+  private output: DynamicsCompressorNode | undefined;
+  private readonly buffers = new Map<SoundVoice, AudioBuffer>();
+  private readonly playing = new Set<AudioBufferSourceNode>();
+  private listenerX = 0;
+  private sessionId = "";
+  private lastStep = -1;
+  private lastWind = -1;
+  private lastRotor = -1;
+  private lastReload = 0;
   get ready(): boolean { return this.context?.state === "running"; }
 
   unlock(): void {
     if (typeof AudioContext === "undefined") return;
     try {
-      this.context ??= new AudioContext();
+      if (!this.context) {
+        this.context = new AudioContext();
+        this.output = this.context.createDynamicsCompressor();
+        this.output.threshold.value = -12; this.output.knee.value = 16;
+        this.output.ratio.value = 8; this.output.attack.value = .002; this.output.release.value = .18;
+        this.output.connect(this.context.destination);
+      }
       this.context.resume().catch(() => undefined);
     } catch { this.context = undefined; }
   }
 
   play(command: FeedbackCommand, settings: PresentationSettings): void {
-    const context = this.context;
+    this.emit(command.voice, settings.masterVolume * settings.effectsVolume, command.position?.x);
+  }
+
+  updateEnvironment(snapshot: SessionSnapshot, settings: PresentationSettings): void {
+    const player = snapshot.actors.find(a => a.id === snapshot.playerActorId);
+    this.listenerX = player?.position.x ?? 0;
+    if (this.sessionId !== snapshot.sessionId) { this.sessionId = snapshot.sessionId; this.lastStep = -1; this.lastWind = -1; this.lastRotor = -1; this.lastReload = 0; }
     const volume = settings.masterVolume * settings.effectsVolume;
-    if (!context || !this.ready || volume <= 0) return;
+    if (!this.ready || volume <= 0 || !player || player.health <= 0) return;
+    const step = Math.floor(snapshot.tick / 18), wind = Math.floor(snapshot.tick / 48), rotor = Math.floor(snapshot.tick / 30);
+    if (wind !== this.lastWind) { this.lastWind = wind; this.emit("wind", volume * .13); }
+    const helicopter = snapshot.actors.find(a => (a.tags.includes("aerial") || a.tags.includes("ally-air")) && Math.abs(a.position.x - player.position.x) < 750);
+    if (helicopter && rotor !== this.lastRotor) { this.lastRotor = rotor; this.emit("rotor", volume * .2, helicopter.position.x); }
+    if (snapshot.hunt?.hunter.grounded && Math.abs(player.velocity.x) > 20 && step !== this.lastStep) { this.lastStep = step; this.emit("step", volume * .3); }
+    const reload = Math.max(snapshot.hunt?.rifle.reloadUntilTick ?? 0, snapshot.hunt?.rpg.reloading ? snapshot.tick + snapshot.hunt.rpg.reloadTicksRemaining : 0);
+    if (reload > snapshot.tick && reload !== this.lastReload) { this.lastReload = reload; this.emit("reload", volume * .65); }
+  }
+
+  private emit(voice: SoundVoice, volume: number, x?: number): void {
+    const context = this.context, output = this.output;
+    if (!context || !output || !this.ready || volume <= 0 || this.playing.size >= 24) return;
     try {
-      playVoice(context, this.noise(context), command.voice, command.tone ?? 220, volume, context.currentTime);
+      let buffer = this.buffers.get(voice);
+      if (!buffer) { const samples = synthesizeSound(voice, context.sampleRate); buffer = context.createBuffer(1, samples.length, context.sampleRate); buffer.copyToChannel(samples as Float32Array<ArrayBuffer>, 0); this.buffers.set(voice, buffer); }
+      const source = context.createBufferSource(), gain = context.createGain(), pan = context.createStereoPanner();
+      const distance = x === undefined ? 0 : x - this.listenerX;
+      gain.gain.value = volume * .42 / (1 + Math.abs(distance) / 850);
+      pan.pan.value = Math.max(-.8, Math.min(.8, distance / 650));
+      source.buffer = buffer; source.connect(gain); gain.connect(pan); pan.connect(output);
+      this.playing.add(source);
+      source.onended = () => { this.playing.delete(source); source.disconnect(); gain.disconnect(); pan.disconnect(); };
+      source.start();
     } catch { /* Audio availability never gates play. */ }
   }
 
-  destroy(): void { this.context?.close().catch(() => undefined); this.context = undefined; this.noiseBuffer = undefined; }
-
-  private noise(context: AudioContext): AudioBuffer {
-    this.noiseBuffer ??= createNoiseBuffer(context);
-    return this.noiseBuffer;
-  }
-}
-
-function createNoiseBuffer(context: AudioContext): AudioBuffer {
-  const buffer = context.createBuffer(1, Math.ceil(context.sampleRate * 0.5), context.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
-  return buffer;
-}
-
-interface SoundTarget { readonly context: AudioContext; readonly out: GainNode }
-
-function playVoice(context: AudioContext, noiseBuffer: AudioBuffer, voice: SoundVoice, tone: number, volume: number, now: number): void {
-  const mix = context.createGain();
-  mix.gain.value = 1;
-  mix.connect(context.destination);
-  const target: SoundTarget = { context, out: mix };
-  switch (voice) {
-    case "rifle": crack(target, noiseBuffer, now, .07, volume * 1.15, 1800); tone_(target, "square", 240, 110, now, .09, volume * .5); break;
-    case "carbine": crack(target, noiseBuffer, now, .12, volume * 1.3, 1100); tone_(target, "sawtooth", 170, 64, now, .2, volume * .75); break;
-    case "smg": crack(target, noiseBuffer, now, .04, volume * .8, 2600); tone_(target, "square", 420, 190, now, .05, volume * .3); break;
-    case "burst": for (let shot = 0; shot < 3; shot += 1) { crack(target, noiseBuffer, now + shot * .045, .035, volume * .7, 2400); tone_(target, "square", 360, 180, now + shot * .045, .045, volume * .28); } break;
-    case "sidearm": crack(target, noiseBuffer, now, .06, volume * .95, 1500); tone_(target, "square", 300, 120, now, .09, volume * .45); break;
-    case "rpg": boom(target, noiseBuffer, now, volume * 1.5); break;
-    case "ally": crack(target, noiseBuffer, now, .05, volume * .45, 900); tone_(target, "triangle", 260, 130, now, .06, volume * .16); break;
-    case "shield": tone_(target, "sine", 200, 130, now, .35, volume * .7); tone_(target, "triangle", 400, 260, now, .3, volume * .3); break;
-    case "heal": for (let note = 0; note < 3; note += 1) tone_(target, "triangle", 520 + note * 130, 640 + note * 130, now + note * .07, .22, volume * .45); break;
-    case "mark": tone_(target, "sine", 900, 700, now, .16, volume * .55); tone_(target, "sine", 1350, 1050, now + .08, .12, volume * .3); break;
-    case "grapple": tone_(target, "sawtooth", 260, 880, now, .22, volume * .4); break;
-    case "decoy": tone_(target, "square", 520, 520, now, .08, volume * .35); tone_(target, "square", 660, 660, now + .12, .1, volume * .35); break;
-    case "fire": for (let shot = 0; shot < 3; shot += 1) { crack(target, noiseBuffer, now + shot * .08, .2, volume * .6, 600); } break;
-    case "venom": tone_(target, "sawtooth", 240, 110, now, .3, volume * .5); crack(target, noiseBuffer, now, .16, volume * .35, 420); break;
-    case "shock": boom(target, noiseBuffer, now, volume * 1.1); break;
-    case "surge": tone_(target, "sawtooth", 220, 720, now, .4, volume * .5); break;
-    case "leap": crack(target, noiseBuffer, now, .3, volume * .8, 460); tone_(target, "sawtooth", 170, 680, now, .32, volume * .45); break;
-    case "boss": tone_(target, "sawtooth", 110, 42, now, .8, volume * .8); crack(target, noiseBuffer, now, .5, volume * .5, 300); break;
-    case "impact": crack(target, noiseBuffer, now, .1, volume * .7, 700); tone_(target, "triangle", 150, 80, now, .12, volume * .35); break;
-    case "hit": tone_(target, "triangle", 130, 90, now, .1, volume * .45); break;
-    case "warning": tone_(target, "square", 480, 620, now, .18, volume * .4); break;
-    default: tone_(target, "sine", tone, tone * .6, now, .14, volume * .5); break;
-  }
-}
-
-function tone_(target: SoundTarget, type: OscillatorType, from: number, to: number, start: number, duration: number, gain: number): void {
-  const { context, out } = target;
-  const oscillator = context.createOscillator();
-  const envelope = context.createGain();
-  oscillator.type = type;
-  oscillator.frequency.setValueAtTime(Math.max(30, from), start);
-  oscillator.frequency.exponentialRampToValueAtTime(Math.max(28, to), start + duration);
-  envelope.gain.setValueAtTime(0.0001, start);
-  envelope.gain.exponentialRampToValueAtTime(Math.max(0.0005, gain * .16), start + 0.004);
-  envelope.gain.exponentialRampToValueAtTime(0.0004, start + duration);
-  oscillator.connect(envelope); envelope.connect(out);
-  oscillator.start(start); oscillator.stop(start + duration + .02);
-  oscillator.onended = () => { oscillator.disconnect(); envelope.disconnect(); };
-}
-
-function crack(target: SoundTarget, noiseBuffer: AudioBuffer, start: number, duration: number, gain: number, filterHz: number): void {
-  const { context, out } = target;
-  const source = context.createBufferSource();
-  const filter = context.createBiquadFilter();
-  const envelope = context.createGain();
-  source.buffer = noiseBuffer;
-  filter.type = "bandpass";
-  filter.frequency.setValueAtTime(filterHz, start);
-  filter.Q.value = 0.8;
-  envelope.gain.setValueAtTime(Math.max(0.0005, gain * .22), start);
-  envelope.gain.exponentialRampToValueAtTime(0.0004, start + duration);
-  source.connect(filter); filter.connect(envelope); envelope.connect(out);
-  source.start(start); source.stop(start + duration + .02);
-  source.onended = () => { source.disconnect(); filter.disconnect(); envelope.disconnect(); };
-}
-
-function boom(target: SoundTarget, noiseBuffer: AudioBuffer, start: number, gain: number): void {
-  crack(target, noiseBuffer, start, .45, gain, 260);
-  tone_(target, "sine", 96, 34, start, .5, gain * 1.3);
-  tone_(target, "square", 200, 60, start + .02, .25, gain * .5);
+  destroy(): void { this.context?.close().catch(() => undefined); this.context = undefined; this.output = undefined; this.buffers.clear(); this.playing.clear(); }
 }

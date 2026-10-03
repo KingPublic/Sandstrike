@@ -57,7 +57,12 @@ export class AlliedHunterController {
 
     if (engage) {
       this.state = "engage";
-      return freezeRecord({ moveX: 0, jump: false, drop: false, fire: true, aim, state: "engage" });
+      const close = Math.hypot(worm.position.x - p.self.x, worm.position.y - p.self.y) < 145;
+      const platform = p.platforms.find(item => item.id === p.platformId);
+      const away = Math.sign(p.self.x - worm.position.x) || direction;
+      const safe = !platform || p.self.x + away * 60 > platform.left + 18 && p.self.x + away * 60 < platform.right - 18;
+      const follow = Math.abs(leash) > allies.escortOffset + 40 ? direction : 0;
+      return freezeRecord({ moveX: close && safe ? away : follow, jump: false, drop: false, fire: true, aim, state: "engage" });
     }
 
     // Buried or lagging behind the Hunter: close the gap, taking the next ledge up.
@@ -66,7 +71,7 @@ export class AlliedHunterController {
       const standOff = Math.abs(leash) - allies.escortOffset;
       const wantsHigher = hunterFeet < feet - 20;
       const canJump = p.grounded && wantsHigher && climbTarget !== undefined && Math.abs(centreOf(climbTarget) - p.self.x) <= 200;
-      const moveX = canJump ? Math.sign(centreOf(climbTarget) - p.self.x) : Math.abs(standOff) < 24 ? 0 : Math.sign(standOff);
+      const moveX = canJump ? Math.sign(centreOf(climbTarget) - p.self.x) : Math.abs(standOff) < 24 ? 0 : direction * Math.sign(standOff);
       return freezeRecord({ moveX, jump: canJump, drop: false, fire: false, aim, state: "regroup", platformId: hunterPlatform?.id });
     }
 

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Smarter, more aggressive Maw pursuit with corrected breach trajectories,
+  committed warning sectors and complete above-ground attacks. Pure Hunt sprint
+  preserves upward momentum; repositioning no longer stalls in repeated dives.
+- Every Hunter skill now has a distinct Maw response, including one-use supplies:
+  Attract Maw draws a real beacon attack, Grapple draws landing pursuit, Shield
+  prompts flanking, Mark provokes pursuit and Heal creates a location pulse.
+- Hunter bots lead shots, fire while moving/climbing, dodge incoming Maw attacks,
+  use all five real kit skills/weapons and actually collect the rooftop RPG.
+  Armed barrels/skill effects are visible; burial/death removes heavy ownership.
+- Allied Hunters retreat while firing and correctly regroup toward a player to
+  their left.
+- Underground cutaways now contain natural textured rocks, gravel, uneven sediment,
+  fractures, roots, mineral veins and pockets; desert fossils, buried urban pipes/
+  masonry/rebar and frozen ice lenses give each environment its own material detail.
+- Random platform supply crates in Hunt grant one skill from another Hunter, usable once with E / gamepad X / Supply. Primary Q skill remains independent.
+- Original realistic menu key art and textured worm skin, natural material colors, weathered platforms/steel cases and clearer mobile controls.
+- Reworked weapon/skill sound with original pressure/noise/foley samples; RPG impact, reload, steps, wind, rotor, pickup, spatial attenuation and compressed output.
+
 - **Rampage is now the worm hunting five Hunters up the rising-sand tower.** The
   player worm burrows into the same climb the Hunter mode uses: the sand rises,
   five Hunter bots (Ranger, Scout, Engineer, Siegebreaker, Field Medic) deploy one

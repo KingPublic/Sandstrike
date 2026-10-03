@@ -1,6 +1,7 @@
 import { freezeRecord } from "../actors/Actor";
 import type { Vec2 } from "../math/Vector2";
 import type { WormMotionSnapshot } from "../movement/WormMovementTypes";
+import type { HunterSkillSignals } from "./HunterSkillSignals";
 
 export interface WormPerceptionSnapshot {
   readonly self: WormMotionSnapshot;
@@ -13,6 +14,10 @@ export interface WormPerceptionSnapshot {
   readonly hunterVelocity?: Vec2 | undefined;
   readonly trap?: Vec2 | undefined;
   readonly surfaceY: number;
+  readonly lure?: Vec2;
+  readonly noise?: Readonly<{ kind: "grapple" | "heal"; position: Vec2; untilTick: number }>;
+  readonly shieldUntilTick?: number;
+  readonly markedUntilTick?: number;
 }
 
 const SEISMIC_CELL = 80;
@@ -26,16 +31,19 @@ const SEISMIC_INTERVAL_TICKS = 20;
 export class WormPerception {
   private sighting: Readonly<{ position: Vec2; observedTick: number }> | undefined;
   private seismic: Vec2 | undefined;
+  private noise: WormPerceptionSnapshot["noise"];
 
-  observe(self: WormMotionSnapshot, hunter: Readonly<{ position: Vec2; velocity: Vec2 }>, relay: Vec2, trap: Vec2 | undefined, tick: number, surfaceY = 0, decoy?: Vec2): WormPerceptionSnapshot {
+  observe(self: WormMotionSnapshot, hunter: Readonly<{ position: Vec2; velocity: Vec2 }>, relay: Vec2, trap: Vec2 | undefined, tick: number, surfaceY = 0, decoy?: Vec2, signals?: HunterSkillSignals): WormPerceptionSnapshot {
     const p = self.head.position;
     if (p.y <= surfaceY + 60 && Math.hypot(p.x - hunter.position.x, p.y - hunter.position.y) <= 500) this.sighting = { position: hunter.position, observedTick: tick };
     if (this.sighting && tick - this.sighting.observedTick >= 120) this.sighting = undefined;
 
     // The Engineer's beacon is a louder vibration source than footsteps, so the
     // seismic bearing follows it while it lasts.
-    const source = decoy ?? hunter.position;
-    if (this.seismic === undefined || tick % SEISMIC_INTERVAL_TICKS === 0) this.seismic = freezeRecord({ x: Math.round(source.x / SEISMIC_CELL) * SEISMIC_CELL, y: Math.round(source.y / SEISMIC_CELL) * SEISMIC_CELL });
+    if (signals?.noise) this.noise = { ...signals.noise, untilTick: tick + 90 };
+    if (this.noise && tick >= this.noise.untilTick) this.noise = undefined;
+    const source = decoy ?? this.noise?.position ?? hunter.position;
+    if (decoy || signals?.noise || this.seismic === undefined || tick % SEISMIC_INTERVAL_TICKS === 0) this.seismic = freezeRecord({ x: Math.round(source.x / SEISMIC_CELL) * SEISMIC_CELL, y: Math.round(source.y / SEISMIC_CELL) * SEISMIC_CELL });
 
     const observedTrap = trap && p.y <= surfaceY + 100 && Math.hypot(p.x - trap.x, p.y - trap.y) < 500 ? trap : undefined;
     return freezeRecord({
@@ -43,9 +51,12 @@ export class WormPerception {
       relay,
       hunter: this.sighting,
       seismic: this.seismic,
-      hunterVelocity: freezeRecord({ x: hunter.velocity.x, y: hunter.velocity.y }),
+      hunterVelocity: freezeRecord(decoy || this.noise ? { x: 0, y: 0 } : { x: hunter.velocity.x, y: hunter.velocity.y }),
       trap: observedTrap,
       surfaceY,
+      ...(decoy ? { lure: decoy } : {}),
+      ...(this.noise ? { noise: this.noise } : {}),
+      ...(signals ? { shieldUntilTick: signals.shieldUntilTick, markedUntilTick: signals.markedUntilTick } : {}),
     });
   }
 }

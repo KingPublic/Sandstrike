@@ -12,7 +12,8 @@ export const defaultPresentationSettings: PresentationSettings = Object.freeze({
 export type SoundVoice =
   | "rifle" | "carbine" | "smg" | "burst" | "sidearm" | "rpg" | "ally"
   | "shield" | "heal" | "mark" | "grapple" | "decoy"
-  | "fire" | "venom" | "shock" | "surge" | "boss" | "impact" | "hit" | "warning" | "leap" | "neutral";
+  | "fire" | "venom" | "shock" | "surge" | "boss" | "impact" | "hit" | "warning" | "leap" | "neutral"
+  | "pickup" | "reload" | "step" | "wind" | "rotor";
 export interface FeedbackCommand {
   readonly label: string; readonly shape: "ring" | "cross" | "shield" | "diamond";
   readonly position: Vec2 | undefined; readonly color: number;
@@ -54,12 +55,15 @@ const SKILL_VOICES: Readonly<Record<string, SoundVoice>> = Object.freeze({
 
 function cueFor(event: DomainEvent): Cue | undefined {
   switch (event.type) {
+    case "supply-collected": return { label: "Supply", shape: "diamond", color: 0xe5b974, tone: 190, voice: "pickup" };
     case "rifle-fired": return { label: "Shot", shape: "diamond", color: 0xfff0c4, tone: 520, voice: WEAPON_VOICES[event.weaponId ?? "rifle"] ?? "rifle" };
+    case "projectile-fired": return { label: "Shot", shape: "diamond", color: 0xffe1ab, tone: 320, voice: event.weaponId === "rpg" ? "rpg" : WEAPON_VOICES[event.weaponId ?? "rifle"] ?? "rifle" };
     case "rpg-fired": return { label: "RPG", shape: "diamond", color: 0xffc46b, tone: 300, voice: "rpg" };
     case "ally-fired": return { label: "Ally fire", shape: "diamond", color: 0xbfe8dd, tone: 430, voice: "ally" };
     case "ability-activated":
       return { label: "Skill", shape: "ring", color: 0xa8f0d8, tone: 560, voice: SKILL_VOICES[event.abilityId] ?? "neutral" };
     case "damage-applied":
+      if (event.abilityId === "ability.rpg") return { label: "Impact", shape: "diamond", color: 0xffbf79, tone: 60, voice: "shock" };
       if (event.blocked === "armor") return { label: "Armored", shape: "shield", color: 0xdce8f1, tone: 170, voice: "impact" };
       if (event.blocked) return { label: "Protected", shape: "shield", color: 0xdce8f1, tone: 220, voice: "impact" };
       if (event.targetId === "worm") return { label: "Damage", shape: "cross", color: 0xff756b, tone: 100, voice: "hit" };

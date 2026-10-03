@@ -39,6 +39,11 @@ function angleBetween(
 }
 
 describe("WormLocomotion underground motion", () => {
+  it("a pure sprint preserves upward momentum when no leap lift is configured", () => {
+    const motion = new WormLocomotion({ ...movementBalance, initialPosition: { x: 0, y: 600 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 180, burstLiftSpeed: 0 });
+    motion.step(action(1, { moveY: -1, boostPressed: true }), DT, TERRAIN);
+    expect(motion.snapshot().head.velocity.y).toBeLessThan(-180);
+  });
   it("bounds acceleration at the cruise cap", () => {
     const locomotion = new WormLocomotion({
       ...movementBalance,

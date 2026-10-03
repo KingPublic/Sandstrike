@@ -2,8 +2,32 @@
 
 Recorded 2026-10-02 after the user's playtest. Applies after checkpoint 1ffe038
 and workflow preference commit 34a5971.
-Status: **Stage 1 of the new Rampage (ascent hunt) landed; item 6 (art quality) remains
-a subjective judgement for the next playtest.**
+Status: **Underground presentation accepted on 2026-10-03. Smarter AI and skill
+reactions implemented; aggression/difficulty and audio still need human feedback.**
+
+## Smarter bots and skill reactions (2026-10-03)
+
+User: the presentation is good enough, but worm and Hunter bots are very foolish;
+make them smarter/aggressive and personalize every skill's effect on Maw, with
+Attract Maw causing an actual attack.
+
+Implemented: repaired worm dive/trajectory/above-ground pursuit; beacon wins
+over visual targeting and draws a warned charge; grapple landing, shield flank,
+mark provocation and heal pulse are distinct. Primary and crate skills share the
+same response. Hunter bots now move/fire/dodge, use their real five kit skills,
+lead actual weapons and collect/lose the RPG correctly. Allied regrouping fixed.
+Focused logic and actual desktop/mobile beacon checks passed, plus desktop bot
+mark/fire and production checks. Human playtest acceptance remains open; older
+whole-run pacing measurements do not establish this new difficulty.
+
+## Presentation and Hunter supplies (2026-10-03)
+The user requested more realistic UI/art and sound, plus confirmed exactly one
+random skill per crate from the other four Hunter kits. Implemented original key
+art and textured worms, natural environment/equipment presentation, noise/foley
+sound and the one-charge supply slot. Desktop E and mobile joystick/Supply were
+verified; Q remains independent. Subjective art/audio acceptance remains the
+user's next playtest. The later AI checkpoint above implements per-kit rival skills
+and RPG ownership; dedicated rooftop pickup feedback remains open.
 
 ## Fix log (2026-10-02, Rampage becomes the mirrored ascent hunt - Stage 1)
 
@@ -187,3 +211,11 @@ Relevant entry points (inspect only the current issue's files):
 Work directly in the root/current branch. Default to no Superpowers, no repeated
 planning/review loops, and only necessary affected tests. Record what was actually
 checked and what remains open; user judgment of feel is the acceptance gate.
+
+## Underground realism follow-up (2026-10-03)
+
+User requested rocks and varied objects so the cutaway reads as real underground.
+Added original textured stones, sediment, fractures, roots, minerals and pockets;
+desert fossils, urban masonry/pipes/rebar and frozen ice lenses distinguish themes.
+This continues the art improvement; visual acceptance and physical-device playtest
+remain open. The prior one-random-skill-per-crate behavior and audio are retained.

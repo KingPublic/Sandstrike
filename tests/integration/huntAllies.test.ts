@@ -20,7 +20,7 @@ it("never fires while the ally or the worm is buried", () => {
   const deepWorm = groundController.step({ self: { x: 120, y: -106 }, grounded: true, platformId: "ledge.0", surfaceY: 200, platforms, hunter: anchor(140, -106, "ledge.0"), worm: { position: { x: 130, y: 400 }, exposed: false } });
   expect(deepWorm.fire).toBe(false);
   const exposed = groundController.step({ self: { x: 120, y: -106 }, grounded: true, platformId: "ledge.0", surfaceY: 200, platforms, hunter: anchor(140, -106, "ledge.0"), worm: { position: { x: 130, y: -20 }, exposed: true } });
-  expect(exposed).toMatchObject({ fire: true, state: "engage", moveX: 0 });
+  expect(exposed).toMatchObject({ fire: true, state: "engage", moveX: -1 });
 });
 
 it("escorts the Hunter, regroups when lagging and the helicopter holds altitude", () => {
@@ -32,6 +32,8 @@ it("escorts the Hunter, regroups when lagging and the helicopter holds altitude"
   expect(regroup.state).toBe("regroup");
   expect(regroup.moveX).toBe(1);
   expect(regroup.aim.x).toBeGreaterThan(-900);
+  const left = groundController.step({ self: { x: 900, y: -16 }, grounded: true, platformId: "base", surfaceY: 200, platforms: ascentArena.platforms, hunter: anchor(-140, -16, "base"), worm: undefined });
+  expect(left).toMatchObject({ state: "regroup", moveX: -1 });
   const air = airController.step({ self: { x: 0, y: -120 }, surfaceY: 200, bounds: ascentArena.bounds, hunter: { x: 0, y: -16 }, worm: undefined });
   expect(air.moveY).toBe(0);
   const low = airController.step({ self: { x: 0, y: 100 }, surfaceY: 200, bounds: ascentArena.bounds, hunter: { x: 0, y: -16 }, worm: undefined });

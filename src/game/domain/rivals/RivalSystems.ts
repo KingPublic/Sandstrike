@@ -1,6 +1,6 @@
 import { ascentArena, ascentHunterBalance as climb } from "../../data/ascentArena";
 import { ascentRampageBalance as b } from "../../data/ascentRampage";
-import type { HunterId } from "../../data/characters";
+import { characterForRole, type HunterId, type WeaponDefinition } from "../../data/characters";
 import { spawnActor } from "../../data/actors";
 import { freezeRecord, type ActorState } from "../actors/Actor";
 import type { ActorRegistry } from "../actors/ActorRegistry";
@@ -12,6 +12,9 @@ import type { WormMotionSnapshot } from "../movement/WormMovementTypes";
 import type { RandomStream } from "../random/RandomSource";
 import type { TerrainProfile } from "../terrain/TerrainProfile";
 import { RivalHunterController, type RivalActivity } from "../ai/RivalHunterController";
+import { wantsRivalSkill } from "../ai/RivalSkillTactics";
+import { CharacterSkills, type SkillSnapshot } from "../abilities/CharacterSkills";
+import { applySkillEffects } from "../abilities/ApplySkillEffects";
 
 export interface RivalUnit {
   readonly id: string;
@@ -22,6 +25,9 @@ export interface RivalUnit {
   readonly activity: RivalActivity;
   readonly position: Vec2;
   readonly defeated: boolean;
+  readonly skill?: SkillSnapshot;
+  readonly aim?: Vec2;
+  readonly firing?: boolean;
 }
 
 export interface RivalSnapshot {
@@ -38,6 +44,8 @@ export interface RivalFire {
   readonly from: Vec2;
   readonly to: Vec2;
   readonly heavy: boolean;
+  readonly weaponId: string;
+  readonly damage: number;
 }
 
 interface RivalSlot {
@@ -45,6 +53,8 @@ interface RivalSlot {
   readonly hunterId: HunterId;
   readonly controller: RivalHunterController;
   readonly locomotion: HunterLocomotion;
+  readonly skill: CharacterSkills;
+  readonly weapon: WeaponDefinition;
   ammo: number;
   reloadUntilTick: number;
   readyTick: number;
@@ -53,6 +63,9 @@ interface RivalSlot {
   sawAlive: boolean;
   burialTicks: number;
   burialDamage: number;
+  burstRemaining: number;
+  aim?: Vec2 | undefined;
+  firingUntilTick: number;
 }
 
 /**
@@ -64,8 +77,9 @@ export class RivalSystems {
   private readonly slots: RivalSlot[] = [];
   private nextPlanIndex = 0;
   private nextCarrionTick: number = b.carrionCadenceTicks;
+  private currentTick = 0;
 
-  constructor(private readonly terrain: TerrainProfile) {}
+  constructor(private readonly terrain: TerrainProfile, private readonly wormGravity = 720) {}
 
   step(
     registry: ActorRegistry,
@@ -75,6 +89,7 @@ export class RivalSystems {
   ): Readonly<{ events: readonly DomainEvent[]; fires: readonly RivalFire[] }> {
     const events: DomainEvent[] = [];
     const fires: RivalFire[] = [];
+    this.currentTick = tick;
     this.deploy(registry, worm.head.position.x, tick);
     this.spawnCarrion(registry, tick, random);
     for (const slot of this.slots) {
@@ -83,6 +98,7 @@ export class RivalSystems {
       slot.sawAlive = true;
       const surfaceY = this.terrain.surfaceY(actor.position.x);
       const state = slot.locomotion.snapshot();
+      const exposed = wormIsExposed(worm, surfaceY);
       const decision = slot.controller.step(freezeRecord({
         self: state.position,
         grounded: state.grounded === true,
@@ -93,28 +109,48 @@ export class RivalSystems {
         platforms: ascentArena.platforms,
         armedWithRpg: slot.armed,
         canFire: slot.reloadUntilTick <= tick && slot.readyTick <= tick,
-        worm: wormIsExposed(worm, surfaceY) ? { position: worm.head.position, exposed: true } : undefined,
+        canDodge: state.dodgeReadyTick <= tick,
+        worm: exposed ? { position: worm.head.position, velocity: worm.head.velocity, exposed: true } : undefined,
       }));
       slot.activity = decision.state;
-      const next = slot.locomotion.step(planAction(tick, decision.moveX, decision.jump, decision.drop), tick);
+      let next = slot.locomotion.step(planAction(tick, decision.moveX, decision.jump, decision.drop, decision.dodge === true), tick);
       const direction = decision.moveX === 0 ? state.direction : freezeVec2(Math.sign(decision.moveX), 0);
-      registry.update({ ...actor, position: next.position, velocity: { x: next.velocity?.x ?? 0, y: next.velocity?.y ?? 0 }, direction });
-      if (decision.fire && decision.aim !== undefined) {
+      registry.update({ ...actor, position: next.position, velocity: { x: next.velocity?.x ?? 0, y: next.velocity?.y ?? 0 }, direction, invulnerableUntilTick: Math.max(actor.invulnerableUntilTick ?? 0, next.dodgeUntilTick) });
+      const owner = registry.get(slot.id);
+      if (!owner) continue;
+      const effect = slot.skill.step({ tick, pressed: wantsRivalSkill(slot.hunterId, owner, exposed ? worm.head.position : undefined, registry.snapshot(), ascentArena.platforms, state.grounded === true), owner, actors: registry.snapshot(), direction, phase: "hunter", surfaceY, platforms: ascentArena.platforms });
+      applySkillEffects(registry, slot.id, effect);
+      if (effect.grapple) {
+        slot.locomotion.grappleTo(effect.grapple); next = slot.locomotion.snapshot();
+        const moved = registry.get(slot.id); if (moved) registry.update({ ...moved, position: next.position, velocity: next.velocity ?? { x: 0, y: 0 } });
+      }
+      if (effect.activated) events.push({ type: "ability-activated", tick, actorId: slot.id, abilityId: effect.ability.id, position: next.position });
+      const atCrate = next.grounded && next.platformId === "summit" && Math.abs(next.position.x) <= b.summitCrateHalfWidth;
+      if (atCrate && !slot.armed) { slot.armed = true; slot.readyTick = tick + 45; events.push({ type: "ability-activated", tick, actorId: slot.id, abilityId: "ability.rpg-pickup", position: next.position }); }
+      if (slot.armed && (next.position.y + climb.halfHeight > surfaceY || (registry.get(slot.id)?.health ?? 0) <= 0)) slot.armed = false;
+      slot.aim = decision.aim;
+      if (decision.fire && decision.aim !== undefined && tick >= slot.readyTick) {
         fires.push(freezeRecord({
           actorId: slot.id,
           from: freezeVec2(next.position.x + direction.x * 16, next.position.y - 6),
-          to: slot.armed ? decision.aim : leadAim(decision.aim, worm),
+          to: leadAim(decision.aim, worm, next.position, slot.armed ? b.heavySpeed : 520, surfaceY, this.wormGravity),
           heavy: slot.armed,
+          weaponId: slot.armed ? "rpg" : slot.weapon.id,
+          damage: (slot.armed ? b.heavyDamage : slot.weapon.damage) * (this.markedNear(next.position, tick, registry) ? 1.5 : 1),
         }));
+        slot.firingUntilTick = tick + 6;
         if (slot.armed) {
           slot.readyTick = tick + b.heavyCadenceTicks;
         } else {
           slot.ammo -= 1;
-          slot.readyTick = tick + b.rivalFireCadenceTicks;
-          if (slot.ammo <= 0) { slot.ammo = b.rivalMagazine; slot.reloadUntilTick = tick + b.rivalReloadTicks; }
+          if (slot.burstRemaining === 0) slot.burstRemaining = slot.weapon.burst;
+          slot.burstRemaining -= 1;
+          slot.readyTick = tick + (slot.burstRemaining > 0 ? 4 : slot.weapon.cadence);
+          if (slot.ammo <= 0) { slot.ammo = slot.weapon.magazine; slot.burstRemaining = 0; slot.reloadUntilTick = tick + slot.weapon.reloadTicks; }
         }
       }
-      const burial = this.bury(slot, registry, actor, next.position.y + climb.halfHeight, surfaceY, tick);
+      const currentOwner = registry.get(slot.id);
+      const burial = currentOwner ? this.bury(slot, registry, currentOwner, next.position.y + climb.halfHeight, surfaceY, tick) : undefined;
       if (burial !== undefined) events.push(burial);
     }
     return freezeRecord({ events: freezeRecord(events), fires: freezeRecord(fires) });
@@ -126,12 +162,15 @@ export class RivalSystems {
       return freezeRecord({
         id: slot.id,
         hunterId: slot.hunterId,
-        armed: slot.armed,
+        armed: slot.armed && actor?.lifecycle === "active" && actor.health > 0,
         health: actor?.health ?? 0,
         maxHealth: actor?.maxHealth ?? b.rivalHealth,
         activity: slot.activity,
         position: actor?.position ?? freezeVec2(0, 0),
         defeated: slot.sawAlive && (actor === undefined || actor.health <= 0 || actor.lifecycle !== "active"),
+        skill: slot.skill.snapshot(this.currentTick),
+        ...(slot.aim ? { aim: slot.aim } : {}),
+        firing: slot.firingUntilTick > this.currentTick,
       });
     });
     const defeated = units.filter((unit) => unit.defeated).length;
@@ -157,13 +196,17 @@ export class RivalSystems {
     this.nextPlanIndex += 1;
     const position = this.spawnPoint(wormX);
     const id = `rival.${plan.hunterId}`;
-    registry.deferSpawn({ ...spawnActor(id, "actor.hunter", position), health: b.rivalHealth, maxHealth: b.rivalHealth });
+    const kit = characterForRole("hunt", plan.hunterId);
+    if (!kit?.weapon) throw new Error("Rival requires a Hunter kit.");
+    registry.deferSpawn({ ...spawnActor(id, "actor.hunter", position), health: b.rivalHealth, maxHealth: b.rivalHealth, armor: kit.armor });
     this.slots.push({
       id,
       hunterId: plan.hunterId,
       controller: new RivalHunterController(),
       locomotion: new HunterLocomotion(this.terrain, ascentArena.bounds, position, ascentArena.platforms),
-      ammo: b.rivalMagazine,
+      skill: new CharacterSkills(kit),
+      weapon: kit.weapon,
+      ammo: kit.weapon.magazine,
       reloadUntilTick: 0,
       readyTick: tick + 40,
       armed: false,
@@ -171,7 +214,13 @@ export class RivalSystems {
       sawAlive: false,
       burialTicks: 0,
       burialDamage: 0,
+      burstRemaining: 0,
+      firingUntilTick: 0,
     });
+  }
+
+  private markedNear(position: Vec2, tick: number, registry: ActorRegistry): boolean {
+    return this.slots.some(slot => (registry.get(slot.id)?.health ?? 0) > 0 && registry.get(slot.id)?.lifecycle === "active" && slot.skill.snapshot(tick).markUntilTick > tick && Math.hypot(slot.locomotion.snapshot().position.x - position.x, slot.locomotion.snapshot().position.y - position.y) <= 900);
   }
 
   /** A safe ledge near the worm, so rivals start their climb alongside the player. */
@@ -215,15 +264,16 @@ function wormIsExposed(worm: WormMotionSnapshot, surfaceY: number): boolean {
 }
 
 /** Rivals lean their aim ahead of the worm's travel so shots read as intent. */
-function leadAim(aim: Vec2, worm: WormMotionSnapshot): Vec2 {
-  return freezeVec2(aim.x + worm.head.velocity.x * 0.16, aim.y + worm.head.velocity.y * 0.08);
+function leadAim(aim: Vec2, worm: WormMotionSnapshot, from: Vec2, speed: number, surfaceY: number, gravity: number): Vec2 {
+  const travel = Math.min(.65, Math.hypot(aim.x - from.x, aim.y - from.y) / speed);
+  return freezeVec2(aim.x + worm.head.velocity.x * travel, Math.min(surfaceY - 4, aim.y + worm.head.velocity.y * travel + gravity * travel * travel * .5));
 }
 
-function planAction(tick: number, moveX: number, jump: boolean, drop: boolean) {
+function planAction(tick: number, moveX: number, jump: boolean, drop: boolean, dodge: boolean) {
   const off = Object.freeze({ held: false, pressed: false, released: false });
   return Object.freeze({
     tick, moveX, moveY: 0, aimX: 0, aimY: 0,
-    primary: off, secondary: off, ability: off, boost: off,
+    primary: off, secondary: off, ability: off, boost: Object.freeze({ held: dodge, pressed: dodge, released: false }),
     jump: Object.freeze({ held: jump, pressed: jump, released: false }),
     drop: Object.freeze({ held: drop, pressed: drop, released: false }),
     interact: off, pause: off, confirm: off, back: off,

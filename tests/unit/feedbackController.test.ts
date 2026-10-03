@@ -4,6 +4,14 @@ import type { DomainEvent } from "../../src/game/domain/events/DomainEvent";
 
 const hit = (tick: number, abilityId = "ability.bite", blocked?: "armor"): Extract<DomainEvent, { type: "damage-applied" }> => ({ type: "damage-applied", tick, sourceId: "worm", targetId: "prey", abilityId, amount: blocked ? 0 : 15, ...(blocked ? { blocked } : {}), tags: [], position: { x: 0, y: 0 } });
 describe("bounded accessible feedback", () => {
+  it("sounds real rival rifle and heavy fire distinctly and preserves one-use pickup feedback", () => {
+    const events: DomainEvent[] = [
+      { type: "projectile-fired", tick: 1, actorId: "rival", projectileId: "round.1", position: { x: 0, y: 0 }, weaponId: "rifle" },
+      { type: "projectile-fired", tick: 2, actorId: "rival", projectileId: "round.2", position: { x: 0, y: 0 }, weaponId: "rpg" },
+      { type: "supply-collected", tick: 3, actorId: "hunter", abilityId: "scout", position: { x: 0, y: 0 } },
+    ];
+    expect(new FeedbackController().consume(events, defaultPresentationSettings, true).map(c => c.voice)).toEqual(["rifle", "rpg", "pickup"]);
+  });
   it("preserves separate simultaneous projectile hit and protection cues", () => {
     const commands = new FeedbackController().consume([{ ...hit(1), sourceId: "projectile.1", targetId: "worm" }, { ...hit(1), sourceId: "projectile.2", targetId: "worm", blocked: "invulnerable", amount: 0 }], defaultPresentationSettings);
     expect(commands.map((command) => command.label)).toEqual(["Damage", "Protected"]);

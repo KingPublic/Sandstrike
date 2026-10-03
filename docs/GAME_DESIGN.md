@@ -714,3 +714,49 @@ User explicitly requests a clean playfield. Normal HUD shows only gameplay healt
 ammo/skill, objective/direction and boss meter. Height, hazard distance, generation,
 AI tracking, support counters and floating event labels belong to explicit debug.
 Threat sectors/particles remain graphical; controls are available in How to Play.
+
+## Hunter supply crates and realism pass (2026-10-03)
+Touch a random platform supply crate to store one skill from the four other Hunter
+kits. E / gamepad X / Supply uses it once. The selected Q skill remains independent.
+A full slot leaves crates in place; skills cannot stack while a borrowed effect is
+active. A failed grapple keeps its charge. Supplies reset each run and never change
+saves. This is player Hunt equipment; rival-AI Stage 2 is separate.
+Presentation now favors natural materials, original detailed worm textures and
+menu key art, restrained field-equipment UI and noise/foley-based weapon audio.
+Procedural humans/environments and kit tints retain readable gameplay at small sizes.
+
+## Underground environment detail (2026-10-03 follow-up)
+
+The underground is a geological cutaway with uneven sediment seams, natural rock
+textures, gravel, fractures, shallow roots, mineral veins and small pockets.
+Desert has fossils; ruins have buried masonry, corroded pipes and rebar; frozen
+soil has ice lenses. Details use restrained natural colors behind the worm,
+carrion and equipment, without labels or collectible glows. They are visual
+decoration: worm movement and the surface/hazard contact boundary are unchanged.
+Ascent details travel with the rising material band; classic geology stays fixed.
+
+## Aggressive AI and Hunter counterplay (2026-10-03)
+
+Maw tracks movement before committing a warned breach, corrects for its own turn
+radius/momentum, attacks above ground, then dives/repositions for another pass.
+Once a warning appears its target remains committed, preserving escape counterplay.
+No ordinary breach may bypass the existing 60-tick minimum warning.
+
+Hunter skills provide distinct signals, including skills borrowed from crates:
+- Engineer Attract Maw: a loud five-second beacon takes priority over a recent
+  sighting and draws the next attack. A charge already warned finishes first;
+  its queued beacon target has an eight-second limit to allow lining up the attack.
+- Scout Grapple: landing vibration gives Maw a short pursuit bearing.
+- Siegebreaker Shield: Maw shifts to a flank and delays committing while more
+  than one second of protection remains. A charge already underway continues.
+- Ranger Target Mark: stronger coordinated fire remains; Maw is provoked into
+  faster reacquisition when roaming/recovering.
+- Field Medic Heal: the recovery pulse briefly reveals its origin to Maw.
+
+Rampage rivals remain real Hunters: shoot during movement/climbing, predict close
+contact and dodge away where a ledge offers room, choose reachable nearby landings,
+and use kit skills for useful situations with the existing cooldowns. They only
+target an exposed worm. A human worm decides whether to pursue an Engineer beacon;
+bot skills never take control away from the player. Rooftop rivals approach the
+crate, acquire heavy fire after a short ready delay, and lose it on burial/death.
+New difficulty is provisional pending the user's playtest.

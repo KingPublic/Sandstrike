@@ -1,6 +1,9 @@
 import type Phaser from "phaser";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
 import { characterForRole } from "../data/characters";
+import type { CharacterDefinition } from "../data/characters";
+import type { SkillSnapshot } from "../domain/abilities/CharacterSkills";
+import type { ActorState } from "../domain/actors/Actor";
 
 export class CharacterSkillView {
   private readonly graphics: Phaser.GameObjects.Graphics;
@@ -9,8 +12,17 @@ export class CharacterSkillView {
     const g = this.graphics; g.clear();
     const skill = snapshot.skill, character = characterForRole(snapshot.mode, snapshot.characterId);
     const owner = snapshot.actors.find(a => a.id === snapshot.playerActorId);
-    if (!skill || !owner || owner.health <= 0 || !character) return;
-    const color = character.visual.light;
+    if (skill && owner && owner.health > 0 && character) this.draw(snapshot, skill, character, owner);
+    const supply = snapshot.hunt?.supplies?.active;
+    const borrowed = supply ? characterForRole("hunt", supply.characterId) : undefined;
+    if (supply && borrowed && owner && owner.health > 0) this.draw(snapshot, supply.skill, borrowed, owner);
+    for (const rival of snapshot.rivals?.units ?? []) {
+      const actor = snapshot.actors.find(a => a.id === rival.id), kit = characterForRole("hunt", rival.hunterId);
+      if (actor && actor.health > 0 && kit && rival.skill) this.draw(snapshot, rival.skill, kit, actor);
+    }
+  }
+  private draw(snapshot: SessionSnapshot, skill: SkillSnapshot, character: CharacterDefinition, owner: ActorState): void {
+    const g = this.graphics, color = character.visual.light;
     for (const shot of skill.projectiles) {
       g.lineStyle(5, shot.kind === "fire" ? 0xffa858 : 0xb7ed8c, .65).lineBetween(shot.position.x - shot.direction.x * 30, shot.position.y - shot.direction.y * 30, shot.position.x, shot.position.y);
       g.fillStyle(color).fillCircle(shot.position.x, shot.position.y, 6);
@@ -29,7 +41,7 @@ export class CharacterSkillView {
       g.lineStyle(2, color, .5).strokeCircle(p.x, p.y - 15, 18 + snapshot.tick % 30);
       g.fillStyle(color).fillCircle(p.x, p.y - 17, 5);
     }
-    if (skill.markUntilTick && snapshot.hunt?.tracking.band === "exposed" && snapshot.wormLife?.phase !== "absent") {
+    if (skill.markUntilTick && (snapshot.hunt?.tracking.band === "exposed" || snapshot.mode === "rampage" && snapshot.worm.head.position.y <= (snapshot.world?.surfaceY ?? 0)) && snapshot.wormLife?.phase !== "absent") {
       const p = snapshot.worm.head.position; g.lineStyle(3, color).strokeCircle(p.x, p.y, 44);
       for (const sign of [-1, 1]) g.lineBetween(p.x + sign * 34, p.y - 52, p.x + sign * 52, p.y - 34);
     }

@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-03",
+  "branch": "phase-b-ready",
+  "domain": {
+    "uniqueCases": 29,
+    "files": 7,
+    "fullSuite": false
+  },
+  "browser": {
+    "existingCases": 10,
+    "productionRoot": 1,
+    "productionPages": 1,
+    "manualDesktop": {
+      "seed": 20,
+      "kit": "scout",
+      "pickup": "siegebreaker",
+      "activation": "KeyE",
+      "storedAfterUse": null,
+      "repeatDoesNotExtend": true,
+      "primary": "skill.grapple",
+      "consoleErrors": 0,
+      "consoleWarnings": 0
+    },
+    "manualPhone": {
+      "viewport": [
+        915,
+        412
+      ],
+      "seed": 20,
+      "kit": "scout",
+      "movement": "touch joystick",
+      "buttonSize": 57.67,
+      "activation": "Supply pointerdown",
+      "hiddenAfterUse": true,
+      "primaryReady": true
+    },
+    "finalProduction": {
+      "mode": "rampage",
+      "fatalErrors": 0,
+      "warnings": 0,
+      "testBridge": false
+    }
+  },
+  "build": "normal root production",
+  "limits": [
+    "No human listening",
+    "No physical device/gamepad check",
+    "No full-run balance validation",
+    "Humans and environment remain procedural"
+  ]
+}

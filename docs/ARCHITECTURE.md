@@ -903,3 +903,52 @@ Mode plumbing: `RunConfiguration.ascentRampage` selects the variant, `GameSessio
 derives `rivalMode` from `mode !== "hunt" && ascent === true`, and the session
 validates `mode.ascent-rampage` instead of `mode.rampage`. Fixtures always keep the
 classic path so the historical regression arena is unchanged.
+
+## Run-local Hunter supplies and textured rendering (2026-10-03)
+SkillCrates owns bounded platform spawns, the one-charge slot and a temporary
+CharacterSkills instance. HuntSystems prepares/applySkillEffects, supplies decoy
+perception and allied mark boosts, emits supply-collected/ability-activated events,
+and exposes optional HuntSnapshot.supplies. GameSession passes a dedicated random
+stream. Existing interact action maps E / gamepad X; TouchControls adds a safe-area
+layout supply button. HUD and CharacterSkillView read the same snapshot.
+PreloadScene loads base-path-safe textures. WormSkinView pools images following the
+existing interpolated poses: one Container WebGL Mask filter clips above the moving
+surface; Canvas uses GeometryMask. Existing geometry remains a missing-texture
+fallback. Rendering textures do not affect collision dimensions.
+SoundSynthesis generates cached bounded samples; PhaserAudioAdapter handles spatial
+attenuation, compression, voice cap and tick-based ambient/foley. No runtime fetch
+or server was introduced. CharacterPreview uses common original generated key art.
+
+## Static underground cutaway (2026-10-03)
+
+WorldRenderer shares UndergroundDetails between classic soil and the moving
+hazard. It draws sediment seams, roots, gravel, veins, small pockets and theme
+objects once, using its own deterministic hash instead of session randomness.
+UndergroundRockView holds a static container with a cached 256x256 grain tile and
+image instances from one four-frame transparent atlas. Frames are registered
+once per texture; Vite BASE_URL loading occurs in PreloadScene. The container's y
+tracks surfaceY together with hazard Graphics; classic keeps y=0. It is destroyed
+when WorldRenderer recreates the world. Decoration has no simulation bodies.
+Absent atlas textures keep procedural rock rendering. No save schema, terrain
+collision, input, AI or audio interface changed.
+
+## Skill-sensitive pursuit and tactical rivals (2026-10-03)
+
+HunterSkillSignals derives one sensory frame from primary/borrowed SkillFrames.
+HuntSystems passes it and the beacon to WormPerception; bounded pulse timers,
+shield/mark expiry and explicit lure feed WormController. The controller maintains
+a pending lure and a committed attack separately, uses at most three trajectory
+corrections when planning a charge, and latches escape-turn direction until safely
+deep. These are deterministic domain operations, independent of rendering.
+WormLocomotion only converts upward Burst momentum to a leap when lift is positive.
+
+RivalHunterController returns move/jump/drop/dodge/fire decisions from bounded
+exposed-worm perception. RivalSkillTactics requests useful kit activations;
+RivalSystems owns each CharacterSkills, actual WeaponDefinition and locomotion.
+Shared applySkillEffects updates health/protection, then burial reads the latest
+actor state. RivalFire carries weaponId/damage and predicted aim; GameSession uses
+the existing projectile/audio path with real weapon damage. RPG ownership requires
+grounded summit proximity and is cleared on burial or death.
+RivalUnit exposes skill/aim/firing/armed snapshots; CharacterSkillView and
+HunterCharacterView render bot skills, equipment and muzzle feedback. No new
+runtime service, input action, save schema or asset is required.

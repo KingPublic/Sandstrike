@@ -19,7 +19,7 @@ function replay(seed = 881, hunterX = 1600) {
     const events = motion.step(decision.action, 1 / 60, terrain);
     if (events.some(e => e.type === "phase-changed" && e.to === "breaching")) {
       const warning = decision.breachPrediction;
-      expect(warning, `unwarned crossing at tick ${String(tick)}`).toBeDefined();
+      expect(warning, `unwarned crossing at tick ${String(tick)}: ${JSON.stringify({ before: p.self.head, phase: p.self.phase, state: decision.state, steering: decision.steeringTarget })}`).toBeDefined();
       expect(tick - (warning?.warningTick ?? tick)).toBeGreaterThanOrEqual(60);
       expect(warning?.warningTick).not.toBe(lastWarningTick);
       expect(Math.abs(motion.snapshot().head.position.x - (warning?.x ?? Infinity))).toBeLessThanOrEqual(120);

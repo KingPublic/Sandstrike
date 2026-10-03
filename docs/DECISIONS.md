@@ -487,3 +487,49 @@ cases (deployment, climbing, carrion healing, death, five-kill win), plus browse
 cases proving the new mode deploys rivals that climb while the sand rises and that
 classic arena still starts unchanged. Stage 2 (per-kit rival skills, crate/pickup
 presentation) and Stage 3 (HUD/art/balance, human feel) remain open.
+
+## D-025 ? One-charge alternative Hunter skills and grounded presentation (2026-10-03)
+The user explicitly confirmed one random skill per crate, chosen from the other
+four Hunter kits. One extra slot uses the existing interact action, preserving Q
+and primary cooldown. Full slots do not consume a crate; unreachable grapples keep
+the charge. Effects reuse their kit definitions rather than copying rules.
+Spawns use a dedicated seed stream, safe nearby platforms, an 18s interval and
+three-crate cap. These initial values are provisional pending a human playtest.
+Original generated key art/transparent worm textures establish the more realistic
+art direction. Human/environment geometry stays procedural and small-device
+readable. Sound uses original cached physical-noise/foley samples rather than
+third-party recordings; skill device cues stay distinct. Root/Pages hosting and
+save schema3 are retained. User requested no wasted time/long test cycles: focused
+logic tests, existing scoped browser checks and short production smoke only.
+
+## D-026 - Geological cutaway decoration (2026-10-03)
+
+The user requested visible natural underground objects and a realistic environment.
+Use original generated rock textures plus procedural sediment, roots, gravel,
+fractures, minerals, fossils and theme-specific buried debris/ice. Details remain
+behind gameplay actors and have no hitboxes. This satisfies the visual request
+without changing settled worm movement or adding a terrain obstacle system.
+Ascent decoration follows the rising material band; classic decoration is fixed.
+Build static geometry and a shared cached grain texture once, with local visual
+hashing independent of gameplay RNG. Ship one compact transparent atlas with
+documented provenance and base-path-safe loading. Verify appearance/input at
+representative sizes and static hosting with short checks, without long gameplay
+simulation reruns for a presentation-only change.
+
+## D-027 - Aggressive, skill-sensitive AI with committed warnings (2026-10-03)
+
+The user accepted the environment and explicitly requested smarter/aggressive
+worm/Hunter bots and personalized skill effects, especially a real beacon attack.
+Fix the existing deterministic brains instead of replacing them or adding LLMs.
+Prioritize actionable sensory cues: beacon overrides visual sightings, grapple
+and healing publish brief bearings, Shield prompts a flank/delayed commitment,
+and Mark provokes pursuit. Primary/borrowed skills share one signal adapter.
+Already warned attacks remain committed; a lure can queue the following attack.
+Maintain minimum warning lead and no blind rival shooting through underground soil.
+
+Use real Hunter kit skill/weapon definitions for rivals, shared locomotion/dodge,
+safe nearby ledge selection and predictive exposed-target aiming. Fix rooftop RPG
+ownership and feed its state into rendering/audio. A bot beacon never overrides
+a human worm's input. Focused deterministic/browser checks establish behavior;
+human aggression and complete-run pacing remain provisional. No workflow restart,
+save migration, new dependency or major content expansion is needed.

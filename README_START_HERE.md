@@ -1,8 +1,68 @@
 # Sandstrike
 
+## Latest playable update: aggressive AI and skill reactions — 2026-10-03
+
+Maw now follows current movement, corrects its breach trajectory, completes the
+attack above ground and repositions without getting stuck in repeated dives.
+Hunter bots shoot while climbing/moving, predict incoming Maw attacks, dodge with
+ledge safety checks, and use their real kit skills and weapons. Rooftop bots now
+actually collect the RPG, show the armed weapon and lose it when buried/dead.
+
+All five Hunter skills affect Maw differently: Attract Maw draws a warned attack
+to its beacon; Grapple draws pursuit to the landing; Shield prompts a flank and
+delayed commitment; Target Mark provokes faster reacquisition; Field Heal emits
+a short location pulse. Primary and one-use crate skills share these reactions.
+An already warned charge finishes before switching targets.
+
+Verified: 50 unique focused cases across 11 files in incremental checks, lint,
+typecheck and root production smoke/build. Browser: desktop Q and phone touch
+Attract Maw reached the beacon; Rampage Ranger marked and fired while climbing;
+normal production Hunt activated the skill without debug text or test bridge.
+Evidence and remaining limits: docs/verification/ai-skill-behavior.json and
+docs/SESSION_HANDOFF.md. No long five-run balance simulation was repeated.
+
+Latest work remains uncommitted on phase-b-ready; dist is root production.
+Next: the user's playtest verdict on aggression and skill usefulness. Earlier
+5-6 minute pacing results predate this AI change and are not current acceptance.
+Continue with remaining rooftop pickup feedback/HUD polish only when requested;
+per-kit rival skills and actual RPG ownership are now implemented.
+
+## Previous same-day update: underground environment
+
+Underground now has textured natural rocks, pebbles, uneven sediment seams,
+fractures, roots, mineral veins and small pockets. Desert soil includes fossils;
+ruins include buried masonry, corroded pipe and rebar; frozen soil has ice lenses.
+This works in the rising terrain and classic arena, behind the worm and pickups.
+Original generated rock atlas: `public/art/underground-rocks.png` (about 746 KB).
+
+Follow-up verification: lint/typecheck, root and GitHub Pages production smoke
+(one each), desktop checks for all three themes, and phone/orientation checks.
+Captures and exact scope are recorded in docs/SESSION_HANDOFF.md.
+
+## Earlier same-day update: art, audio and Hunter supplies
+
+More realistic original menu art and textured worm skin, natural equipment/world
+colors, weathered platforms/steel crates and rebuilt weapon/foley/ambient audio.
+Hunt now spawns random platform supplies: each grants one skill from the other four
+Hunter kits, usable **once with E / gamepad X / Supply touch button**. Q remains the
+selected kit's independent skill. One extra slot; full slots leave crates available.
+No charge is lost on a grapple attempt without a reachable ledge.
+
+Verified: 29 focused tests, 10 scoped browser cases, manual desktop E and phone
+joystick/Supply pickup/use, plus production root and GitHub Pages smoke (one each).
+The old WebGL mask API warning discovered during visual inspection was fixed;
+the corrected skin is hidden underground and visible above the surface in Hunt.
+Captures and detailed scope: docs/SESSION_HANDOFF.md. Exact asset prompts:
+docs/ART_GENERATION.md. Human animation and small environment details remain procedural; audio needs
+human listening feedback and physical devices remain unverified.
+
+The user accepted the underground improvement and requested the AI update above.
+Keep execution direct and testing focused; do not replay historical plans or
+full-run tests without a relevant unresolved concern.
+
 ## Read this first when continuing with AI
 
-Updated 2026-10-02. Work in this root on `phase-b-ready`; do not create worktrees,
+Updated 2026-10-03. Work in this root on `phase-b-ready`; do not create worktrees,
 switch branches, push or merge. The user controls remote integration. Communicate
 in Bahasa Indonesia. A short "lanjutkan" means resume the exact next task below.
 
@@ -18,7 +78,7 @@ Read in this order, then check `git status`, recent commits and the actual sourc
    `docs/DECISIONS.md`, `docs/BALANCE.md`, `docs/ASSET_LICENSES.md`, and
    `docs/REFERENCE_RESEARCH.md`; inspect only source/tests relevant to the task.
 
-Current checkpoint (2026-10-02, latest execution): **the approved survival revision,
+Previous checkpoint (2026-10-02): **the approved survival revision,
 pacing pass, presentation pass, first playtest corrections, the Rampage worm leap,
 the mouse/UI-control pass and Stage 1 of the new Rampage (ascent hunt) are
 implemented** in the root on phase-b-ready. Latest checkpoint commit subject:
@@ -30,8 +90,9 @@ kits deploy one at a time as the sand rises (max two active), climb ledge by led
 shoot only at an exposed worm and arm heavy rounds at the rooftop crate; carrion in
 the sand is the worm's only healing. Kill all five to win, lose all health to fail.
 The old endless arena is untouched and reachable via "Choose classic arena" on the
-mode screen, so nothing classic regressed. Stage 2 (per-kit rival skills, crate
-presentation) and Stage 3 (HUD/art/balance, human feel) still to come.
+mode screen. The latest update adds Stage 2 per-kit rival skills, RPG ownership,
+weapon presentation and loss on burial/death. Dedicated rooftop pickup feedback,
+HUD/art/balance and human feel remain open.
 
 Mouse and control presentation (latest): the right mouse button mirrors Shift (worm
 Burst in Rampage, Hunter Dodge in Hunt) beside left-click aim/fire, a quick click is
@@ -87,20 +148,10 @@ heavy 5-run survival gate excluded, plus browser cases for the leap, mouse contr
 the mobile skill/grapple buttons, HUD gauges at five viewports and worm controls.
 `dist` is a normal root production build. See SURVIVAL_VERIFICATION.md.
 
-Exact next action: the user is playtesting the new Rampage (Stage 1). If they say
-"lanjutkan", continue with Stage 2 of the ascent hunt: give each rival kit its own
-skill (Scout grapple, Siegebreaker shield, Engineer decoy, Field Medic heal, Ranger
-mark) so the climb reads differently per kit, make the rooftop crate a visible
-pickup with its own feedback instead of an instant arm, and let an armed rival lose
-the heavy weapon when it dives or dies. Then Stage 3: HUD/art polish for the new mode
-(armed warning, remaining-Hunter presentation, carrion cue), balance tuning from their
-verdict (rival cadence/damage, carrion cadence and heal size, deploy timing), and the
-score/record question (ascent and classic still share the Rampage record slot).
-Also still open: item 6 (art quality) in `docs/PLAYER_FEEDBACK.md`, which needs the
-user's own judgement, and the a9f0615 items' human feel. Do not restart a generic
-plan/review/testing cycle, and do not rebalance Hunt for ascent-rampage tuning.
-Physical devices, gamepad/audio/haptics, sustained performance and human difficulty
-still need real feedback. Visuals are stylized original procedural art, not photorealism.
+Exact next action: get the user's verdict on the 2026-10-03 aggressive AI and
+personalized skill reactions. A generic continuation resumes remaining rooftop
+pickup feedback/HUD polish in the newest handoff. Physical devices, human listening
+and revised difficulty still need feedback; do not repeat long simulations routinely.
 
 Required target: 5 worms + 5 Hunters, unique active skills, automatic mouth feeding,
 responsive building-height breaches, compact desktop menu, allied Hunt NPCs/helicopters, climbable

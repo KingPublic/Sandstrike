@@ -4,6 +4,7 @@ import { characterForRole, type CharacterId } from "../data/characters";
 import type { Vec2 } from "../domain/math/Vector2";
 import type { WormMotionSnapshot } from "../domain/movement/WormMovementTypes";
 import { clipAboveSurface, clippedCircle } from "./SurfaceClip";
+import { WormSkinView } from "./WormSkinView";
 
 interface RenderPose {
   readonly position: Vec2;
@@ -12,6 +13,7 @@ interface RenderPose {
 
 export class WormView {
   private readonly body: Phaser.GameObjects.Graphics;
+  private readonly skin: WormSkinView;
   private previous: WormMotionSnapshot | undefined;
   private current: WormMotionSnapshot | undefined;
   private radiusScale = 1;
@@ -30,12 +32,15 @@ export class WormView {
     if (!character) throw new RangeError("Invalid worm visual.");
     this.visual = character.visual;
     this.body = scene.add.graphics().setDepth(30);
+    const tint = character.id === "cinder-wyrm" ? 0xffa681 : character.id === "iron-burrower" ? 0xb8c9cb : character.id === "storm-serpent" ? 0xaac3dc : character.id === "rift-spitter" ? 0xc1afd1 : 0xffffff;
+    this.skin = new WormSkinView(scene, tint);
   }
 
   render(snapshot: WormMotionSnapshot, alpha: number, surfaceOnly = false, shielded = false, visible = true, boss = false, surfaceY = 0): void {
     this.radiusScale = boss ? 1.35 : this.visual.silhouette === "armor" ? 1.15 : this.visual.silhouette === "fins" ? .87 : 1;
     this.renderTick = snapshot.tick - 1 + alpha;
     if (!visible) {
+      this.skin.hide();
       this.body.clear();
       this.previous = undefined;
       this.current = undefined;
@@ -55,6 +60,18 @@ export class WormView {
     );
 
     this.body.clear();
+    if (this.skin.available) {
+      this.skin.render(poses, poses.map((_, index) => this.radius(index, poses.length)), surfaceOnly, surfaceY);
+      if (!surfaceOnly) this.drawShadow(poses);
+      if (shielded) for (const [index, pose] of poses.entries()) {
+        const points = surfaceOnly ? clippedCircle(pose.position, this.radius(index, poses.length) + 7, surfaceY) : [];
+        this.body.lineStyle(2.5, 0xb5cbd0, .85);
+        if (surfaceOnly && points.length >= 3) this.body.strokePoints(points.map(p => new Phaser.Math.Vector2(p.x, p.y)), true);
+        else if (!surfaceOnly) this.body.strokeCircle(pose.position.x, pose.position.y, this.radius(index, poses.length) + 7);
+      }
+      if (this.debug) this.drawDebug(poses);
+      return;
+    }
     if (surfaceOnly) {
       this.drawSurfaceBody(poses, current, surfaceY);
       if (shielded) for (const [index, pose] of poses.entries()) {
@@ -75,6 +92,7 @@ export class WormView {
   }
 
   destroy(): void {
+    this.skin.destroy();
     this.body.destroy();
   }
 

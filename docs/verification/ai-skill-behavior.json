@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-03",
+  "scope": "Smarter Maw/Hunter AI and personalized primary/borrowed Hunter skill reactions",
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "focusedUniqueCases": 50,
+    "focusedFiles": 11,
+    "testExecution": "incremental focused groups after relevant changes; not a full-suite run",
+    "finalRootProductionBuild": "passed via production smoke",
+    "rootProductionSmokeCases": 1,
+    "pagesProductionSmokeRepeatedThisTask": false,
+    "pagesNote": "Asset/base-path compatibility verified earlier the same day; unchanged in this task",
+    "longFiveKitBalanceGateRepeated": false,
+    "consoleErrorsAndPageErrorsInSuccessfulBrowserChecks": []
+  },
+  "desktopAttractMaw": {
+    "viewport": [1280, 720],
+    "seed": 8,
+    "activation": "keyboard Q",
+    "explicitDebug": true,
+    "beacon": [-300, -16],
+    "warningTick": 61,
+    "committedTick": 121,
+    "observedTick": 125,
+    "distanceToBeaconPx": 133.8259827347249,
+    "reason": "breach: beacon attack",
+    "capture": "ai-attract-maw-breach.png"
+  },
+  "phoneAttractMaw": {
+    "viewport": [915, 412],
+    "seed": 8,
+    "activation": "touch ability pointer down/up",
+    "explicitDebug": true,
+    "beacon": [-300, -16],
+    "warningTick": 61,
+    "committedTick": 121,
+    "observedTick": 129,
+    "distanceToBeaconPx": 74.84098336469495,
+    "reason": "breach: beacon attack",
+    "capture": "ai-attract-maw-mobile.png"
+  },
+  "rampageHunter": {
+    "start": "normal Choose Rampage menu path",
+    "viewport": [1280, 720],
+    "playerInput": "ArrowUp and Shift",
+    "tick": 54,
+    "hunter": "ranger",
+    "activity": "climb",
+    "markActive": true,
+    "firing": true,
+    "capture": "ai-rival-hunter.png"
+  },
+  "normalProduction": {
+    "url": "http://127.0.0.1:4173/",
+    "mode": "hunt",
+    "hunter": "engineer",
+    "QActivation": "Attract Maw active",
+    "testBridgePresent": false,
+    "technicalDebugLabels": false,
+    "capture": "ai-production-hunt.png"
+  },
+  "limits": [
+    "No human difficulty or physical-device acceptance",
+    "No complete tower win through manual controls in this task",
+    "Prior full-run pacing evidence predates the AI change",
+    "Dedicated rooftop pickup/restock artwork remains open",
+    "A bot beacon does not override a human-controlled worm",
+    "Existing Phaser production bundle-size warning remains"
+  ]
+}

@@ -2,7 +2,7 @@ import type { TouchInput } from "../input/TouchInput";
 import type { ControlReadiness } from "./ControlReadiness";
 import type { ViewportLayoutResult } from "./ViewportLayout";
 
-type TouchAction = "primary" | "boost" | "ability" | "jump";
+type TouchAction = "primary" | "boost" | "ability" | "jump" | "interact";
 
 export class TouchControls {
   private readonly root: HTMLDivElement;
@@ -12,12 +12,14 @@ export class TouchControls {
   private readonly boostButton: HTMLButtonElement;
   private readonly abilityButton: HTMLButtonElement;
   private readonly jumpButton: HTMLButtonElement;
+  private readonly supplyButton: HTMLButtonElement;
+  private supplyPointerId: number | undefined;
   private abilityPointerId: number | undefined;
   private jumpPointerId: number | undefined;
   private joystickPointerId: number | undefined;
   private primaryPointerId: number | undefined;
   private boostPointerId: number | undefined;
-  private readonly readiness: Record<TouchAction, number> = { primary: 1, boost: 1, ability: 1, jump: 1 };
+  private readonly readiness: Record<TouchAction, number> = { primary: 1, boost: 1, ability: 1, jump: 1, interact: 1 };
   private readonly primaryBinding: "primary" | "ability";
 
   private readonly handleJoystickDown = (event: PointerEvent): void => {
@@ -74,7 +76,8 @@ export class TouchControls {
     this.primaryButton = this.createButton("primary", role === "hunter" ? "Fire / Aim" : arcade ? skillName : "Bite");
     this.abilityButton = this.createButton("ability", ascent ? skillName : "Snare"); this.abilityButton.hidden = role !== "hunter";
     this.jumpButton = this.createButton("jump", "Jump"); this.jumpButton.hidden = role !== "hunter" || !ascent;
-    this.root.append(this.joystick, this.boostButton, this.primaryButton, this.abilityButton, this.jumpButton);
+    this.supplyButton = this.createButton("interact", "Supply"); this.supplyButton.hidden = true;
+    this.root.append(this.joystick, this.boostButton, this.primaryButton, this.abilityButton, this.jumpButton, this.supplyButton);
     container.append(this.root);
 
     this.primaryBinding = arcade && role === "worm" ? "ability" : "primary";
@@ -91,6 +94,7 @@ export class TouchControls {
     this.bindButton(this.boostButton, "boost");
     this.bindButton(this.abilityButton, "ability");
     this.bindButton(this.jumpButton, "jump");
+    this.bindButton(this.supplyButton, "interact");
     this.primaryButton.addEventListener("pointermove", event => { if (this.role === "hunter" && event.pointerId === this.primaryPointerId) this.updateAim(event); });
   }
 
@@ -101,6 +105,7 @@ export class TouchControls {
     place(this.boostButton, layout.boostButton);
     place(this.abilityButton, layout.abilityButton);
     place(this.jumpButton, layout.jumpButton);
+    place(this.supplyButton, layout.supplyButton);
     this.root.style.setProperty("--touch-target", `${String(layout.targetSize)}px`);
     if (!layout.touchControlsVisible) {
       this.clearPointers();
@@ -112,6 +117,12 @@ export class TouchControls {
     this.applyReadiness("boost", readiness.boost);
     this.applyReadiness(this.primaryBinding, readiness[this.primaryBinding]);
     this.applyReadiness("ability", readiness.ability);
+  }
+
+  setSupply(name: string | undefined): void {
+    this.supplyButton.hidden = !name || this.role !== "hunter";
+    this.supplyButton.textContent = name ? `${name} · 1×` : "Supply";
+    this.supplyButton.setAttribute("aria-label", name ? `Use ${name} once` : "Supply");
   }
 
   private applyReadiness(action: TouchAction, readiness: number): void {
@@ -126,16 +137,18 @@ export class TouchControls {
   }
 
   private buttonFor(action: TouchAction): HTMLButtonElement {
-    return action === "primary" ? this.primaryButton : action === "boost" ? this.boostButton : action === "ability" ? this.abilityButton : this.jumpButton;
+    return action === "primary" ? this.primaryButton : action === "boost" ? this.boostButton : action === "ability" ? this.abilityButton : action === "interact" ? this.supplyButton : this.jumpButton;
   }
 
   clearPointers(): void {
-    for (const [element, id] of [[this.joystick, this.joystickPointerId], [this.primaryButton, this.primaryPointerId], [this.boostButton, this.boostPointerId], [this.abilityButton, this.abilityPointerId], [this.jumpButton, this.jumpPointerId]] as const) if (id !== undefined) try { element.releasePointerCapture(id); } catch { /* Already released. */ }
+    for (const [element, id] of [[this.joystick, this.joystickPointerId], [this.primaryButton, this.primaryPointerId], [this.boostButton, this.boostPointerId], [this.abilityButton, this.abilityPointerId], [this.jumpButton, this.jumpPointerId], [this.supplyButton, this.supplyPointerId]] as const) if (id !== undefined) try { element.releasePointerCapture(id); } catch { /* Already released. */ }
     this.joystickPointerId = undefined;
     this.primaryPointerId = undefined;
     this.boostPointerId = undefined;
     this.abilityPointerId = undefined;
     this.jumpPointerId = undefined;
+    this.supplyPointerId = undefined;
+    this.input.setButton("interact", false);
     this.input.setButton("ability", false); this.input.setAim(0, 0);
     this.input.setMove(0, 0);
     this.input.setButton("primary", false);
@@ -146,6 +159,7 @@ export class TouchControls {
     this.boostButton.classList.remove("touch-action--held");
     this.abilityButton.classList.remove("touch-action--held");
     this.jumpButton.classList.remove("touch-action--held");
+    this.supplyButton.classList.remove("touch-action--held");
     this.input.clear();
   }
 
@@ -203,13 +217,14 @@ export class TouchControls {
   }
 
   private pointerFor(action: TouchAction): number | undefined {
-    return action === "primary" ? this.primaryPointerId : action === "boost" ? this.boostPointerId : action === "ability" ? this.abilityPointerId : this.jumpPointerId;
+    return action === "primary" ? this.primaryPointerId : action === "boost" ? this.boostPointerId : action === "ability" ? this.abilityPointerId : action === "interact" ? this.supplyPointerId : this.jumpPointerId;
   }
 
   private setPointer(action: TouchAction, id: number | undefined): void {
     if (action === "primary") this.primaryPointerId = id;
     else if (action === "boost") this.boostPointerId = id;
     else if (action === "ability") this.abilityPointerId = id;
+    else if (action === "interact") this.supplyPointerId = id;
     else this.jumpPointerId = id;
   }
 

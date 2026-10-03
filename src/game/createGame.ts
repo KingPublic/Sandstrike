@@ -45,7 +45,7 @@ export function createGame(
     parent,
     width: 1280,
     height: 720,
-    backgroundColor: "#17101f",
+    backgroundColor: "#252d28",
     antialias: true,
     pixelArt: false,
     roundPixels: false,

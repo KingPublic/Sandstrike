@@ -15,15 +15,17 @@ export interface RivalPerception {
   /** Armed by the summit crate: heavy rounds instead of rifle fire. */
   readonly armedWithRpg: boolean;
   readonly canFire: boolean;
-  readonly worm?: Readonly<{ position: Vec2; exposed: boolean }> | undefined;
+  readonly canDodge?: boolean;
+  readonly worm?: Readonly<{ position: Vec2; velocity?: Vec2; exposed: boolean }> | undefined;
 }
 
-export type RivalActivity = "climb" | "advance" | "engage" | "rpg";
+export type RivalActivity = "climb" | "advance" | "engage" | "rpg" | "dodge";
 
 export interface RivalDecision {
   readonly moveX: number;
   readonly jump: boolean;
   readonly drop: boolean;
+  readonly dodge?: boolean;
   readonly fire: boolean;
   /** Aim point the rival shoots at, kept readable for the player. */
   readonly aim?: Vec2 | undefined;
@@ -48,40 +50,50 @@ export class RivalHunterController {
     const feet = p.self.y + HALF_HEIGHT;
     const reach = jumpReach();
     const buried = feet > p.surfaceY - 12;
-    const atSummit = feet <= p.summitY + 8 && p.self.x >= p.summit.left && p.self.x <= p.summit.right;
+    const atSummit = p.grounded && Math.abs(feet - p.summitY) <= 8 && p.self.x >= p.summit.left && p.self.x <= p.summit.right;
     const worm = p.worm;
     const aim = worm !== undefined ? { x: worm.position.x, y: worm.position.y } : undefined;
     const canEngage = worm !== undefined && worm.exposed && !buried
       && Math.abs(worm.position.x - p.self.x) <= b.rivalRange
       && Math.abs(worm.position.y - p.self.y) <= b.rivalRange;
+    const incoming = worm?.velocity ? { x: worm.position.x + worm.velocity.x * .3, y: worm.position.y + worm.velocity.y * .3 } : worm?.position;
+    const danger = canEngage && incoming && Math.hypot(incoming.x - p.self.x, incoming.y - p.self.y) < 155;
+    const current = p.platforms.find(platform => platform.id === p.platformId);
+    const away = worm ? Math.sign(p.self.x - worm.position.x) || 1 : 0;
+    const safeEscape = current === undefined || p.self.x + away * 85 > current.left + 18 && p.self.x + away * 85 < current.right - 18;
+    if (danger && p.canDodge !== false && safeEscape) {
+      this.state = "dodge";
+      return freezeRecord({ moveX: away, jump: false, drop: false, dodge: true, fire: p.canFire, aim, state: "dodge", platformId: p.platformId });
+    }
 
-    if (atSummit && p.armedWithRpg) {
-      this.state = "rpg";
+    if (atSummit) {
+      this.state = p.armedWithRpg ? "rpg" : "advance";
       const offset = p.self.x - 0;
       const wantsCentre = Math.abs(offset) > 40;
       return freezeRecord({
-        moveX: wantsCentre ? (worm !== undefined && Math.abs(worm.position.x - p.self.x) > 80 ? Math.sign(worm.position.x - p.self.x) : -Math.sign(offset)) : 0,
-        jump: false, drop: false, fire: p.canFire && canEngage, aim, state: "rpg", platformId: p.platformId,
+        moveX: wantsCentre ? -Math.sign(offset) : 0,
+        jump: false, drop: false, fire: p.canFire && canEngage, aim, state: this.state, platformId: p.platformId,
       });
     }
 
     // The sand is the clock: keep climbing whenever it closes in.
     const climbTarget = nextLedgeUp(p, feet, reach);
-    const mustClimb = buried || p.surfaceY - feet > b.climbPanicDistance;
-    if ((mustClimb || this.state === "climb") && climbTarget !== undefined) {
+    const mustClimb = buried || p.surfaceY - feet < b.climbPanicDistance;
+    if (climbTarget !== undefined && (mustClimb || !canEngage || !p.canFire)) {
       this.state = "climb";
-      const offset = centreOf(climbTarget) - p.self.x;
+      const offset = landingX(climbTarget, p.self.x) - p.self.x;
       return freezeRecord({
         moveX: Math.abs(offset) <= 14 ? 0 : Math.sign(offset),
         jump: p.grounded && Math.abs(offset) <= 220,
-        drop: false, fire: false, state: "climb", platformId: climbTarget.id,
+        drop: false, fire: p.canFire && canEngage, aim, state: "climb", platformId: climbTarget.id,
       });
     }
 
     if (canEngage && p.canFire) {
       this.state = "engage";
       const offset = worm.position.x - p.self.x;
-      return freezeRecord({ moveX: Math.abs(offset) > ADVANCE_LEASH ? Math.sign(offset) : 0, jump: false, drop: false, fire: true, aim, state: "engage", platformId: p.platformId });
+      const moveX = Math.abs(offset) < 210 && safeEscape ? away : Math.abs(offset) > ADVANCE_LEASH ? Math.sign(offset) : 0;
+      return freezeRecord({ moveX, jump: false, drop: false, fire: true, aim, state: "engage", platformId: p.platformId });
     }
 
     this.state = "advance";
@@ -97,12 +109,13 @@ function nextLedgeUp(p: RivalPerception, feet: number, reach: number): Platform 
     if (platform.y < p.summitY - 40) continue;
     const rise = feet - platform.y;
     if (rise < 24 || rise > reach) continue;
-    if (!best || rise < feet - best.y) best = platform;
+    if (platform.y >= p.surfaceY - 18) continue;
+    if (!best || rise < feet - best.y || rise === feet - best.y && Math.abs(landingX(platform, p.self.x) - p.self.x) < Math.abs(landingX(best, p.self.x) - p.self.x)) best = platform;
   }
   return best;
 }
 
-function centreOf(platform: Platform): number { return (platform.left + platform.right) / 2; }
+function landingX(platform: Platform, x: number): number { return Math.max(platform.left + 24, Math.min(platform.right - 24, x)); }
 
 function jumpReach(): number {
   return (climb.jumpSpeed ** 2) / (2 * climb.gravity) - 12;

@@ -8,6 +8,13 @@ export function drawTowerDetails(g: Phaser.GameObjects.Graphics, world: AscentWo
     g.lineStyle(3, theme.light, .08).lineBetween(x - 105, world.bounds.top, x - 105, 0);
     for (let y = -60; y > world.bounds.top; y -= 120) {
       for (let index = 0; index < 5; index++) g.fillStyle(theme.light, (index + Math.abs(y / 120)) % 3 === 0 ? .22 : .08).fillRect(x - 80 + index * 36, y, 18, 38);
+      g.lineStyle(1, 0x222925, .2).lineBetween(x - 108, y + 55, x + 108, y + 55);
+      g.lineStyle(1, theme.light, .11).lineBetween(x - 106, y + 57, x + 106, y + 57);
+      g.lineStyle(3, theme.structure, .45).lineBetween(x + 84, y - 65, x + 84, y + 55);
+      for (let crack = 0; crack < 6; crack++) {
+        const cx = x - 95 + (crack * 43 + Math.abs(y)) % 175, cy = y - 40 + crack * 15;
+        g.lineStyle(1, theme.light, .12).lineBetween(cx, cy, cx + 5, cy + 2).lineBetween(cx + 5, cy + 2, cx + 13, cy - 3);
+      }
     }
   }
   for (const p of world.platforms) {
@@ -21,28 +28,12 @@ export function drawTowerDetails(g: Phaser.GameObjects.Graphics, world: AscentWo
       g.lineStyle(4, theme.structure, .9).lineBetween(x, p.y + 30, end, p.y + height).lineBetween(end, p.y + 30, x, p.y + height);
     }
     g.lineStyle(2, theme.light, .12).lineBetween(left + 5, p.y + 30, left + 5, p.y + height);
+    g.lineStyle(1, 0x1b2320, .45).lineBetween(left, p.y + 32, right, p.y + 32);
     g.fillStyle(theme.light, .13).fillRoundedRect((p.left + p.right) / 2 - 28, p.y + 34, 56, 20, 3);
     const next = world.platforms.find(n => n.y === p.y - 90 && n.right - n.left < 1000);
     if (next && p.right - p.left > 1000) {
       const direction = (next.left + next.right) / 2 < 0 ? -1 : 1;
       for (let x = p.left + 160; x < p.right - 160; x += 500) g.lineStyle(3, theme.light, .5).lineBetween(x - direction * 8, p.y - 26, x + direction * 8, p.y - 18).lineBetween(x + direction * 8, p.y - 18, x - direction * 8, p.y - 10);
-    }
-  }
-}
-
-export function drawTerrainDetails(g: Phaser.GameObjects.Graphics, theme: EnvironmentTheme): void {
-  for (let i = 0; i < 160; i++) {
-    const x = -2700 + (i * 977) % 5400, y = 45 + (i * 193) % 2800;
-    const r = 2 + i % 7;
-    g.fillStyle(theme.structure, .2).fillTriangle(x - r * 2, y + r, x, y - r, x + r * 3, y + r);
-    g.lineStyle(1, theme.light, .14).lineBetween(x - r, y, x, y - r);
-  }
-  for (let row = 0; row < 12; row++) {
-    const y = 110 + row * 210;
-    g.lineStyle(2, theme.light, .055);
-    for (let x = -2700; x < 2700; x += 150) {
-      const a = y + Math.sin(x / 180 + row) * 18, b = y + Math.sin((x + 150) / 180 + row) * 18;
-      g.lineBetween(x, a, x + 150, b);
     }
   }
 }

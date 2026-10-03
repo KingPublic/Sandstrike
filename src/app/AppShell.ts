@@ -267,7 +267,7 @@ export class AppShell {
         controller: this.controller,
         debug: configuration.debugAI ?? false,
         onResult: (result) => { this.showResults(result); },
-        onSnapshot: (snapshot) => { this.hud?.update(snapshot, this.settings.reducedMotion); this.touchControls?.setReadiness(controlReadiness(snapshot)); },
+        onSnapshot: (snapshot) => { this.hud?.update(snapshot, this.settings.reducedMotion); this.touchControls?.setReadiness(controlReadiness(snapshot)); this.touchControls?.setSupply(snapshot.hunt?.supplies?.stored?.name); },
         settings: () => this.settings,
         audio: this.audio,
         onReady: () => {

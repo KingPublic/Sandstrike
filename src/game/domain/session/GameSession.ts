@@ -142,7 +142,7 @@ export class GameSession {
     ]);
     this.random = new RandomSource(options.seed);
     this.hunt = options.mode === "hunt" ? new HuntSystems(this.terrain, options.debugAI ?? false, movement, this.actors.get("hunter")?.position, options.aimAssist ?? .35, this.world, this.character) : undefined;
-    this.rivals = rivalMode ? new RivalSystems(this.terrain) : undefined;
+    this.rivals = rivalMode ? new RivalSystems(this.terrain, options.movement.gravity) : undefined;
     this.projectiles = new ProjectileSystem(this.actors, enemies.projectileCapacity, this.world ? ascentArena.bounds : undefined);
     for (const shot of options.initialProjectiles ?? []) this.projectiles.spawn("fixture", shot.position, shot.direction, 0);
     this.actors.commit();
@@ -167,7 +167,7 @@ export class GameSession {
     const previousActors = this.actors.snapshot();
     this.currentTick = action.tick;
     this.world?.step(this.currentTick, this.currentStage());
-    const huntStep = this.hunt?.prepare(action, this.locomotion.snapshot(), this.actors, this.random.stream("ai.worm"), this.currentTick);
+    const huntStep = this.hunt?.prepare(action, this.locomotion.snapshot(), this.actors, this.random.stream("ai.worm"), this.currentTick, this.random.stream("supplies"));
     for (const event of huntStep?.events ?? []) this.events.publish(event);
     const skillOwner = this.actors.get("worm");
     if (!skillOwner) throw new Error("Missing worm actor.");
@@ -371,8 +371,9 @@ export class GameSession {
     const step = system.step(this.actors, worm, this.currentTick, this.random.stream("rivals"));
     for (const event of step.events) this.events.publish(event);
     for (const fire of step.fires) {
-      const projectileId = this.projectiles.spawn(fire.actorId, fire.from, { x: fire.to.x - fire.from.x, y: fire.to.y - fire.from.y }, this.currentTick, fire.heavy ? rivalProjectiles.heavy : rivalProjectiles.rifle);
-      if (projectileId !== undefined) this.events.publish({ type: "projectile-fired", tick: this.currentTick, actorId: fire.actorId, projectileId, position: fire.from });
+      const definition = fire.heavy ? rivalProjectiles.heavy : rivalProjectiles.rifle;
+      const projectileId = this.projectiles.spawn(fire.actorId, fire.from, { x: fire.to.x - fire.from.x, y: fire.to.y - fire.from.y }, this.currentTick, { ...definition, damage: fire.damage });
+      if (projectileId !== undefined) this.events.publish({ type: "projectile-fired", tick: this.currentTick, actorId: fire.actorId, projectileId, position: fire.from, weaponId: fire.weaponId });
     }
   }
 
@@ -395,7 +396,7 @@ export class GameSession {
         const direction = { x: decision.aimPoint.x - position.x, y: decision.aimPoint.y - position.y };
         if (Math.hypot(direction.x, direction.y) === 0) direction.x = 1;
         const projectileId = this.projectiles.spawn(actor.id, position, direction, this.currentTick, actor.tags.includes("vehicle") ? projectiles.vehicle : actor.tags.includes("aerial") ? projectiles.aerial : projectiles.infantry);
-        if (projectileId) this.events.publish({ type: "projectile-fired", tick: this.currentTick, actorId: actor.id, projectileId, position });
+        if (projectileId) this.events.publish({ type: "projectile-fired", tick: this.currentTick, actorId: actor.id, projectileId, position, weaponId: actor.tags.includes("vehicle") ? "carbine" : "rifle" });
       }
     }
   }

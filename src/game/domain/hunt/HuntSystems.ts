@@ -4,6 +4,8 @@ import { applySkillEffects } from "../abilities/ApplySkillEffects";
 import { assistExposedAim } from "./HuntAiming";
 import { ascentArena } from "../../data/ascentArena";
 import { neutralActionFrame, type ActionFrame } from "../../input/ActionFrame";
+import { SkillCrates, type SkillCrateSnapshot } from "./SkillCrates";
+import type { HunterId } from "../../data/characters";
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
@@ -22,6 +24,7 @@ import type { ActorRegistry } from "../actors/ActorRegistry";
 import { freezeRecord } from "../actors/Actor";
 import { WormController, type WormDecision } from "../ai/WormController";
 import { WormPerception } from "../ai/WormPerception";
+import { hunterSkillSignals } from "../ai/HunterSkillSignals";
 import type { DomainEvent } from "../events/DomainEvent";
 import type { WormMotionSnapshot, WormMovementConfig } from "../movement/WormMovementTypes";
 import type { RandomStream } from "../random/RandomSource";
@@ -47,6 +50,7 @@ import { SupportHelicopterController } from "../ai/SupportHelicopterController";
 import { supportPlatform, sweptLanding, type Platform } from "../world/PlatformContacts";
 import type { DamageCommand } from "../combat/DamageResolver";
 export interface HuntSnapshot {
+  readonly supplies?: SkillCrateSnapshot;
   readonly hunter: HunterState; readonly rifle: RifleState; readonly snare: SnareState;
   readonly hunterHealth: number; readonly wormHealth: number; readonly relayIntegrity: number;
   readonly tracking: TrackingState; readonly score: number; readonly trapTriggers: number;
@@ -81,6 +85,7 @@ export class HuntSystems {
   private readonly hunter: HunterLocomotion;
   private readonly rifle: RifleSystem;
   private readonly characterSkill: CharacterSkills | undefined;
+  private readonly supplies: SkillCrates | undefined;
   private readonly medical: RecoveryStations;
   private readonly snare = new SeismicSnare();
   private readonly ai: WormController;
@@ -103,6 +108,7 @@ export class HuntSystems {
     const selected = character ?? characterForRole("hunt");
     this.rifle = new RifleSystem(this.world ? selected?.weapon : undefined);
     this.characterSkill = this.world && selected ? new CharacterSkills(selected) : undefined;
+    this.supplies = this.world && selected ? new SkillCrates(this.world.snapshot().platforms, selected.id as HunterId) : undefined;
     this.hunter = new HunterLocomotion(terrain, this.world ? { left: this.world.snapshot().bounds.left + 18, right: this.world.snapshot().bounds.right - 18 } : { left: -2382, right: 2382 }, initial, this.world?.snapshot().platforms ?? []);
     this.ai = new WormController(movement, terrain, this.world ? ascentArena.riseSpeed : 0, this.world === undefined);
   }
@@ -112,16 +118,19 @@ export class HuntSystems {
 
   /** Fresh worm life: clean behaviour state with the current escalation. */
   restartWorm(generation: number): void { this.ai.reset(); this.ai.setAggression(generation); }
-  prepare(action: ActionFrame, worm: WormMotionSnapshot, registry: ActorRegistry, random: RandomStream, tick: number) {
+  prepare(action: ActionFrame, worm: WormMotionSnapshot, registry: ActorRegistry, random: RandomStream, tick: number, supplyRandom: RandomStream = random) {
     let hunter = this.hunter.step(action, tick); const actor = registry.get("hunter");
     if (actor) registry.update({ ...actor, position: hunter.position, direction: hunter.direction, velocity: hunter.velocity ?? { x: (hunter.position.x - actor.position.x) * 60, y: 0 }, ...(this.world ? { invulnerableUntilTick: Math.max(actor.invulnerableUntilTick ?? 0, hunter.dodgeUntilTick) } : {}) });
     const collector = registry.get("hunter"), healed = collector ? this.medical.collect(collector) : 0;
     if (collector && healed > 0) registry.update({ ...collector, health: collector.health + healed });
     const skillOwner = registry.get("hunter");
+    const pickedUp = skillOwner ? this.supplies?.step(skillOwner, tick, this.terrain.surfaceY(hunter.position.x), supplyRandom) : undefined;
     const skill = skillOwner ? this.characterSkill?.step({ tick, pressed: action.ability.pressed, owner: skillOwner, actors: registry.snapshot(), direction: hunter.direction, phase: "hunter", surfaceY: this.terrain.surfaceY(hunter.position.x), platforms: this.world?.snapshot().platforms ?? [] }) : undefined;
-    if (skill) {
-      applySkillEffects(registry, "hunter", skill);
-      if (skill.grapple) { this.hunter.grappleTo(skill.grapple); hunter = this.hunter.snapshot(); const player = registry.get("hunter"); if (player) registry.update({ ...player, position: hunter.position, velocity: hunter.velocity ?? { x: 0, y: 0 } }); }
+    const supplyOwner = registry.get("hunter");
+    const borrowed = supplyOwner ? this.supplies?.use({ tick, pressed: action.interact.pressed, owner: supplyOwner, actors: registry.snapshot(), direction: hunter.direction, phase: "hunter", surfaceY: this.terrain.surfaceY(hunter.position.x), platforms: this.world?.snapshot().platforms ?? [] }) : undefined;
+    for (const effect of [skill, borrowed]) if (effect) {
+      applySkillEffects(registry, "hunter", effect);
+      if (effect.grapple) { this.hunter.grappleTo(effect.grapple); hunter = this.hunter.snapshot(); const player = registry.get("hunter"); if (player) registry.update({ ...player, position: hunter.position, velocity: hunter.velocity ?? { x: 0, y: 0 } }); }
     }
     const snare = this.snare.step(this.world ? { ...action, ability: neutralActionFrame(tick).ability } : action, hunter.position, worm.head.position, tick);
     if (snare.events.length) {
@@ -131,11 +140,11 @@ export class HuntSystems {
     }
     const surfaceY = this.terrain.surfaceY(hunter.position.x);
     const relay = registry.get("relay")?.position ?? { x: 0, y: surfaceY + 200 };
-    const perception = this.perception.observe(worm, { position: hunter.position, velocity: hunter.velocity ?? { x: 0, y: 0 } }, relay, snare.state.position, tick, surfaceY, skill?.decoy);
+    const perception = this.perception.observe(worm, { position: hunter.position, velocity: hunter.velocity ?? { x: 0, y: 0 } }, relay, snare.state.position, tick, surfaceY, borrowed?.decoy ?? skill?.decoy, hunterSkillSignals([skill, borrowed]));
     const decision = this.wormAlive ? this.ai.step(perception, tick, random) : this.ai.snapshot();
     this.stepStage(registry, hunter.position, tick);
     this.stepAllies(registry, worm, tick, surfaceY);
-    return { action: decision?.action ?? neutralActionFrame(tick), effects: snare.effects, damage: skill?.damage ?? [], events: [...(collector && healed > 0 ? [{ type: "actor-healed" as const, tick, actorId: collector.id, amount: healed, position: collector.position }] : []), ...snare.events, ...(skill?.activated ? [{ type: "ability-activated" as const, tick, actorId: "hunter", abilityId: skill.ability.id, position: hunter.position }] : [])] as readonly DomainEvent[] };
+    return { action: decision?.action ?? neutralActionFrame(tick), effects: snare.effects, damage: [...(skill?.damage ?? []), ...(borrowed?.damage ?? [])], events: [...(collector && healed > 0 ? [{ type: "actor-healed" as const, tick, actorId: collector.id, amount: healed, position: collector.position }] : []), ...snare.events, ...(pickedUp ? [{ type: "supply-collected" as const, tick, actorId: "hunter", abilityId: pickedUp.characterId, position: hunter.position }] : []), ...[skill, borrowed].flatMap(effect => effect?.activated ? [{ type: "ability-activated" as const, tick, actorId: "hunter", abilityId: effect.ability.id, position: hunter.position }] : [])] as readonly DomainEvent[] };
   }
 
   /** Summit transition, boss immunity cycle and the objective crate pickup. */
@@ -280,10 +289,11 @@ export class HuntSystems {
         .filter(region => Math.abs(region.position.x - unit.position.x) <= range)
         .reduce<(typeof exposed)[number] | undefined>((best, region) => !best || Math.abs(region.position.x - unit.position.x) < Math.abs(best.position.x - unit.position.x) ? region : best, undefined);
       if (!unit.dead && unit.fire && contact !== undefined && tick >= unit.nextFireTick) {
-        unit.nextFireTick = tick + (this.characterSkill?.snapshot(tick).markUntilTick ? Math.ceil(cadence / 1.5) : cadence);
+        const marked = (this.characterSkill?.snapshot(tick).markUntilTick ?? 0) > tick || (this.supplies?.snapshot(tick).active?.skill.markUntilTick ?? 0) > tick;
+        unit.nextFireTick = tick + (marked ? Math.ceil(cadence / 1.5) : cadence);
         unit.firingUntilTick = tick + 6;
         unit.aim = contact.position;
-        commands.push({ sourceId: unit.id, targetId: "worm", abilityId: unit.kind === "ally.ground" ? "ability.ally-rifle" : "ability.ally-air", tick, amount: damage * (this.characterSkill?.snapshot(tick).markUntilTick ? 1.35 : 1), tags: ["ally", "rifle"], priority: 0 });
+        commands.push({ sourceId: unit.id, targetId: "worm", abilityId: unit.kind === "ally.ground" ? "ability.ally-rifle" : "ability.ally-air", tick, amount: damage * (marked ? 1.35 : 1), tags: ["ally", "rifle"], priority: 0 });
         // The tracer starts at the drawn muzzle so the visual shot matches the pose.
         const muzzle = muzzlePoint(unit);
         events.push(Object.freeze({ type: "ally-fired" as const, tick, actorId: unit.id, kind: unit.kind, position: muzzle, to: contact.position }));
@@ -333,6 +343,6 @@ export class HuntSystems {
     const skill = this.bossSkill.snapshot();
     const stage = this.stage.snapshot();
     const rpg = this.rpg.snapshot();
-    return freezeRecord({ medical: this.medical.snapshot(), aim: this.aim, hunter: this.hunter.snapshot(), rifle: this.rifle.snapshot(), snare: this.snare.snapshot(), hunterHealth: registry.get("hunter")?.health ?? 0, wormHealth: bossWorm?.health ?? 0, relayIntegrity: registry.get("relay")?.health ?? 0, tracking: this.tracking.step(worm, this.ai.snapshot(), this.snare.snapshot(), tick, this.terrain.surfaceY(worm.head.position.x)), score: this.scoring.score, trapTriggers: this.trapTriggers, breachInterruptions: this.breachInterruptions, shotsFired: this.shotsFired, shotsHit: this.shotsHit, exposureWindowsUsed: this.exposureWindowsUsed, eligibleForRecords: !this.debugAI, allies: this.allySnapshot(registry, tick), boss: { stage: stage.stage, warningTicks: stage.warningTicks, health: bossWorm?.health ?? 0, maxHealth: this.stage.snapshot().stage === "boss" ? bossWorm?.maxHealth ?? 0 : 0, shieldPhase: skill.phase, shieldActive: skill.activeUntilTick > tick && skill.phase === "active", shieldTicksRemaining: Math.max(0, skill.activeUntilTick - tick) }, rpg: { owned: rpg.owned, rockets: rpg.rockets, reloading: rpg.reloadUntilTick > tick, reloadTicksRemaining: Math.max(0, rpg.reloadUntilTick - tick), crateReady: stage.stage === "boss" && tick >= rpg.crateReadyTick && this.world !== undefined, inCrateZone: this.world !== undefined && this.inCrateZone(this.hunter.snapshot().position) }, decision: this.debugAI ? this.ai.snapshot() : undefined, shot: this.shot && tick - this.shot.tick < 6 ? this.shot : undefined });
+    return freezeRecord({ ...(this.supplies ? { supplies: this.supplies.snapshot(tick) } : {}), medical: this.medical.snapshot(), aim: this.aim, hunter: this.hunter.snapshot(), rifle: this.rifle.snapshot(), snare: this.snare.snapshot(), hunterHealth: registry.get("hunter")?.health ?? 0, wormHealth: bossWorm?.health ?? 0, relayIntegrity: registry.get("relay")?.health ?? 0, tracking: this.tracking.step(worm, this.ai.snapshot(), this.snare.snapshot(), tick, this.terrain.surfaceY(worm.head.position.x)), score: this.scoring.score, trapTriggers: this.trapTriggers, breachInterruptions: this.breachInterruptions, shotsFired: this.shotsFired, shotsHit: this.shotsHit, exposureWindowsUsed: this.exposureWindowsUsed, eligibleForRecords: !this.debugAI, allies: this.allySnapshot(registry, tick), boss: { stage: stage.stage, warningTicks: stage.warningTicks, health: bossWorm?.health ?? 0, maxHealth: this.stage.snapshot().stage === "boss" ? bossWorm?.maxHealth ?? 0 : 0, shieldPhase: skill.phase, shieldActive: skill.activeUntilTick > tick && skill.phase === "active", shieldTicksRemaining: Math.max(0, skill.activeUntilTick - tick) }, rpg: { owned: rpg.owned, rockets: rpg.rockets, reloading: rpg.reloadUntilTick > tick, reloadTicksRemaining: Math.max(0, rpg.reloadUntilTick - tick), crateReady: stage.stage === "boss" && tick >= rpg.crateReadyTick && this.world !== undefined, inCrateZone: this.world !== undefined && this.inCrateZone(this.hunter.snapshot().position) }, decision: this.debugAI ? this.ai.snapshot() : undefined, shot: this.shot && tick - this.shot.tick < 6 ? this.shot : undefined });
   }
 }

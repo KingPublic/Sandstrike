@@ -230,7 +230,7 @@ export class WormLocomotion {
     this.velocity = scale(tangent, this.speed);
     // A Burst aimed upward is a leap, not a sprint. It is what carries the worm
     // up to air targets instead of skimming just under the surface.
-    if (this.isAscending(action)) {
+    if (this.config.burstLiftSpeed > 0 && this.isAscending(action)) {
       this.velocity = freezeVec2(this.velocity.x, -this.config.burstLiftSpeed);
     }
     this.speed = Math.hypot(this.velocity.x, this.velocity.y);

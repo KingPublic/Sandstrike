@@ -451,3 +451,41 @@ pass yet.** Data lives in `src/game/data/ascentRampage.ts`.
 - Known balance gaps: no per-kit rival skills yet (Stage 2), no summit boss or
   crate-restock visuals (Stage 3), and a rival that reaches the crate keeps heavy
   fire forever. Scores share the Rampage record slot with classic arena runs.
+
+## Hunt one-use supplies (2026-10-03)
+Provisional: first spawn at tick1, 1080-tick interval (18s), max3 visible crates.
+Eligible platforms are above the hazard by30px and within200px vertically of the
+living player; random placement within480px horizontally, clamped to35px platform
+margins. Pickup tolerance42px horizontal /24px vertical. Buried crates are retired.
+Each crate grants one of the four non-selected Hunter skills with equal kit choice.
+One slot and one activation; borrowed active effects block additional pickup until
+expiry. Durations/healing/range match CharacterSkills (Shield3s, mark4s, decoy5s,
+heal30HP, grapple260px). Primary skill cooldowns and AI RNG are independent.
+No full-run pacing/difficulty acceptance was measured for this addition.
+
+## Aggressive AI and personalized skills (2026-10-03)
+
+This supersedes the earlier generic rival fire/no-skills tuning and older pursuit
+measurements above. Values remain provisional; no new whole-run pace guarantee.
+- Maw: minimum warning60ticks; target travel lead0.55s; bounded trajectory correction
+  up to3 attempts when planning, reject crossings farther than260px from aim.
+  Surface escape depth is max(280px, current turn-radius estimate +80px).
+- Beacon5s, queued next-attack target limited to480ticks/8s. Existing warned attack
+  completes before retargeting. Grapple/Heal bearing pulse90ticks/1.5s.
+  Shield flank110px, delay commitment while protection has more than60ticks left.
+  Mark/other provocative cues can interrupt roam/recovery, never warning commitment.
+- Rivals: deployment/cap/100HP remain. Actual kit armor and weapon damage/cadence/
+  magazine/reload/burst apply (characters.ts); Engineer burst bullets4ticks apart.
+  Target lead is distance/speed, capped0.65s, including ballistic gravity.
+  Rifle speed520px/s; heavy330px/s. Living nearby Ranger marks boost damage1.5x.
+- Predict contact0.3s ahead; dodge inside155px when ready with safe ledge room85px.
+  Retreat inside210px, approach beyond420px, prefer nearby landing margins24px.
+- Bot skill requests: Ranger exposed target within900px; Shield280px; beacon380px;
+  Medic living friendly within300px missing at least30HP; Scout reachable clear
+  upper ledge within260px. All use existing kit cooldown/duration rules.
+- Rooftop RPG pickup requires grounded summit and center distance<=180px;
+  initial ready delay45ticks, repeat cadence240ticks, damage55 before mark bonus.
+  Burial/death removes armed state. Dedicated crate feedback remains open.
+Focused deterministic and browser behavior checks passed. Human difficulty, device
+performance and the desired5-6min successful run need fresh feedback; historical
+seed33 results predate this AI change.

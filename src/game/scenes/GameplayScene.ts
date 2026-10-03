@@ -142,6 +142,7 @@ export class GameplayScene extends Phaser.Scene {
     this.cameraController.update(frame.snapshot, deltaMs / 1000);
     const lifecycle = this.lifecycle();
     const settings = lifecycle.settings?.() ?? defaultPresentationSettings;
+    lifecycle.audio?.updateEnvironment(frame.snapshot, settings);
     this.worldView?.updateAtmosphere(frame.snapshot.tick, this.cameraController.debugBounds(), settings.reducedMotion);
     const visibleEvents = frame.snapshot.mode === "hunt" && !frame.snapshot.hunt?.tracking.exactTrace ? frame.events.filter(e => !("position" in e) || e.position.y <= (frame.snapshot.world?.surfaceY ?? 0) || e.type === "snare-triggered") : frame.events;
     const commands = this.feedback.consume(visibleEvents, settings, lifecycle.audio?.ready ?? false);

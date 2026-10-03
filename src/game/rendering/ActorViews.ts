@@ -24,6 +24,8 @@ export class ActorViews {
       const decision = snapshot.ai.find((item) => item.actorId === actor.id)?.decision;
       const ally = snapshot.hunt?.allies.find((item) => item.id === actor.id);
       if (actor.id === "hunter" && snapshot.characterId) { drawHunterCharacter(view, actor, snapshot, snapshot.tick - 1 + blend); continue; }
+      const rival = snapshot.rivals?.units.find(unit => unit.id === actor.id);
+      if (rival) { drawHunterCharacter(view, actor, snapshot, snapshot.tick - 1 + blend, rival.hunterId); continue; }
       this.draw(view, actor, snapshot.tick - 1 + blend, highContrast, decision?.state === "telegraph", decision?.aimPoint?.x, ally);
     }
   }
@@ -40,10 +42,10 @@ export class ActorViews {
       const muzzle = { x: dir.x * (firing ? 16 : 19) - dir.x * recoil, y: dir.y * (firing ? 16 : 19) - dir.y * recoil };
       if (actor.tags.includes("ally-air")) {
         view.fillStyle(0x24313c).fillRoundedRect(-32, -14, 64, 26, 8);
-        view.fillStyle(contrast ? 0xdffffa : 0x8af1db).fillRoundedRect(-24, -19, 40, 22, 6);
+        view.fillStyle(contrast ? 0xdffffa : 0xc2cda6).fillRoundedRect(-24, -19, 40, 22, 6);
         view.lineStyle(2.5, 0xffd79a).lineBetween(-46, -28, 46, -28);
         view.lineStyle(3, 0x295f66).lineBetween(0, -19, 0, -30);
-        view.lineStyle(3, 0x8af1db).lineBetween(-20, 14, 24, 14);
+        view.lineStyle(3, 0xc2cda6).lineBetween(-20, 14, 24, 14);
         view.lineStyle(5, 0x2b4453).lineBetween(0, -4, dir.x * 18, dir.y * 18 - 4);
         view.lineStyle(3, 0x152330).lineBetween(0, 8, dir.x * 14, dir.y * 14 + 8);
         view.fillStyle(0x0f1a24).fillRoundedRect(-30, -8, 12, 7, 2).fillRoundedRect(18, -8, 12, 7, 2);
@@ -56,7 +58,7 @@ export class ActorViews {
       const stride = Math.sin(tick * 0.19) * (Math.abs(actor.velocity.x) > 0 ? 4 : 0.6);
       view.fillStyle(0x100d18, 0.28).fillEllipse(1, 17, 29, 7);
       view.lineStyle(3, 0x35424c).lineBetween(-3, 3, -4 - stride, 16).lineBetween(4, 3, 5 + stride, 16);
-      view.fillStyle(contrast ? 0xdffffa : 0x63b8ad).fillRoundedRect(-7, -7, 14, 15, 3);
+      view.fillStyle(contrast ? 0xdffffa : 0x89917a).fillRoundedRect(-7, -7, 14, 15, 3);
       view.fillStyle(0x334b58).fillRoundedRect(-7, -18, 14, 6, 2);
       view.fillStyle(0xf7d2a2).fillCircle(0, -12, 5);
       view.fillStyle(0x334b58).fillRect(-4, 15, 3, 3).fillRect(4, 15, 3, 3);
@@ -71,10 +73,10 @@ export class ActorViews {
     }
     if (actor.tags.includes("relay")) {
       view.fillStyle(0x252e3f).fillRoundedRect(-26, -30, 52, 60, 6);
-      view.lineStyle(3, 0x8af1db).strokeRoundedRect(-26, -30, 52, 60, 6);
+      view.lineStyle(3, 0xc2cda6).strokeRoundedRect(-26, -30, 52, 60, 6);
       view.lineStyle(3, 0x9bc9c6).lineBetween(0, -30, 0, -74);
-      view.lineStyle(2, 0x8af1db, .4 + Math.sin(tick * .08) * .2).strokeCircle(0, -74, 15);
-      view.fillStyle(0x8af1db).fillRect(-18, -19, 36 * actor.health / actor.maxHealth, 5); return;
+      view.lineStyle(2, 0xc2cda6, .4 + Math.sin(tick * .08) * .2).strokeCircle(0, -74, 15);
+      view.fillStyle(0xc2cda6).fillRect(-18, -19, 36 * actor.health / actor.maxHealth, 5); return;
     }
     if (actor.tags.includes("projectile")) {
       view.lineStyle(3, 0xffe5a4, 0.9).lineBetween(-actor.direction.x * 14, -actor.direction.y * 14, 0, 0);
@@ -95,7 +97,7 @@ export class ActorViews {
     const soldier = actor.tags.includes("infantry") || hunter;
     view.fillStyle(0x100d18, 0.28).fillEllipse(1, soldier ? 17 : 10, 29, 7);
     view.lineStyle(3, soldier ? 0x384550 : 0x704c43).lineBetween(-3, 3, -4 - stride, soldier ? 16 : 9).lineBetween(4, 3, 5 + stride, soldier ? 16 : 9);
-    view.fillStyle(hunter ? 0x8af1db : soldier ? (contrast ? 0xe4f3ff : 0x76999c) : (contrast ? 0xffe9b6 : 0xe3b583)).fillRoundedRect(-7, -7, 14, 15, 3);
+    view.fillStyle(hunter ? 0xc2cda6 : soldier ? (contrast ? 0xe4f3ff : 0x8d947d) : (contrast ? 0xffe9b6 : 0xe3b583)).fillRoundedRect(-7, -7, 14, 15, 3);
     view.fillStyle(0xf7d2a2).fillCircle(0, -12, 5);
     if (soldier) {
       view.fillStyle(0x334b58).fillRoundedRect(-7, -18, 14, 6, 2);

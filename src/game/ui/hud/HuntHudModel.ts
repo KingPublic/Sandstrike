@@ -58,6 +58,7 @@ export const HuntHudModel = {
         ? h.rpg.reloading ? "RPG reloading · firearm ready" : `RPG ${String(h.rpg.rockets)} / 2 · LMB fire`
         : world.stage === "ascent" ? debug ? "RPG at rooftop" : undefined : h.rpg.inCrateZone ? "RPG crate · picking up" : h.rpg.crateReady ? "RPG crate ready · reach the summit" : "RPG crate restocking",
       skill: skillLabel,
+      supply: h.supplies?.stored ? `${h.supplies.stored.name} · 1× · E / X` : h.supplies?.active ? "Supply active" : undefined,
       dodge,
       tracking: debug ? h.tracking.text : undefined,
       score: debug ? h.score : undefined,

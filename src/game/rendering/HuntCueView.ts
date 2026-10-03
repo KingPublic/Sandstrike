@@ -1,5 +1,6 @@
 import type Phaser from "phaser";
 import type { SessionSnapshot } from "../domain/session/SessionSnapshot";
+import { drawFieldCrate } from "./FieldCrateView";
 export class HuntCueView {
   private readonly crateGraphics: Phaser.GameObjects.Graphics;
   private readonly graphics: Phaser.GameObjects.Graphics;
@@ -10,17 +11,13 @@ export class HuntCueView {
     const h = snapshot.hunt; this.graphics.clear(); this.crateGraphics.clear(); this.crateLabel.setVisible(Boolean(snapshot.world)); this.label.setVisible(Boolean(h) && this.debug); if (!h) return;
     for (const cache of h.medical) {
       if (cache.claimed) continue;
-      const p = cache.position, g = this.crateGraphics;
-      g.fillStyle(0x284b48).fillRoundedRect(p.x - 16, p.y - 10, 32, 24, 4);
-      g.lineStyle(2, 0x94e5b9).strokeRoundedRect(p.x - 16, p.y - 10, 32, 24, 4);
-      g.fillStyle(0xcaffda).fillRect(p.x - 2, p.y - 6, 4, 16).fillRect(p.x - 7, p.y, 14, 4);
+      drawFieldCrate(this.crateGraphics, cache.position.x, cache.position.y, "medical");
     }
+    for (const crate of h.supplies?.crates ?? []) drawFieldCrate(this.crateGraphics, crate.position.x, crate.position.y, "supply");
     const surfaceY = snapshot.world?.surfaceY ?? 0;
     if (snapshot.world) {
       const y = snapshot.world.summit.y, crate = this.crateGraphics;
-      crate.fillStyle(0x254f50).fillRoundedRect(-30, y - 30, 60, 30, 4);
-      crate.lineStyle(3, h.rpg.crateReady ? 0x8af1db : 0xc4a778).strokeRoundedRect(-30, y - 30, 60, 30, 4);
-      crate.lineStyle(4, 0x8af1db).lineBetween(-10, y - 15, 10, y - 15).lineBetween(0, y - 25, 0, y - 5);
+      drawFieldCrate(crate, 0, y - 15, "rpg", h.rpg.crateReady);
       this.crateLabel.setPosition(0, y - 52);
     }
     const t = h.tracking, pulse = .5 + Math.sin(snapshot.tick * .12) * .2;
