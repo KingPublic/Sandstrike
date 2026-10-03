@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-03",
+  "url": "https://sandstrike-sandy.vercel.app",
+  "deploymentId": "dpl_FHSa6fqXZQd4XmYV6koChD71Jyfe",
+  "package": "@vercel/analytics@2.0.1",
+  "dnsNote": "Node DNS lookup mapped in the isolated test browser after Chromium DNS resolution failed; TLS verification retained",
+  "checks": [
+    {
+      "mobile": false,
+      "htmlStatus": 200,
+      "script": "/_vercel/insights/script.js",
+      "pageView": null,
+      "role": "Hunt",
+      "canvasCount": 1,
+      "testBridge": false,
+      "consoleErrorsAndPageErrors": []
+    },
+    {
+      "mobile": true,
+      "htmlStatus": 200,
+      "script": "/_vercel/insights/script.js",
+      "pageView": null,
+      "role": "Rampage",
+      "canvasCount": 1,
+      "testBridge": false,
+      "consoleErrorsAndPageErrors": []
+    }
+  ]
+}
