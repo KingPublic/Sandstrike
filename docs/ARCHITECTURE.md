@@ -952,3 +952,13 @@ grounded summit proximity and is cleared on burial or death.
 RivalUnit exposes skill/aim/firing/armed snapshots; CharacterSkillView and
 HunterCharacterView render bot skills, equipment and muzzle feedback. No new
 runtime service, input action, save schema or asset is required.
+
+## Optional Vercel page-view analytics (2026-10-03)
+
+main.ts injects the official @vercel/analytics JavaScript client after AppShell
+mount. __SANDSTRIKE_ANALYTICS__ is replaced at build time: production mode and
+VERCEL=1 are required. Local/E2E/Pages builds omit it, retaining static-host
+compatibility and clean test requests. Production SDK script loads asynchronously
+from the same-origin /_vercel/insights/script.js route managed by Vercel.
+There is no domain/simulation dependency, gameplay event stream or saved-player
+data passed into the client. The game does not wait for tracking to load.

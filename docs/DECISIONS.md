@@ -533,3 +533,14 @@ ownership and feed its state into rendering/audio. A bot beacon never overrides
 a human worm's input. Focused deterministic/browser checks establish behavior;
 human aggression and complete-run pacing remain provisional. No workflow restart,
 save migration, new dependency or major content expansion is needed.
+
+## D-028 - Use vanilla, production-only Vercel Web Analytics (2026-10-03)
+
+The user explicitly requested @vercel/analytics. This app stays Vite/Phaser and
+uses inject from the package root, following Vercel's other-framework setup.
+Pin2.0.1; keep the tracking call at app startup, outside gameplay systems.
+Enable only Vercel production builds, preserving local/E2E/Pages behavior and
+custom-domain support. No custom game events, identity/score payloads, React or
+mandatory backend is introduced. Existing project Analytics is already enabled.
+Verify deployment/script availability and clean game boot; headless test traffic
+is intentionally excluded by the served SDK, so real data needs normal visitors.

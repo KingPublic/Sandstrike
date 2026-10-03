@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Vercel Web Analytics records production visits/page views through the official
+  JavaScript SDK; local development, fixtures and GitHub Pages remain untracked.
 - Smarter, more aggressive Maw pursuit with corrected breach trajectories,
   committed warning sectors and complete above-ground attacks. Pure Hunt sprint
   preserves upward momentum; repositioning no longer stalls in repeated dives.

@@ -1,5 +1,24 @@
 # Sandstrike
 
+## Latest integration: Vercel Web Analytics — 2026-10-03
+
+@vercel/analytics2.0.1 is installed and live at https://sandstrike-sandy.vercel.app.
+This Vite/Phaser app uses the official JavaScript inject API at startup.
+Only Vercel production builds enable it; local development, automated fixtures
+and GitHub Pages do not request the Analytics script. No game-state/custom-event
+tracking was added. App startup does not wait for Analytics.
+
+Project Web Analytics is enabled. Deployment dpl_FHSa6fqXZQd4XmYV6koChD71Jyfe
+is READY (main/192a7f1). Lint/typecheck and root/Pages production smoke passed.
+Live desktop Hunt and phone-viewport Rampage booted with the Analytics script,
+one canvas, no test bridge and no console/page errors. Script endpoint returns
+HTTP200. Vercel deliberately excludes automated/headless browsers from page-view
+counts, so real visitor data still needs a normal browser visit/refresh.
+The user confirmed the integration is functioning in this root project.
+Dashboard: https://vercel.com/hartawansuwardi953-1589s-projects/sandstrike/analytics.
+Evidence: docs/verification/vercel-analytics.json. Do not replace this project or
+copy React/Next.js instructions into the Phaser app.
+
 ## Live on Vercel — 2026-10-03
 
 Production: **https://sandstrike-sandy.vercel.app** — deployment READY.

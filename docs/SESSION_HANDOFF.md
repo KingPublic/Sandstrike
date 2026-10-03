@@ -1,10 +1,67 @@
 # SESSION HANDOFF - Project Sandstrike
 
 Updated 2026-10-03, latest execution. Root C:/Users/Adrian/Games/Sandstrike.
-Current branch main after the user's merge (41327df). Work directly in root; no new worktree, branch switch, push
+Current branch main (192a7f1 observed; use git log/status for later user commits).
+Work directly in root; no new worktree, branch switch, push
 or merge. User handles remote integration. Communicate in Bahasa Indonesia.
 
-## Latest checkpoint: Vercel production deployment (2026-10-03)
+## Latest checkpoint: Vercel Web Analytics integration (2026-10-03)
+
+User pasted the Vercel Analytics install/React snippet and asked for it. Implemented
+the equivalent official vanilla JavaScript integration for this Vite/Phaser app,
+reusing the existing project and CLI login. No agent commit/push or branch change.
+The user committed during execution: cd17c83 (analytic), then192a7f1 (nice).
+Preserve those commits/edits; hosting and package changes are already in the user's
+history. Current tracked dist/node_modules cache changes come from verification;
+do not mass-untrack or reset them without a separate request.
+
+- Pinned production dependency @vercel/analytics2.0.1, package/lock updated.
+- src/main.ts calls inject({mode:"production",framework:"vite",debug:false}) after
+  app mount, gated by __SANDSTRIKE_ANALYTICS__. vite.config.ts enables that constant
+  only for mode production with VERCEL=1; src/vite-env.d.ts declares it.
+- Local/E2E/Pages builds omit Analytics requests. Vercel custom domains work through
+  the build-time flag. Analytics is non-blocking, outside the game simulation;
+  no React, backend, save data, custom gameplay events or per-frame tracking.
+- Official setup/package docs consulted; SDK MIT license recorded in ASSET_LICENSES.
+- API through vercel api confirms project webAnalytics.enabledAt1791004183303 and
+  autoExposeSystemEnvs true. No extra account setting or credential was needed.
+
+Deployed production READY:
+- Public URL unchanged: https://sandstrike-sandy.vercel.app
+- Deployment dpl_FHSa6fqXZQd4XmYV6koChD71Jyfe
+- Immutable URL https://sandstrike-fn2jldbnw-hartawansuwardi953-1589s-projects.vercel.app
+- Metadata source main/192a7f1, source cli, target production. Remote install/build
+  successful; same project/team as the previous deployment below.
+
+Verified:
+- Lint/typecheck pass. Root and GitHub Pages production smoke each pass one case
+  (build and actual browser boot, error/request checks). Final local dist is root
+  production. No unrelated full-suite or whole-run replay.
+- Anonymous HTML and /_vercel/insights/script.js return200. Live headless desktop
+  1280x720 Hunt and phone915x412 Rampage start, one canvas, no test bridge, no
+  console/page errors, injected Analytics script present. Captures:
+  verification/analytics-desktop.png and analytics-mobile.png.
+- Chromium initially failed DNS on the domain; isolated test browser used the
+  address from Node DNS lookup without changing TLS verification. No user browser
+  settings or production code changed for this test workaround.
+- Initial checker expected a POST/view from headless browsers and failed that
+  expectation. The actual served script explicitly skips navigator.webdriver or
+  a Headless user agent. Both automated checks are excluded traffic, correctly
+  recorded as pageView:null; no fake visitors were injected.
+- Metrics query at first returned no data. User was asked to open/refresh the game
+  normally to verify a real visit; production collector/script availability is
+  verified. The user then confirmed it is functioning and asked whether installation
+  was in the root; confirmed C:/Users/Adrian/Games/Sandstrike and the same Vercel
+  project. Aggregate metrics were not re-queried after that confirmation.
+  Evidence: verification/vercel-analytics.json.
+
+Exact next action: use the project Analytics dashboard for normal visitor data
+or via `vercel metrics vercel.analytics.page_view.count --since 1h --project
+sandstrike --prod` in the linked root. Do not treat excluded headless traffic as
+a broken collector or bypass bot filtering. Preserve the existing Vercel project.
+Gameplay follow-up still uses the prior AI feedback and rooftop pickup/HUD work.
+
+## Previous checkpoint: Vercel production deployment (2026-10-03)
 
 User explicitly requested Vercel deployment and allowed browser access. The browser
 inventory was empty; a later in-app-browser creation failed in the Windows helper.

@@ -37,3 +37,11 @@ code. No external bitmap, reference-game art, audio pack or generated image adde
 | Equipment crates, material details and favicon | rendering/; public/favicon.svg | Original project code | Project Sandstrike | Original project work | None | Earlier no-bitmap notes describe prior checkpoints only. |
 | Underground rock atlas | public/art/underground-rocks.png | Built-in OpenAI imagegen, 2026-10-03 | OpenAI, generated for this project | Original generated output; no input/reference images | No third-party pack attribution | Four transparent rocks; resized to 768x512 with alpha preserved. Exact prompt in ART_GENERATION.md. |
 | Underground sediment, roots, veins, fossils, debris, ice and grain | UndergroundDetails.ts; UndergroundRockView.ts | Original project TypeScript/Phaser/canvas code, 2026-10-03 | Project Sandstrike | Original project work | None | Decorative geology, no external texture pack or game asset. |
+
+## Web Analytics dependency (2026-10-03)
+
+@vercel/analytics2.0.1: official npm package / https://github.com/vercel/analytics,
+Vercel Inc., MIT license (2026 copyright in the installed package LICENSE).
+Package/lock pin the SDK; retain its MIT notice with distributed SDK copies.
+The production collector script is served by Vercel's Web Analytics service.
+No external art/audio or reference-game assets were added by this integration.
