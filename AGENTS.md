@@ -160,6 +160,25 @@ When a reference source changes:
 
 ## Development Workflow
 
+### Persistent user preferences (2026-10-02)
+
+These preferences apply to future fixes, maintenance and game updates, not only
+the current session. They supersede older requests to use Superpowers throughout.
+
+- Default to direct execution without Superpowers. Do not load its skills or start
+  planning/review cycles merely because the plugin is available. Use it again only
+  if the user explicitly requests it; avoid any workflow that delays delivery.
+- Reuse settled designs and working systems. Keep any necessary plan brief and
+  proportional to the change; do not reopen approvals already given.
+- Run only relevant checks. Repeat passed tests only after a relevant change,
+  failure or unresolved concern; do not skip verification needed for correctness.
+- Work in the project root and the user's current branch. Do not create worktrees
+  or switch branches unless explicitly requested; the user handles push/merge.
+- Give a realistic estimate, respect stated time limits, and report useful progress.
+- Keep normal gameplay free of technical text; diagnostics require explicit debug.
+- Update README_START_HERE.md and docs/SESSION_HANDOFF.md before stopping so a
+  later "lanjutkan" can resume from the exact recorded state.
+
 For architectural work:
 - research;
 - design;
@@ -174,13 +193,8 @@ For implementation:
 - visually verify behavior;
 - fix before expanding scope.
 
-If Superpowers skills are available, use the relevant workflow:
-- brainstorming
-- writing-plans
-- test-driven-development
-- systematic-debugging
-- requesting-code-review
-- verification-before-completion
+Existing Superpowers specs/plans are historical references, not a requirement to
+invoke its skills. Follow the persistent user preferences above for future work.
 
 ## Verification
 

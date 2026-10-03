@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-03",
+  "scope": "Underground presentation only; no simulation, input, audio or save behavior changes",
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "finalRootProductionBuild": "passed",
+    "rootProductionSmokeCases": 1,
+    "pagesProductionSmokeCases": 1,
+    "desktopFinalProductionThemes": ["desert", "ruins", "frozen"],
+    "desktopViewport": [1280, 720],
+    "desktopSteering": "ArrowRight and ArrowUp",
+    "finalProductionTestBridge": "absent",
+    "consoleWarningsErrorsAndPageErrors": [],
+    "phoneHuntViewport": [915, 412],
+    "phoneHuntVisibleActionMinSizePx": 57.671875,
+    "orientationInterruption": [390, 844],
+    "landscapeResume": [844, 390],
+    "phoneRampageJoystickTranslation": "16.5px -16.5px",
+    "phoneRampageJoystickAfterRelease": "0px",
+    "phoneRampageBurstAfterPress": "cooldown",
+    "pageScrollPx": 0
+  },
+  "art": {
+    "file": "public/art/underground-rocks.png",
+    "bytes": 745568,
+    "size": [768, 512],
+    "frames": 4,
+    "tool": "Built-in OpenAI imagegen",
+    "sourceAlphaVerified": true,
+    "references": [],
+    "promptDocument": "docs/ART_GENERATION.md"
+  },
+  "captures": [
+    "underground-desert.png",
+    "underground-ruins.png",
+    "underground-frozen.png",
+    "underground-mobile-hunt.png",
+    "underground-mobile-return.png",
+    "underground-mobile-rampage.png"
+  ],
+  "limits": [
+    "Physical mobile devices and sustained performance not checked",
+    "Visual realism requires user judgement",
+    "Earlier domain suites not repeated for decorative art changes",
+    "Existing Phaser production bundle-size warning remains"
+  ]
+}

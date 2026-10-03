@@ -1,14 +1,14 @@
 # ARCHITECTURE — Project Sandstrike
 
-Status: **Phase A specification approved by the user on 2026-10-01; no
-implementation exists yet.**
+Status: **Phase A specification approved on 2026-10-01; Phase B and Phase C
+functional prototypes implemented. Physical-device release gate remains pending.**
 
-Last updated: 2026-10-01
+Last updated: 2026-10-02
 
 This document defines the implementation boundaries for the approved staged,
 two-role MVP. It turns the accepted product direction in `docs/GAME_DESIGN.md`
-into contracts that later phases can implement and test. It does not claim that
-any package, module, scene, deployment, or runtime behavior already exists.
+into implementation contracts. Sections below retain the approved specification;
+implementation notes are appended. Actual evidence is in PHASE_C_VERIFICATION.md.
 
 ## 1. Decision status
 
@@ -772,3 +772,183 @@ answer yes to all of the following:
 Implementation completion later requires actual test, build, browser, console,
 desktop-input, touch-input, viewport, and gameplay evidence. This document alone
 does not satisfy those runtime gates.
+
+## Phase C implementation: Hunt composition
+HuntSystems composes surface locomotion, hitscan rifle, shallow snare, seeded
+WormController, allowed perception and quantized tracking. GameSession supplies
+motion and registry boundaries; HuntRules owns terminal priority. Normal Hunt
+snapshots omit AI decisions; presentation must filter exact underground state.
+SaveV1 validates legacy fields before SaveValidation constructs schema v2.
+
+## Phase C breach prediction correction (2026-10-02)
+
+WormController receives the same bounded movement configuration and TerrainProfile
+as the live session. WormBreachPlanner forecasts at most 600 fixed ticks with
+WormLocomotion once per attack preparation, then exposes only a quantized crossing
+sector through TrackingSystem. It does not drive or replace live movement.
+Preparation/recovery routes leave room for the cruise-speed turn radius; a locked
+upward approach and 60-tick boost deadline keep each natural crossing announced.
+Exogenous snare lift may invalidate the original route, as an intentional interrupt.
+
+## Survival ascent implementation (2026-10-02)
+
+Status: implemented; human feel and the roster remain open.
+
+The survival revision adds focused modules rather than new scenes: `AscentWorld`
+(world clock, rising hazard, platforms, summit bounds), `PlatformContacts`
+(swept one-way landings, drop-through ignore, grapple blocking), vertical
+`HunterLocomotion`, `WormLifeDirector` (alive/absent/boss with capped escalation),
+`AlliedHunterController` and `SupportHelicopterController` (bounded support),
+`HuntStageDirector` (single summit transition), `BossSkillController` (windup /
+immunity / cooldown) and `RpgSystem` (objective weapon with crate restock).
+`HuntSystems` composes hunter, worm AI, allies, stage and the objective weapon;
+`GameSession` owns the world clock, burial damage, worm lives and the boss spawn.
+Snapshots expose `world`, `wormLife`, `hunt.boss`, `hunt.rpg` and `hunt.allies`,
+and rendering owns no timers. Relay-defense compositions remain available through
+the legacy fixtures.
+
+## Pointer, mouse and touch controls (2026-10-02)
+
+`PointerInput` owns canvas mouse input for both modes: the left button is `primary`
+(aim/fire) and the right button is `boost`, so Burst/Dodge work with the mouse
+alone. A press is latched for at least one sample (`pendingPrimary`/`pendingBoost`)
+because a fast click can start and end between two simulation frames; the canvas
+`contextmenu` event is suppressed so the right button never opens the browser menu.
+
+`ui/ControlReadiness.ts` is the single place that turns a `SessionSnapshot` into
+per-action readiness (0 = busy, 1 = ready) from the existing cooldown ticks. The HUD
+models use it for the new gauges and `TouchControls.setReadiness` maps it onto the
+touch buttons, which draw a conic-gradient ring from a `--ready` custom property.
+Adding a cooldown-visible control therefore needs only a readiness value, not a new
+event stream.
+
+## Ballistic movement profiles (2026-10-02)
+
+arcadeMovementBalance owns compact player breach tuning; huntMovementBalance owns
+tower pursuit. WormLocomotion ballisticAirControl preserves vertical velocity
+through steering before applying gravity. Historical fixtures keep their explicit
+legacy profile.
+
+`burstLiftSpeed` lives in the same movement configuration: when the player steers up
+and Bursts, WormLocomotion replaces the tangent sprint with a fixed vertical launch
+(`WormLocomotion.isAscending`). arcadeMovementBalance sets 1050 (275px apex);
+movementBalance and huntMovementBalance keep 0, so fixtures and the Hunt pursuit worm
+are untouched. `WormMotionSnapshot.burstCooldownTotalSeconds` lets the DOM touch layer
+(`TouchControls.setBurstReadiness`) draw the Burst readiness ring without new events.
+
+## Survival roster and persistence v3 (2026-10-02)
+characters.ts owns ten immutable definitions, visual identity and five weapons.
+RunFactory validates role-compatible characterId; the session freezes the selected
+character/theme and emits gameplayVersion3 result metadata. CharacterSkills owns
+bounded timers, projectiles, venom, mark/decoy and typed damage/heal/knockback/motion;
+renderers read snapshots. A focused dispatcher selects the ten current strategies.
+HunterCharacterView owns original limb/aim/reload animation; CharacterSkillView
+owns transient feedback; logical collision dimensions do not follow artwork.
+SaveValidation validates genuine v1/v2 before migration to schema3. legacyRecords
+preserves old mode records; current buckets only accept revised result envelopes.
+Selection persists independently of records; original backup bytes and future-schema
+memory fallback remain protected. No dependency/server was added.
+Moving surfaceY now flows through clipping, cues, tracking, aim, ray contacts and
+feedback filtering. Hunt committed impacts preserve resolve-start source liveness
+so a simultaneous lethal shot cannot cancel lethal contact; Rampage death blocks
+subsequent feeding/healing as before. Ascent AI uses sensed targets rather than the
+legacy relay utility. Ground support spawns on safe ledges, retires deep burial and
+prunes dead controller entries.
+
+## Latest route, recovery and visual pass (2026-10-02)
+ascentArena authors alternating end stairs and wider world bounds; HuntSystems
+uses those bounds rather than fixed legacy relay limits. RecoveryStations is pure
+domain state with one-use caches exposed through HuntSnapshot.medical; HuntCueView
+renders them, and healing emits domain events. Configured hitInvulnerabilityTicks
+now applies to Hunters as well as worms; legacy targets keep previous defaults.
+Hunt dodge extends existing protection with max(), preserving active shields.
+CharacterPreview creates original inline menu SVG. WorldDetails draws static
+braces/terrain and24 bounded render-only weather elements, disabled by reduced
+motion. HuntHud uses native meter/progress; one gameplay/action path is retained.
+
+## Explicit visual diagnostics (2026-10-02)
+AppShell passes configuration.debugAI explicitly to the HUD and game lifecycle.
+GameplayScene never auto-enables debug from import.meta.env.DEV. HuntCueView hides
+tracking labels outside debug; EffectsRenderer allocates floating label objects
+only in debug. Domain feedback/particles/audio are unchanged. HuntHudModel has an
+explicit debug parameter; essential objectives remain ordinary gameplay fields.
+
+## Ascent rampage systems (2026-10-02)
+
+`domain/rivals/RivalHunterController.ts` is the opponent brain. It receives a
+bounded perception (self, grounded, active platform, surfaceY, summit bounds,
+platform list, crate-armed flag, fire-ready flag, exposed worm) and returns a
+decision (moveX/jump/drop/fire/aim/activity). It climbs the next reachable ledge
+whenever the sand closes in, holds to shoot only at an exposed worm, and switches to
+the heavy round on the summit crate. Like the Hunt worm AI it is a small FSM with no
+runtime LLM and no knowledge of anything the player cannot see.
+
+`domain/rivals/RivalSystems.ts` owns deployment, the per-rival `HunterLocomotion`
+instances, fire cadence/magazine bookkeeping, hazard burial damage and carrion
+spawning. It never touches the projectile or actor systems directly: it returns
+`fires` (from/to/heavy) and damage `events`, and `GameSession` spawns the rounds
+through the existing `ProjectileSystem`, so combat, feedback and rendering need no
+new paths. Rival burial mirrors the Hunter's grace-then-damage rule with its own
+accumulator instead of reusing the hardcoded `"hunter"` actor.
+
+`ProjectileSystem` gained an optional bounds argument because the arena reaches
+y = -2800 while the classic enemy bounds stop at -1200; ascent runs pass the arena
+bounds so rifle and heavy rounds survive the climb.
+
+Carrion is a new `actor.carrion` definition that reuses the prey collision profile
+and the `prey`/`consumable` tags, so the existing automatic mouth feeding and
+`CombatSystem` consumption path heal the worm with no special-casing.
+
+Mode plumbing: `RunConfiguration.ascentRampage` selects the variant, `GameSession`
+derives `rivalMode` from `mode !== "hunt" && ascent === true`, and the session
+validates `mode.ascent-rampage` instead of `mode.rampage`. Fixtures always keep the
+classic path so the historical regression arena is unchanged.
+
+## Run-local Hunter supplies and textured rendering (2026-10-03)
+SkillCrates owns bounded platform spawns, the one-charge slot and a temporary
+CharacterSkills instance. HuntSystems prepares/applySkillEffects, supplies decoy
+perception and allied mark boosts, emits supply-collected/ability-activated events,
+and exposes optional HuntSnapshot.supplies. GameSession passes a dedicated random
+stream. Existing interact action maps E / gamepad X; TouchControls adds a safe-area
+layout supply button. HUD and CharacterSkillView read the same snapshot.
+PreloadScene loads base-path-safe textures. WormSkinView pools images following the
+existing interpolated poses: one Container WebGL Mask filter clips above the moving
+surface; Canvas uses GeometryMask. Existing geometry remains a missing-texture
+fallback. Rendering textures do not affect collision dimensions.
+SoundSynthesis generates cached bounded samples; PhaserAudioAdapter handles spatial
+attenuation, compression, voice cap and tick-based ambient/foley. No runtime fetch
+or server was introduced. CharacterPreview uses common original generated key art.
+
+## Static underground cutaway (2026-10-03)
+
+WorldRenderer shares UndergroundDetails between classic soil and the moving
+hazard. It draws sediment seams, roots, gravel, veins, small pockets and theme
+objects once, using its own deterministic hash instead of session randomness.
+UndergroundRockView holds a static container with a cached 256x256 grain tile and
+image instances from one four-frame transparent atlas. Frames are registered
+once per texture; Vite BASE_URL loading occurs in PreloadScene. The container's y
+tracks surfaceY together with hazard Graphics; classic keeps y=0. It is destroyed
+when WorldRenderer recreates the world. Decoration has no simulation bodies.
+Absent atlas textures keep procedural rock rendering. No save schema, terrain
+collision, input, AI or audio interface changed.
+
+## Skill-sensitive pursuit and tactical rivals (2026-10-03)
+
+HunterSkillSignals derives one sensory frame from primary/borrowed SkillFrames.
+HuntSystems passes it and the beacon to WormPerception; bounded pulse timers,
+shield/mark expiry and explicit lure feed WormController. The controller maintains
+a pending lure and a committed attack separately, uses at most three trajectory
+corrections when planning a charge, and latches escape-turn direction until safely
+deep. These are deterministic domain operations, independent of rendering.
+WormLocomotion only converts upward Burst momentum to a leap when lift is positive.
+
+RivalHunterController returns move/jump/drop/dodge/fire decisions from bounded
+exposed-worm perception. RivalSkillTactics requests useful kit activations;
+RivalSystems owns each CharacterSkills, actual WeaponDefinition and locomotion.
+Shared applySkillEffects updates health/protection, then burial reads the latest
+actor state. RivalFire carries weaponId/damage and predicted aim; GameSession uses
+the existing projectile/audio path with real weapon damage. RPG ownership requires
+grounded summit proximity and is cleared on burial or death.
+RivalUnit exposes skill/aim/firing/armed snapshots; CharacterSkillView and
+HunterCharacterView render bot skills, equipment and muzzle feedback. No new
+runtime service, input action, save schema or asset is required.

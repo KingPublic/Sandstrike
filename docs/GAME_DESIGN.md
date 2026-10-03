@@ -2,6 +2,21 @@
 
 Status: **Phase A specification approved by the user on 2026-10-01.**
 
+Implementation checkpoint (2026-10-02): Phase B and the Phase C two-role prototype
+are implemented. Actual evidence and remaining release gates are recorded in
+`docs/PHASE_C_VERIFICATION.md`; provisional feel/performance targets remain pending.
+
+Survival revision checkpoint (2026-10-02): the user-approved redesign in
+`docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md` supersedes the
+relay-defense Hunt objective. Implemented so far: compact multi-theme menus, the
+arcade worm profile with automatic mouth feeding and Sandguard, the vertical Hunter
+ascent with a rising hazard and platforms, 10-second escalating worm returns, two
+allied survivors plus a support helicopter, and the summit boss fight with the
+objective RPG. Sections of this document describing relay defense as Hunt's main
+objective are now historical fixture behaviour, not the default mode. The ten-kit
+roster, character selection and save v3 record migration are implemented. Latest
+evidence and remaining human/device gates are in SURVIVAL_VERIFICATION.md.
+
 Project Sandstrike is a working title.
 
 Evidence boundary: verified reference observations, confidence, and access limits
@@ -18,11 +33,11 @@ roles:
 - **Worm:** shape a high-momentum path underground, breach through targets,
   sustain through aggressive play, chain varied destruction, and survive an
   escalating response.
-- **Hunter:** interpret uncertain underground signals, anticipate the AI worm's
-  route, protect a surface objective, create exposure windows with a trap, and
-  finish the worm with a ranged weapon.
+- **Hunter:** climb above the rising hazard with allied support, survive escalating
+  worm returns, acquire the summit RPG and defeat the boss.
 
-The MVP contains one arena, one balanced worm, one agile human hunter, and two modes:
+The revised playable prototype contains one shared route, three themes, five worms,
+five Hunters with unique skills, and two modes:
 **Rampage** and **Hunt**. It is complete only when both roles are playable. The
 worm-only vertical slice is an earlier validation milestone, not the finished
 MVP.
@@ -52,8 +67,7 @@ characters, abilities, and balance values.
 
 The following are outside the two-role MVP:
 
-- the complete five-character roster;
-- a campaign, multiple biomes, bosses, or a large mission catalogue;
+- a campaign or large mission catalogue (the approved roster/themes/boss are in scope);
 - permanent power upgrades, currencies, battle passes, or a broad achievement
   system;
 - online accounts, cloud saves, global leaderboards, telemetry services, or a
@@ -113,7 +127,7 @@ clarify the next decision rather than compete with the playfield.
 | Playable Worm | One balanced segmented worm, working name **Dune Maw** | Offensive and armored worms; final roster naming |
 | Playable Hunter | One mobile rifle specialist, working name **Ranger** | Heavy hunter and alternate loadouts |
 | Modes | Rampage and Hunt | Campaign, Survival variants, Challenge, mini-games |
-| Rampage targets | Desert fauna, infantry, one light ground vehicle, one aerial threat | Large enemy catalogue, elite hunters, bosses |
+| Rampage targets | Hunt five Hunter bots up the rising-sand tower; carrion is the only healing | Large enemy catalogue, elite hunters, bosses |
 | Hunt opposition | One observable AI worm and one protected surface objective | Allied squads, multiple worms, escorts, rescue missions |
 | Worm kit | Steering/thrust, bite/impact, and short burst | Projectiles, elemental trails, evolution trees |
 | Hunter kit | Rifle, dodge, and one Seismic Snare | Grenades, shields, alternate traps, weapon inventory |
@@ -165,7 +179,25 @@ but repeated breaches expose the worm to increasingly capable counters.
    dangerous targets for score, then respond to the next threat tier.
 
 The loop repeats until the worm is defeated or the player ends the run.
-Rampage has no finite victory state in the MVP.
+
+### 7.2b Rampage today: hunting the five (2026-10-02)
+
+Rampage is the mirror of the Hunter mode instead of an endless arena chase. The
+worm burrows inside the same rising sand the Hunter climbs, and the sand is what
+lifts its reach, so the two modes lean on one ascent language from opposite sides.
+
+- Five Hunter bots (the existing Hunter kits) deploy one at a time as the sand
+  climbs; at most two are on the field at once so the pressure stays readable.
+- Each rival races for the rooftop crate. Reaching it arms the objective weapon,
+  which is the real threat: slower, heavier rounds that punish a stalled worm.
+- The worm's only healing is carrion drifting in the sand - it must surface, eat and
+  dive again, which is exactly when the rivals get their shots.
+- Defeating all five wins the run; running out of health loses it.
+- Rivals only shoot at a worm that is out of the sand, so diving is a reliable
+  escape, and they keep climbing while the sand closes in rather than standing still.
+
+The older endless arena loop (prey for health, response bands, score chase) is still
+available as the classic arena option and is not part of the intended Rampage pitch.
 
 ### 7.3 Worm movement rules
 
@@ -175,6 +207,11 @@ Rampage has no finite victory state in the MVP.
   bounded by the worm's current state and speed.
 - Underground travel provides the most reliable acceleration and turning.
 - The short Burst increases commitment and speed; it cannot cancel a poor angle.
+- A Burst held *with an upward steer* is a leap instead of a sprint: it converts the
+  climb into a strong vertical launch so the worm can leave the ground, reach above
+  the surface and strike air targets. The leap is intent-based, so a player who
+  steers up and bursts gets height whether they pressed it underground or in the
+  air; the campaign (Hunt) pursuit worm keeps Burst as a pure sprint.
 - Crossing the ground line emerges from movement. There is no contextual
   "breach" button.
 - Air control is weaker than underground control but is not zero.
@@ -190,7 +227,8 @@ Rampage has no finite victory state in the MVP.
 - **Impact:** speed and approach angle influence collisions with vehicles,
   structures, and airborne targets.
 - **Burst:** a short mobility action governed by a visible cooldown or resource;
-  it improves speed, not invulnerability.
+  it improves speed, not invulnerability. Steered upward it becomes the leap that
+  lets the worm leave the surface far enough to reach and bite air targets.
 - Consuming designated biological prey restores a small amount of health.
 - Armored threats provide more score and escalation pressure but no routine
   healing.
@@ -321,12 +359,20 @@ Default physical mappings are design baselines and may be tuned during the
 vertical slice:
 
 - **Keyboard/mouse:** keyboard movement; mouse aim for Hunter; primary on mouse
-  or keyboard fallback; nearby keys for Ability and Mobility; `Esc` pauses.
+  or keyboard fallback; **right mouse button mirrors the Mobility action**
+  (worm Burst / Hunter Dodge) so the mouse alone can move, aim, fire and burst;
+  nearby keys for Ability (the Hunter's Skill/grapple stays on `Q`) and Mobility;
+  `Esc` pauses.
 - **Gamepad:** left stick movement/steering, right stick Hunter aim, trigger for
   Primary, face/shoulder buttons for Ability and Mobility, menu button to pause.
 - **Touch:** a left-side movement/steering region and large right-side action
   controls. Hunter aim supports a right-side drag/aim region plus configurable
-  aim assistance; touch controls may swap sides for handedness.
+  aim assistance; touch controls may swap sides for handedness. Every action
+  offered on desktop has a reachable touch button in the same mode: Burst/Dodge
+  and the active skill are always present, and Jump/drop appear in the climbing
+  Hunt. Buttons with a cooldown (Burst, skill, and reloading fire) draw a
+  readiness ring so a tap during a cooldown is visibly explained rather than
+  silently ignored.
 
 Worm steering must feel continuous on every device even if physical gestures
 differ. Touch and gamepad input use analog magnitude where available. Keyboard
@@ -631,3 +677,86 @@ Only after both MVP modes meet their gates should the project consider:
 
 Each substantial addition needs a player-value statement, scope review, and an
 updated design/decision record before implementation.
+
+## 21. Latest playtest revision request (2026-10-02)
+
+The user's new direction supersedes the earlier roster and relay scenario as the
+next product target: five playable worms plus five Hunters, passive mouth feeding,
+active character skills, easier/high worm breaches, compact menus, and Hunt as
+vertical survival ascent with allied Hunters/helicopters and rising sand. Ordinary
+ascent worm kills are followed by a fiercer return after 10 seconds. Reaching the
+summit stops sand and starts a final boss fight: thicker/aggressive worm, high-damage
+RPG, visible 3-second boss immunity. Target whole successful run: 5-6 minutes.
+This is requested scope, not already shipped behavior. Concrete proposed design
+and assumptions: `docs/superpowers/specs/2026-10-02-sandstrike-survival-redesign.md`.
+Written design review and implementation planning are the next checkpoints.
+
+## Playtest override 2026-10-02: breach height
+
+Player-controlled worms should breach about one building height, then fall under
+gravity. Held upward steering cannot sustain altitude. This supersedes the earlier
+500-700px player target; the high-rise Hunt enemy retains a tower pursuit profile.
+
+## Latest survival pacing/presentation (2026-10-02)
+The climb now alternates stairs at either end of industrial catwalks instead of
+stacking overlapping ledges that allowed a9.9-second straight ascent. Direction
+arrows and a next-ledge HUD guide the route. One-use35HP medical supplies are
+spread along long walks; first rooftop RPG pickup fully restores a living Hunter.
+Hunter impacts grant1s recovery and dodge grants0.2s protection, with a steady
+outline. Engineer leaves the beacon behind the escape direction.
+Boss health is3600, shield3s unchanged. Seed33 full-run feasibility is measured at
+5:46-6:03, not a hard timer or guaranteed human difficulty. Scout grapple remains
+an optional shortcut. Menu original SVG artwork, armored tangent worm jaws, limb
+animation, industrial supports and bounded dust/snow improve the presentation.
+
+## Gameplay text clarity (2026-10-02)
+User explicitly requests a clean playfield. Normal HUD shows only gameplay health,
+ammo/skill, objective/direction and boss meter. Height, hazard distance, generation,
+AI tracking, support counters and floating event labels belong to explicit debug.
+Threat sectors/particles remain graphical; controls are available in How to Play.
+
+## Hunter supply crates and realism pass (2026-10-03)
+Touch a random platform supply crate to store one skill from the four other Hunter
+kits. E / gamepad X / Supply uses it once. The selected Q skill remains independent.
+A full slot leaves crates in place; skills cannot stack while a borrowed effect is
+active. A failed grapple keeps its charge. Supplies reset each run and never change
+saves. This is player Hunt equipment; rival-AI Stage 2 is separate.
+Presentation now favors natural materials, original detailed worm textures and
+menu key art, restrained field-equipment UI and noise/foley-based weapon audio.
+Procedural humans/environments and kit tints retain readable gameplay at small sizes.
+
+## Underground environment detail (2026-10-03 follow-up)
+
+The underground is a geological cutaway with uneven sediment seams, natural rock
+textures, gravel, fractures, shallow roots, mineral veins and small pockets.
+Desert has fossils; ruins have buried masonry, corroded pipes and rebar; frozen
+soil has ice lenses. Details use restrained natural colors behind the worm,
+carrion and equipment, without labels or collectible glows. They are visual
+decoration: worm movement and the surface/hazard contact boundary are unchanged.
+Ascent details travel with the rising material band; classic geology stays fixed.
+
+## Aggressive AI and Hunter counterplay (2026-10-03)
+
+Maw tracks movement before committing a warned breach, corrects for its own turn
+radius/momentum, attacks above ground, then dives/repositions for another pass.
+Once a warning appears its target remains committed, preserving escape counterplay.
+No ordinary breach may bypass the existing 60-tick minimum warning.
+
+Hunter skills provide distinct signals, including skills borrowed from crates:
+- Engineer Attract Maw: a loud five-second beacon takes priority over a recent
+  sighting and draws the next attack. A charge already warned finishes first;
+  its queued beacon target has an eight-second limit to allow lining up the attack.
+- Scout Grapple: landing vibration gives Maw a short pursuit bearing.
+- Siegebreaker Shield: Maw shifts to a flank and delays committing while more
+  than one second of protection remains. A charge already underway continues.
+- Ranger Target Mark: stronger coordinated fire remains; Maw is provoked into
+  faster reacquisition when roaming/recovering.
+- Field Medic Heal: the recovery pulse briefly reveals its origin to Maw.
+
+Rampage rivals remain real Hunters: shoot during movement/climbing, predict close
+contact and dodge away where a ledge offers room, choose reachable nearby landings,
+and use kit skills for useful situations with the existing cooldowns. They only
+target an exposed worm. A human worm decides whether to pursue an Engineer beacon;
+bot skills never take control away from the player. Rooftop rivals approach the
+crate, acquire heavy fire after a short ready delay, and lose it on burial/death.
+New difficulty is provisional pending the user's playtest.

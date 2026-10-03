@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-02",
+  "method": "Seed 33, normal simulation, exposed-target aiming, no traversal skill, no teleport or health override",
+  "runs": [
+    {
+      "characterId": "ranger",
+      "ascentSeconds": 248.06666666666666,
+      "totalSeconds": 412.48333333333335,
+      "bossHealth": 0,
+      "hunterHealth": 100,
+      "outcome": "victory"
+    },
+    {
+      "characterId": "siegebreaker",
+      "ascentSeconds": 248.06666666666666,
+      "totalSeconds": 393.6,
+      "bossHealth": 0,
+      "hunterHealth": 82,
+      "outcome": "victory"
+    },
+    {
+      "characterId": "scout",
+      "ascentSeconds": 247.8,
+      "totalSeconds": 405.43333333333334,
+      "bossHealth": 0,
+      "hunterHealth": 100,
+      "outcome": "victory"
+    },
+    {
+      "characterId": "engineer",
+      "ascentSeconds": 247.6,
+      "totalSeconds": 385.0833333333333,
+      "bossHealth": 0,
+      "hunterHealth": 100,
+      "outcome": "victory"
+    },
+    {
+      "characterId": "field-medic",
+      "ascentSeconds": 248.86666666666667,
+      "totalSeconds": 409.4166666666667,
+      "bossHealth": 0,
+      "hunterHealth": 100,
+      "outcome": "victory"
+    }
+  ]
+}

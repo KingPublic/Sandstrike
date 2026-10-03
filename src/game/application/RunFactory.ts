@@ -1,0 +1,78 @@
+import { characterForRole, type CharacterId } from "../data/characters";
+import { GameSession } from "../domain/session/GameSession";
+import { arcadeMovementBalance } from "../data/arcadeMovementBalance";
+import { huntMovementBalance } from "../data/huntMovementBalance";
+import { movementBalance } from "../data/movementBalance";
+import { FlatTerrainProfile } from "../domain/terrain/FlatTerrainProfile";
+import { ascentArena } from "../data/ascentArena";
+import { spawnActor } from "../data/actors";
+import { huntBalance } from "../data/huntBalance";
+import type { ThemeId } from "../data/themes";
+
+/** The compact player-worm profile, scaled by character speed like gravity. */
+function scaledArcadeMovement(speed: number) {
+  return {
+    ...arcadeMovementBalance,
+    initialSpeed: arcadeMovementBalance.initialSpeed * speed,
+    cruiseSpeed: arcadeMovementBalance.cruiseSpeed * speed,
+    burstSpeedCap: arcadeMovementBalance.burstSpeedCap * speed,
+    burstSpeedGain: arcadeMovementBalance.burstSpeedGain * speed,
+    burstLiftSpeed: arcadeMovementBalance.burstLiftSpeed * speed,
+    gravity: arcadeMovementBalance.gravity * speed ** 2,
+  };
+}
+
+/** Historical relay objectives kept as regression fixtures; every other Hunt run is the ascent. */
+const LEGACY_RELAY_FIXTURES = new Set(["hunt-relay", "hunt-victory", "hunt-trap", "hunter-defeat", "relay-defeat"]);
+
+export interface RunConfiguration { readonly seed: number; readonly characterId?: CharacterId; readonly fixtureId?: string; readonly mode?: "rampage" | "hunt"; readonly ascent?: boolean; readonly ascentRampage?: boolean; readonly debugAI?: boolean; readonly aimAssist?: number; readonly themeId?: ThemeId }
+export class RunFactory {
+  private sequence = 0;
+  constructor(private readonly namespace = Date.now().toString(36)) {}
+  create(configuration: RunConfiguration): GameSession {
+    const character = characterForRole(configuration.mode ?? "rampage", configuration.characterId);
+    if (!character) throw new RangeError("Character does not match the selected role.");
+    this.sequence += 1;
+    // Ascent rampage: the worm hunts five Hunter bots up the rising-sand tower.
+    // Fixtures always stay on the classic arena, which is what they were built for.
+    if (configuration.mode !== "hunt" && configuration.ascentRampage === true && configuration.fixtureId === undefined) {
+      return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "rampage", arcade: true, ascent: true, characterId: character.id, seed: configuration.seed, debugAI: configuration.debugAI ?? false, movement: scaledArcadeMovement(character.speed), terrain: new FlatTerrainProfile(0) });
+    }
+    if (configuration.mode === "hunt") {
+      const fixture = configuration.fixtureId;
+      const legacyRelay = fixture !== undefined && LEGACY_RELAY_FIXTURES.has(fixture);
+      if (configuration.ascent ?? !legacyRelay) {
+        // "ascent-boss" starts the Hunter on the summit so the boss stage and the
+        // objective crate are reachable in deterministic runs and browser checks.
+        const atSummit = fixture === "ascent-boss";
+        const hunter = spawnActor("hunter", "actor.hunter", atSummit ? { x: 0, y: ascentArena.summitY - 16 } : { x: -180, y: -16 });
+        // "ascent-buried" starts the hazard at the base so burial damage is deterministic.
+        // "ascent-kill" starts the worm at 1 HP with a lethal fixture shot so the
+        // remove/return cycle is reachable in deterministic runs and browser checks.
+        const kill = fixture === "ascent-kill";
+        return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", ascent: true, ...(fixture === "ascent-buried" ? { ascentSurface: 0 } : {}), seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement: huntMovementBalance, terrain: new FlatTerrainProfile(0), characterId: character.id, actors: [{ ...hunter, armor: character.armor, hitInvulnerabilityTicks: huntBalance.hitRecoveryTicks }], ...(kill ? { playerHealth: 1, initialProjectiles: [{ position: { x: 0, y: 900 }, direction: { x: 1, y: 0 } }] } : {}) });
+      }
+      const hunter = spawnActor("hunter", "actor.hunter", { x: -180, y: -16 }), relay = spawnActor("relay", "actor.relay", { x: 0, y: -30 });
+      const defeat = fixture === "hunter-defeat" || fixture === "relay-defeat";
+      const trap = fixture === "hunt-trap";
+      // Trap practice starts the worm deeper so the shallow crossing window is
+      // long enough for a human or test to arm the snare ahead of it.
+      const movement = fixture === "hunt-victory" ? { ...movementBalance, initialPosition: { x: 100, y: -80 } } : defeat ? { ...movementBalance, initialPosition: { x: fixture === "hunter-defeat" ? -180 : 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 360 } : trap ? { ...movementBalance, initialPosition: { x: -180, y: 200 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 90 } : movementBalance;
+      return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, mode: "hunt", seed: configuration.seed, debugAI: configuration.debugAI ?? false, aimAssist: configuration.aimAssist ?? .35, movement, terrain: new FlatTerrainProfile(0), ...(fixture === "hunt-victory" ? { playerHealth: 8 } : {}), actors: [{ ...hunter, health: fixture === "hunter-defeat" ? 10 : hunter.health }, { ...relay, health: fixture === "relay-defeat" ? 10 : relay.health }] });
+    }
+    const stress = configuration.fixtureId === "phase-b-smoke";
+    const defeat = configuration.fixtureId === "rampage-defeat";
+    const breach = stress || configuration.fixtureId === "surface-breach" || configuration.fixtureId === "combat-breach" || configuration.fixtureId === "rampage-short";
+    const laboratory = configuration.fixtureId === "surface-breach";
+    const advancedBand = configuration.fixtureId === "rampage-band-3" ? 3 : configuration.fixtureId === "rampage-band-2" ? 2 : undefined;
+    const arcade = configuration.mode === "rampage" && configuration.fixtureId === undefined;
+    const movement = arcade ? scaledArcadeMovement(character.speed) : breach ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: movementBalance.cruiseSpeed } : movementBalance;
+    const actors = stress ? [
+      ...Array.from({ length: 3 }, (_, index) => spawnActor(`smoke.prey.${String(index + 1)}`, "actor.prey", { x: 0, y: -10 })),
+      ...Array.from({ length: 4 }, (_, index) => spawnActor(`smoke.infantry.${String(index + 1)}`, "actor.infantry", { x: 0, y: -16 })),
+    ] : laboratory ? [] : [spawnActor("opening.prey.1", "actor.prey", { x: 260, y: -10 }), spawnActor("opening.prey.2", "actor.prey", { x: 440, y: -10 }), spawnActor("opening.prey.3", "actor.prey", { x: -320, y: -10 }), ...(configuration.fixtureId === "combat-breach" ? [spawnActor("opening.infantry", "actor.infantry", { x: 180, y: -16 })] : [])];
+    const shots = stress ? [{ position: { x: -26, y: 22 }, direction: { x: 1, y: 0 } }, { position: { x: -26, y: 22 }, direction: { x: 1, y: 0 } }] : defeat ? [{ position: { x: -26, y: 180 }, direction: { x: 1, y: 0 } }] : [];
+    const advancedActors = advancedBand ? [...actors, spawnActor("opening.vehicle", "actor.vehicle", { x: 300, y: -18 }), ...(advancedBand === 3 ? [spawnActor("opening.aerial", "actor.aerial", { x: 300, y: -220 })] : [])] : actors;
+    return new GameSession({ themeId: configuration.themeId ?? "desert", sessionId: `${this.namespace}.${String(this.sequence)}`, seed: configuration.seed, arcade, ...(arcade ? { characterId: character.id } : {}), movement: advancedBand ? { ...movementBalance, initialPosition: { x: 0, y: 28 }, initialDirection: { x: 0, y: -1 }, initialSpeed: 360 } : movement, terrain: new FlatTerrainProfile(0), actors: advancedActors, ...(advancedBand ? { initialBand: advancedBand } : {}), ...(laboratory ? {} : { mode: "rampage" }), ...(stress || defeat ? { playerHealth: stress ? 30 : 10, initialProjectiles: shots } : {}) });
+  }
+}

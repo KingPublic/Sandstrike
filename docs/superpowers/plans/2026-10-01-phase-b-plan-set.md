@@ -17,7 +17,7 @@ the Phase B gate; it extends those contracts instead of replacing them.
 
 **Tech Stack:** Node.js `^20.19.0 || >=22.12.0`, npm, Phaser 4.2.1,
 TypeScript 6.0.3, Vite 8.3.1,
-Vitest 5.0.3, Playwright 1.63.0, ESLint 10.11.0, typescript-eslint 8.71.0,
+Vitest 4.1.11, Playwright 1.63.0, ESLint 10.11.0, typescript-eslint 8.71.0,
 plain HTML/CSS, and versioned `localStorage`.
 
 **Spec:** `docs/GAME_DESIGN.md`, `docs/ARCHITECTURE.md`, and
@@ -58,8 +58,10 @@ plain HTML/CSS, and versioned `localStorage`.
   typescript-eslint 8.71.0:
   https://www.npmjs.com/package/typescript?activeTab=versions and
   https://typescript-eslint.io/users/dependency-versions/
-- Vitest 5.0.3 and Playwright Test 1.63.0 are the current stable test packages:
-  https://www.npmjs.com/package/vitest and
+- Vitest 5.0.3 is newer but requires Node.js 22.12+; the Node 20.19 baseline
+  therefore pins Vitest 4.1.11, whose official package metadata supports Node 20
+  and Vite 8. Playwright Test remains pinned at 1.63.0:
+  https://www.npmjs.com/package/vitest/v/4.1.11 and
   https://www.npmjs.com/package/%40playwright/test?activeTab=versions
 - ESLint 10.11.0 is the current stable linter release:
   https://www.npmjs.com/package/eslint
