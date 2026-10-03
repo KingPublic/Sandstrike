@@ -1,10 +1,57 @@
 # SESSION HANDOFF - Project Sandstrike
 
 Updated 2026-10-03, latest execution. Root C:/Users/Adrian/Games/Sandstrike.
-Branch phase-b-ready. Work directly in root; no new worktree, branch switch, push
+Current branch main after the user's merge (41327df). Work directly in root; no new worktree, branch switch, push
 or merge. User handles remote integration. Communicate in Bahasa Indonesia.
 
-## Latest checkpoint: aggressive AI and personalized Hunter skill reactions (2026-10-03)
+## Latest checkpoint: Vercel production deployment (2026-10-03)
+
+User explicitly requested Vercel deployment and allowed browser access. The browser
+inventory was empty; a later in-app-browser creation failed in the Windows helper.
+Vercel connector login succeeded, but deploy_to_vercel was missing server-side and
+get_project had a parameter mapping error. Deployed via the official npm Vercel
+CLI62.2.0 after the user completed its device login. No token was exposed or
+committed. CLI authentication remains available on this machine.
+
+Observed before deployment: user had merged phase-b-ready into main, HEAD and
+origin/main both 41327df92b0d9e17ad554b50dd5b3cd194ed8b68, working tree clean.
+No agent commit, push, merge or branch switch occurred in this task.
+
+Production READY:
+- Public URL: https://sandstrike-sandy.vercel.app
+- Deployment: dpl_CAWRtN2LaAzxifFPnzLuG6CEKDcv
+- Immutable URL: https://sandstrike-hjhppo6qq-hartawansuwardi953-1589s-projects.vercel.app
+- Project: sandstrike / prj_8yOw2LxNgyvAD1MGVxNN5JlWBFN7
+- Team: team_i7CQ6vAmCBLrZCLuX5JjAR1B
+- Dashboard: https://vercel.com/hartawansuwardi953-1589s-projects/sandstrike
+- GitHub: https://github.com/KingPublic/Sandstrike (CLI confirmed Connected)
+- Source main/41327df; deployment source cli, target production. Build-to-ready
+  interval reported by deployment metadata:13.1s. npm ci and Vite build succeeded.
+  CLI project inspection confirms root directory '.', Vite/dist and Node24.x.
+
+Added vercel.json (Vite, npm ci, npm run build, dist), .vercelignore and .vercel/
+ignore. CLI created ignored .vercel/project.json and .env.local with a local OIDC
+token. Preserve credentials locally; never print/commit them. Hosting configuration
+and this documentation are uncommitted and need the user's next GitHub push.
+Future manual deploy from this root:
+`npm exec --yes --package=vercel@62.2.0 -- vercel deploy --prod`.
+Git integration is connected for subsequent commits; no extra backend/env setup.
+
+Verified: connector deployment status READY; anonymous HTTP200 for production
+HTML, JS, CSS and all four art assets; image hashes identical to local files;
+production JS has no __SANDSTRIKE_TEST__. No repeat of passed domain/full-run
+tests because this task changed hosting configuration only. Existing broad Node
+engine upgrade warning remains. Remote interactive/browser gameplay was not
+verified because no usable browser was connected; earlier local desktop/mobile
+checks still describe the deployed gameplay. Evidence: verification/vercel-production.json.
+
+Exact next action: user opens the public URL and confirms online desktop/mobile
+feel. On a deployment follow-up, reuse this project/team (do not create another),
+check status/logs only when needed, and redeploy from the linked root or user's
+main push. For gameplay continuation, use the AI checkpoint's remaining feedback
+and rooftop pickup/HUD polish below. Stay on the user's current branch.
+
+## Previous checkpoint: aggressive AI and personalized Hunter skill reactions (2026-10-03)
 
 The user accepted the underground improvement, then requested smarter/aggressive
 worm and Hunter bots and real, distinct Maw reactions to every Hunter skill,

@@ -1,5 +1,28 @@
 # Sandstrike
 
+## Live on Vercel — 2026-10-03
+
+Production: **https://sandstrike-sandy.vercel.app** — deployment READY.
+Project: sandstrike, linked to https://github.com/KingPublic/Sandstrike.
+The user merged the prior work into main; deployed source commit: 41327df.
+Production was published directly from the current root with Vercel CLI62.2.0.
+GitHub integration is connected for subsequent pushes. No commit/push was made
+by the agent in this deployment task.
+
+vercel.json sets Vite, npm ci, npm run build and output dist. .vercelignore omits
+local dependencies, test reports, docs and local credentials from CLI uploads.
+.vercel/ and .env.local are ignored; never commit the generated local OIDC token.
+For a later manual production update from this linked root:
+`npm exec --yes --package=vercel@62.2.0 -- vercel deploy --prod`.
+Commit/push the new hosting configuration when ready to retain it on GitHub.
+
+Verified remote build and READY status; public URL, JS/CSS and all four original
+art files return HTTP200 without authentication. Deployed art hashes match local
+files; production JS has no test bridge. Remote interactive gameplay was not
+checked because the browser connection was unavailable. Local gameplay evidence
+is in the previous AI checkpoint. Exact hosting evidence:
+docs/verification/vercel-production.json.
+
 ## Latest playable update: aggressive AI and skill reactions — 2026-10-03
 
 Maw now follows current movement, corrects its breach trajectory, completes the
@@ -21,7 +44,7 @@ normal production Hunt activated the skill without debug text or test bridge.
 Evidence and remaining limits: docs/verification/ai-skill-behavior.json and
 docs/SESSION_HANDOFF.md. No long five-run balance simulation was repeated.
 
-Latest work remains uncommitted on phase-b-ready; dist is root production.
+The user subsequently merged this work into main (41327df); it is now deployed.
 Next: the user's playtest verdict on aggression and skill usefulness. Earlier
 5-6 minute pacing results predate this AI change and are not current acceptance.
 Continue with remaining rooftop pickup feedback/HUD polish only when requested;
@@ -62,7 +85,8 @@ full-run tests without a relevant unresolved concern.
 
 ## Read this first when continuing with AI
 
-Updated 2026-10-03. Work in this root on `phase-b-ready`; do not create worktrees,
+Updated 2026-10-03. Work in this root on the user's current branch (`main` at the
+deployment checkpoint); do not create worktrees,
 switch branches, push or merge. The user controls remote integration. Communicate
 in Bahasa Indonesia. A short "lanjutkan" means resume the exact next task below.
 

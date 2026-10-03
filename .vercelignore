@@ -1,0 +1,16 @@
+.git
+.vercel
+.worktrees
+.superpowers
+.codex
+.playwright-mcp
+node_modules
+dist
+coverage
+test-results
+playwright-report
+blob-report
+docs
+tests
+.env*.local
+npm-debug.log*
