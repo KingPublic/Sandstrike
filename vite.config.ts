@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
   return {
     base: normalizeBasePath(environment.VITE_BASE_PATH),
     define: {
+      __SANDSTRIKE_ANALYTICS__: JSON.stringify(
+        mode === "production" && process.env.VERCEL === "1",
+      ),
       __SANDSTRIKE_E2E__: JSON.stringify(
         environment.VITE_ENABLE_TEST_BRIDGE === "true",
       ),
